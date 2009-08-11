@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Copyright (c) 2009, Code Aurora Forum. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * Neither the name of Code Aurora nor
+ *      the names of its contributors may be used to endorse or promote
+ *      products derived from this software without specific prior written
+ *      permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<resources>
+  <string-array name="regional_band_values">
+    <item>United States</item>
+    <item>United Kingdom</item>
+    <item>Japan Standard Band</item>
+    <item>Japan Wide Band</item>
+  </string-array>
+
+  <string-array name="regional_band_entries">
+    <item>United States </item>
+    <item>United Kingdom </item>
+    <item>Japan - Standard</item>
+    <item>Japan - Wide</item>
+  </string-array>
+
+  <string-array name="ster_mon_entries">
+    <item>Stereo</item>
+    <item>Mono</item>
+  </string-array>
+
+  <string-array name="record_durations_entries">
+    <item>5 minutes</item>
+    <item>15 minutes</item>
+    <item>30 minutes</item>
+    <item>Until stopped</item>
+
+  </string-array>
+
+  <string-array name="ster_mon_values">
+    <item>Stereo</item>
+    <item>Mono</item>
+  </string-array>
+
+  <string-array name="record_duration_values">
+    <item>5 minutes</item>
+    <item>15 minutes</item>
+    <item>30 minutes</item>
+    <item>Until stopped</item>
+  </string-array>
+
+  <string-array name="sleep_duration_values">
+    <item>15 minutes</item>
+    <item>30 minutes</item>
+    <item>45 minutes</item>
+    <item>1 Hour</item>
+  </string-array>
+
+    <!-- This array should be in seconds and should match the values above -->
+  <string-array name="sleep_duration_values_seconds">
+    <item>900</item>
+    <item>1800</item>
+    <item>2700</item>
+    <item>3600</item>
+  </string-array>
+
+  <string-array name="search_category_entries">
+    <item>Seek</item>
+    <item>Scan</item>
+    <item>Tune</item>
+  </string-array>
+
+  <string-array name="search_category_values">
+    <item>Seek - Search Stations with good signal strength</item>
+    <item>Scan - Search and Preview Stations with good signal strength</item>
+    <item>Tune - Search All Stations</item>
+  </string-array>
+
+  <string-array name="search_category_types">
+    <item>All Stations</item>
+    <item>News</item>
+    <item>Information </item>
+    <item>Sports </item>
+    <item>Talk </item>
+    <item>Rock </item>
+    <item>Classic Rock </item>
+    <item>Soft </item>
+    <item>Soft Rock </item>
+    <item>Soft R and B </item>
+    <item>Adult Hits </item>
+    <item>Classical </item>
+    <item>Jazz </item>
+    <item>Top 40</item>
+    <item>Country</item>
+    <item>Public</item>
+    <item>Weather</item>
+  </string-array>
+
+  <string-array name="presetlist_edit_category">
+    <item>Rename</item>
+    <item>Edit Stations</item>
+    <item>Auto-Select</item>
+    <item>Delete</item>
+  </string-array>
+
+</resources>

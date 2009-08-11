@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Copyright (c) 2009, Code Aurora Forum. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * Neither the name of Code Aurora nor
+ *      the names of its contributors may be used to endorse or promote
+ *      products derived from this software without specific prior written
+ *      permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="app_name">FMRadio</string>
+
+  <string name="default_sleep">Sleep 12:34</string>
+  <string name="menu_add_to_preset">Add to Presets</string>
+  <string name="menu_settings">Settings</string>
+  <string name="menu_record_start">Start Recording</string>
+  <string name="menu_record_stop">Stop Recording</string>
+  <string name="menu_sleep">Sleep</string>
+  <string name="menu_sleep_cancel">Cancel Sleep</string>
+  <string name="menu_wired_headset">Wired Headset</string>
+
+
+  <string name="enter_frequency">Tune to Station</string>
+  <string name="enter_new_frequency_title">Enter Frequency </string>
+
+  <string name="sel_band_menu">Select Regional Band</string>
+
+  <string name="settings_menu">Settings</string>
+  <string name="regional_band">Regional Band</string>
+
+  <string name="aud_output_mode">Audio Output Mode</string>
+  <string name="sel_audio_output">Select Audio Output</string>
+
+  <string name="record_dur">Record Duration</string>
+  <string name="sel_rec_dur">Select Record Duration</string>
+
+  <string name="auto_select_af">Alternate Frequency</string>
+  <string name="auto_select_af_enabled">Auto Select Enabled</string>
+  <string name="auto_select_af_disabled">Auto Select Disabled</string>
+
+  <string name="fac_defaults">Revert to Factory Defaults</string>
+  <string name="revert_to_fac">Revert to Factory Defaults</string>
+  <string name="settings_back">Back</string>
+  <string name="settings_back_summary">Return to previous view</string>
+  <string name="settings_revert_defaults_summary">Reset all settings</string>
+
+  <string name="default_band">United States</string>
+  <string name="default_audio">Stereo</string>
+  <string name="default_record_duration">5 minutes</string>
+  <string name="factory_reset_dialog_title">Confirm Reset</string>
+  <string name="factory_reset_dialog_message">This will delete all settings including Presets
+  </string>
+  <string name="station_move">Move</string>
+  <string name="station_edit">Edit</string>
+
+  <string name="delete_station_title">Delete</string>
+  <string name="find_af_station">Find</string>
+  <string name="menu_add_list">Add List</string>
+  <string name="menu_rename_list">Rename List</string>
+  <string name="menu_reorder_list">Reorder List</string>
+  <string name="menu_scan_for_preset">Scan for Presets</string>
+  <string name="menu_delete_list">Delete List</string>
+  <string name="alert_dialog_ok">Ok</string>
+  <string name="alert_dialog_cancel">Cancel</string>
+
+
+  <string name="search_category_key">search_category_type</string>
+  <string name="search_category">Select Search Type</string>
+  <string name="search_category_title">Search Type</string>
+  <string name="default_search_category">Seek</string>
+  <string name="search_category_tune">Tune</string>
+
+  <string name="search_category_type_key">search_category_value_type</string>
+  <string name="search_category_type">Select Search by Program Type</string>
+  <string name="search_category_type_title">Search by Program Type</string>
+  <string name="default_search_category_type">All Stations</string>
+
+  <string name="presets_back">Back</string>
+  <string name="presets_back_summary">Return to previous view</string>
+
+  <string name="nav_mode_presets">Presets</string>
+  <string name="nav_mode_stations">Stations</string>
+
+  <string name="prog_service_string">NOW PLAY</string>
+  <string name="radio_text_string">Here is the radio text information for the station</string>
+  <string name="pty_string">Classic Rock</string>
+  <string name="frequency_string">102.1</string>
+  <string name="station_id_string">KPRI</string>
+
+    <skip/>
+    <!-- Do not translate. Duration format. -->
+    <string name="durationformat"><xliff:g id="format">%2$d:%5$02d</xliff:g></string>
+
+<string name="default_record">REC: 10:22</string>
+<string name="default_preset_list_name">FM - San Diego</string>
+<string name="default_station">102.9 ULUL</string>
+<string name="default_blank"> </string>
+<string name="stop_scanning">Stop Scanning</string>
+</resources>
