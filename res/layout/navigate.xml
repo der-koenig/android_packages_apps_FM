@@ -125,13 +125,6 @@
         android:layout_width="90px"
         android:layout_height="55px" />
 
-      <Button android:id="@+id/presets_button_6"
-          android:text="@string/default_blank"
-        android:layout_marginRight="10dip"
-        android:layout_width="90px"
-        android:layout_height="55px"
-        android:visibility="gone" />
-
       <ImageButton android:id="@+id/btn_preset_page"
         android:src="@drawable/ic_btn_forward"
         android:layout_marginRight="10dip"

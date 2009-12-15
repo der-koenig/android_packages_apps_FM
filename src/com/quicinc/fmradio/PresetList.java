@@ -26,23 +26,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.quic.fmradio;
-
-import android.content.Context;
-import android.preference.PreferenceCategory;
+package com.quicinc.fmradio;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PresetList extends PreferenceCategory {
+public class PresetList{
     private    List<PresetStation> mPresetList = new ArrayList<PresetStation>();
     private    int mCurrentStation = 0;
     private    String mListName = "";
-    Context mContext;
 
-    public PresetList(Context context, String name) {
-        super(context);
-        mContext = context;
+    public PresetList(String name) {
         mListName = name;
     }
 
@@ -66,8 +60,8 @@ public class PresetList extends PreferenceCategory {
         return name;
     }
 
-    public synchronized double getStationFrequency(int stationNum){
-        double frequency = 100.0;
+    public synchronized int getStationFrequency(int stationNum){
+        int frequency = 102100;
         if (mPresetList.size() > stationNum){
             frequency = mPresetList.get(stationNum).getFrequency();
         }
@@ -78,7 +72,7 @@ public class PresetList extends PreferenceCategory {
         mListName = name;
     }
 
-    public synchronized void setStationFrequency(int stationNum, double frequency){
+    public synchronized void setStationFrequency(int stationNum, int frequency){
         PresetStation mStation = mPresetList.get(stationNum);
         mStation.setFrequency(frequency);
     }
@@ -97,7 +91,7 @@ public class PresetList extends PreferenceCategory {
         return station;
     }
 
-    public synchronized PresetStation getStationFromFrequency(double frequency){
+    public synchronized PresetStation getStationFromFrequency(int frequency){
         int totalPresets = mPresetList.size();
         for (int presetNum = 0; presetNum < totalPresets; presetNum++ ) {
             PresetStation station = mPresetList.get(presetNum);
@@ -110,7 +104,7 @@ public class PresetList extends PreferenceCategory {
         return null;
     }
 
-    public synchronized PresetStation addStation(String name, double freq){
+    public synchronized PresetStation addStation(String name, int freq){
         PresetStation addStation = new PresetStation(name, freq);
         if(addStation != null) {
             mPresetList.add(addStation);
@@ -128,7 +122,23 @@ public class PresetList extends PreferenceCategory {
     }
 
     public synchronized void removeStation(int index){
-        mPresetList.remove(index);
+       int totalPresets = mPresetList.size();
+       if(index < totalPresets)
+       {
+          mPresetList.remove(index);
+       }
+    }
+
+    public synchronized void removeStation(PresetStation station){
+       int index = mPresetList.indexOf(station);
+       int totalPresets = mPresetList.size();
+       if(index < totalPresets)
+       {
+          mPresetList.remove(index);
+       }
+    }
+    public synchronized void clear(){
+        mPresetList.clear();
     }
 
     /* If a user selects a new station in this list, this routine will be called to
@@ -236,71 +246,78 @@ public class PresetList extends PreferenceCategory {
     /* Test Code */
     public void addDummyStations() {
         PresetStation station;
-        double freq;
+        int freq;
         String name ;
-        String pty ;
+        int pty ;
 
         mPresetList.clear();
-        freq = 89.5;
+        freq = 89500;
         name = "KPBS";
-        pty = "Public Radio";
+        pty = 22; //public
         station = addStation(name, freq);
         if(station != null) {
             station.setPty(pty);
-            station.setStationId(name);
-            station.setRDSSupported(true);
+            station.setPI(0);
+            station.setRDSSupported(false);
         }
 
-        freq = 96.5;
+        freq = 96500;
         name = "KYXY";
-        pty = "Soft Rock";
+        //pty = "Soft Rock";
+        pty = 8;
+
         station = addStation(name, freq);
         if(station != null) {
             station.setPty(pty);
-            station.setStationId(name);
-            station.setRDSSupported(true);
+            station.setPI(0);
+            station.setRDSSupported(false);
         }
 
-        freq = 98.1;
+        freq = 98100;
         name = "KIFM";
-        pty = "Smooth Jazz";
+        //pty = "Smooth Jazz";
+        pty = 14;
+
         station = addStation(name, freq);
         if(station != null) {
             station.setPty(pty);
-            station.setStationId(name);
-            station.setRDSSupported(true);
+            station.setPI(0);
+            station.setRDSSupported(false);
         }
 
-        freq = 101.5;
+        freq = 101500;
         name = "KGB";
-        pty = "Classic Rock";
+        //pty = "Classic Rock";
+        pty = 6;
+
         station = addStation(name, freq);
         if(station != null) {
             station.setPty(pty);
-            station.setStationId(name);
+            station.setPI(0);
+            station.setRDSSupported(false);
+        }
+
+        freq = 102100;
+        name = "KPRI";
+        //pty = "Rock";
+        pty = 5;
+        station = addStation(name, freq);
+        if(station != null) {
+            station.setPty(pty);
+            station.setPI(0);
             station.setRDSSupported(true);
         }
 
-        freq = 102.1;
-        name = "KPRI";
-        pty = "Rock";
-        station = addStation(name, freq);
-        if(station != null) {
-            station.setPty(pty);
-            station.setStationId(name);
-            station.setRDSSupported(false);
-        }
-
-        freq = 105.3;
+        freq = 105300;
         name = "KIOZ";
-        pty = "Rock";
+        //pty = "Rock";
+        pty = 5;
         station = addStation(name, freq);
         if(station != null) {
             station.setPty(pty);
-            station.setStationId(name);
-            station.setRDSSupported(false);
+            station.setPI(0);
+            station.setRDSSupported(true);
         }
-
     }
 
 }
