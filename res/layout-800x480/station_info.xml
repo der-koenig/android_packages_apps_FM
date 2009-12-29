@@ -56,7 +56,7 @@
        android:layout_alignParentTop="true"
        android:layout_centerHorizontal="true"
        android:layout_alignBaseline="@id/signal_level"
-       android:textSize="36sp"
+       android:textSize="24sp"
        android:singleLine="true"
        android:textStyle="bold"
        android:text="@string/prog_service_string" />

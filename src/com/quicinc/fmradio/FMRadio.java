@@ -228,6 +228,8 @@ public class FMRadio extends Activity
    public void onCreate(Bundle savedInstanceState) {
 
       super.onCreate(savedInstanceState);
+      registerHeadsetListener();
+
       mPrefs = new FmSharedPreferences(this);
       mCommandActive = CMD_NONE;
       mCommandFailed = CMD_NONE;
@@ -298,7 +300,6 @@ public class FMRadio extends Activity
       {
          mRadioTextScroller = new ScrollerText(mRadioTextTV);
       }
-      registerHeadsetListener();
 
       enableRadioOnOffUI(false);
       if (false == bindToService(this, osc))
@@ -351,6 +352,7 @@ public class FMRadio extends Activity
    @Override
    public void onResume() {
       super.onResume();
+      Log.d(LOGTAG, "FMRadio: onResume");
       mPrefs.Load();
       PresetStation station = FmSharedPreferences.getStationFromFrequency(FmSharedPreferences.getTunedFrequency());
       if (station != null)
@@ -359,8 +361,8 @@ public class FMRadio extends Activity
       }
       mHandler.post(mUpdateProgramService);
       mHandler.post(mUpdateRadioText);
-      enableRadioOnOffUI();
       updateStationInfoToUI();
+      enableRadioOnOffUI();
    }
 
    @Override
@@ -1538,21 +1540,26 @@ public class FMRadio extends Activity
       {
          try
          {
-            if(isAnyAntennaAvailable())
+            bStatus = mService.fmOn();
+            if(bStatus)
             {
-               bStatus = mService.fmOn();
-               if(bStatus)
+               readInternalAntennaAvailable();
+               if(isAnyAntennaAvailable())
                {
                   tuneRadio(FmSharedPreferences.getTunedFrequency());
+                  enableRadioOnOffUI();
                }
                else
                {
-                  Log.e(LOGTAG, " mService.fmOn failed");
-                  mCommandFailed = CMD_FMON;
-                  showDialog(DIALOG_CMD_FAILED);
+                  disableRadio();
                }
             }
-            enableRadioOnOffUI();
+            else
+            {
+               Log.e(LOGTAG, " mService.fmOn failed");
+               mCommandFailed = CMD_FMON;
+               showDialog(DIALOG_CMD_FAILED);
+            }
          } catch (RemoteException e)
          {
             e.printStackTrace();
@@ -2384,8 +2391,18 @@ public class FMRadio extends Activity
                        (station < searchList.length) && (station < NUM_AUTO_PRESETS_SEARCH);
                        station++)
                   {
-                     Log.d(LOGTAG, "mSearchListComplete: [" + station + "] = " +  searchList[station]);
-                     FmSharedPreferences.addStation("", searchList[station],currentList);
+                     int frequency = searchList[station];
+                     Log.d(LOGTAG, "mSearchListComplete: [" + station + "] = " +  frequency);
+                     if( (frequency <= FmSharedPreferences.getUpperLimit())
+                        && (frequency >= FmSharedPreferences.getLowerLimit()))
+                     {
+                        FmSharedPreferences.addStation("", searchList[station],currentList);
+                     }
+
+                     if(frequency == 0)
+                     {
+                        break;
+                     }
                   }
                }
             } catch (RemoteException e)
@@ -2427,6 +2444,10 @@ public class FMRadio extends Activity
          if(!isAnyAntennaAvailable())
          {
             disableRadio();
+         }
+         else
+         {
+            enableRadioOnOffUI();
          }
       }
    };
@@ -2740,7 +2761,7 @@ public class FMRadio extends Activity
             try
             {
                mService.registerCallbacks(mServiceCallbacks);
-               readInternalAntennaAvailable();
+
                enableRadio();
             } catch (RemoteException e)
             {
@@ -2751,10 +2772,6 @@ public class FMRadio extends Activity
          {
             Log.e(LOGTAG, "IFMRadioService onServiceConnected failed");
          }
-         //startPlayback();
-         // Service is dead or not playing anything. If we got here as part
-         // of a "play this file" Intent, exit. Otherwise go to the Music
-         // app start screen.
          if (getIntent().getData() == null)
          {
             Intent intent = new Intent(Intent.ACTION_MAIN);

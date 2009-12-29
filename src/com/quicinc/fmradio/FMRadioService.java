@@ -36,6 +36,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.IBinder;
@@ -59,8 +61,11 @@ import android.hardware.fmradio.FmConfig;
  */
 public class FMRadioService extends Service
 {
-   public static final int FMRADIOSERVICE_STATUS = 101;
 
+   public static final int RADIO_AUDIO_DEVIVE_WIRED_HEADSET = 0;
+   public static final int RADIO_AUDIO_DEVIVE_SPEAKER_PHONE = 1;
+
+   private static final int FMRADIOSERVICE_STATUS = 101;
    private static final String FMRADIO_DEVICE_FD_STRING = "/dev/radio0";
    private static final String LOGTAG = "FMService";//FMRadio.LOGTAG;
 
@@ -76,6 +81,8 @@ public class FMRadioService extends Service
    private boolean mResumeAfterCall = false;
 
    private boolean mFMOn = false;
+   private BroadcastReceiver mScreenOnOffReceiver = null;
+   final Handler mHandler = new Handler();
 
    private FmRxRdsData mFMRxRDSData=null;
    // interval after which we stop the service when idle
@@ -95,6 +102,8 @@ public class FMRadioService extends Service
       PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
       mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, this.getClass().getName());
       mWakeLock.setReferenceCounted(false);
+      /* Register for Screen On/off broadcast notifications */
+      registerScreenOnOffListener();
 
       // If the service was idle, but got killed before it stopped itself, the
       // system will relaunch it. Make sure it gets stopped again in that case.
@@ -112,12 +121,19 @@ public class FMRadioService extends Service
 
       // make sure there aren't any other messages coming
       mDelayedStopHandler.removeCallbacksAndMessages(null);
+      /* Remove the Screen On/off listener */
+      if (mScreenOnOffReceiver != null) {
+          unregisterReceiver(mScreenOnOffReceiver);
+          mScreenOnOffReceiver = null;
+      }
 
       /* Since the service is closing, disable the receiver */
       fmOff();
 
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
       tmgr.listen(mPhoneStateListener, 0);
+
+      Log.d(LOGTAG, "onDestroy: unbindFromService completed");
 
       //unregisterReceiver(mIntentReceiver);
       mWakeLock.release();
@@ -252,6 +268,55 @@ public class FMRadioService extends Service
       }
    };
 
+
+     /**
+     * Registers an intent to listen for
+     * ACTION_SCREEN_ON/ACTION_SCREEN_OFF notifications. This intent
+     * is called to know iwhen the screen is turned on/off.
+     */
+    public void registerScreenOnOffListener() {
+        if (mScreenOnOffReceiver == null) {
+            mScreenOnOffReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+                    if (action.equals(Intent.ACTION_SCREEN_ON)) {
+                       Log.d(LOGTAG, "ACTION_SCREEN_ON Intent received");
+                       //Screen turned on, set FM module into normal power mode
+                       mHandler.post(mScreenOnHandler);
+                    }
+                    else if (action.equals(Intent.ACTION_SCREEN_OFF)) {
+                       Log.d(LOGTAG, "ACTION_SCREEN_OFF Intent received");
+                       //Screen turned on, set FM module into low power mode
+                       mHandler.post(mScreenOffHandler);
+                    }
+                }
+            };
+            IntentFilter iFilter = new IntentFilter();
+            iFilter.addAction(Intent.ACTION_SCREEN_ON);
+            iFilter.addAction(Intent.ACTION_SCREEN_OFF);
+            registerReceiver(mScreenOnOffReceiver, iFilter);
+        }
+    }
+
+    /* Handle all the Screen On actions:
+       Set FM Power mode to Normal
+     */
+    final Runnable    mScreenOnHandler = new Runnable() {
+       public void run() {
+          setLowPowerMode(false);
+       }
+    };
+    /* Handle all the Screen Off actions:
+       Set FM Power mode to Low Power
+       This will reduce all the interrupts coming up from the SoC, saving power
+     */
+    final Runnable    mScreenOffHandler = new Runnable() {
+       public void run() {
+          setLowPowerMode(true);
+       }
+    };
+
    /* Show the FM Notification */
    public void startNotification() {
       RemoteViews views = new RemoteViews(getPackageName(), R.layout.statusbar);
@@ -337,6 +402,10 @@ public class FMRadioService extends Service
          mService.get().unregisterCallbacks();
       }
 
+      public boolean routeAudio(int device)
+      {
+         return(mService.get().routeAudio(device));
+      }
       public boolean mute()
       {
          return(mService.get().mute());
@@ -434,41 +503,69 @@ public class FMRadioService extends Service
    private boolean fmOn() {
       boolean bStatus=false;
       Log.d(LOGTAG, "fmOn");
-      mReceiver = new FmReceiver(FMRADIO_DEVICE_FD_STRING, fmCallbacks);
-      if (mReceiver == null)
+
+      if(mReceiver == null)
       {
-         throw new RuntimeException("FmReceiver service not available!");
+         mReceiver = new FmReceiver(FMRADIO_DEVICE_FD_STRING, fmCallbacks);
+         if (mReceiver == null)
+         {
+            throw new RuntimeException("FmReceiver service not available!");
+         }
       }
+
       if (mReceiver != null)
       {
-         // This sets up the FM radio device
-         FmConfig config = FmSharedPreferences.getFMConfiguration();
-         Log.d(LOGTAG, "fmOn: RadioBand   :"+ config.getRadioBand());
-         Log.d(LOGTAG, "fmOn: Emphasis    :"+ config.getEmphasis());
-         Log.d(LOGTAG, "fmOn: ChSpacing   :"+ config.getChSpacing());
-         Log.d(LOGTAG, "fmOn: RdsStd      :"+ config.getRdsStd());
-         Log.d(LOGTAG, "fmOn: LowerLimit  :"+ config.getLowerLimit());
-         Log.d(LOGTAG, "fmOn: UpperLimit  :"+ config.getUpperLimit());
-         bStatus = mReceiver.enable(FmSharedPreferences.getFMConfiguration());
-         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-         if(audioManager != null)
+         if (isFmOn())
          {
-            Log.d(LOGTAG, "mAudioManager.setFmRadioOn = true \n" );
-            audioManager.setParameters("FMRadioOn=true");
-            Log.d(LOGTAG, "mAudioManager.setFmRadioOn done \n" );
+            /* FM Is already on,*/
+            bStatus = true;
+            Log.d(LOGTAG, "mReceiver.already enabled");
          }
-         bStatus = mReceiver.registerRdsGroupProcessing(FmReceiver.FM_RX_RDS_GRP_RT_EBL|
-                                                        FmReceiver.FM_RX_RDS_GRP_PS_EBL|
-                                                        FmReceiver.FM_RX_RDS_GRP_AF_EBL);
-         Log.d(LOGTAG, "registerRdsGroupProcessing done, Status :" +  bStatus);
-         bStatus = enableAutoAF(FmSharedPreferences.getAutoAFSwitch());
-         Log.d(LOGTAG, "enableAutoAF done, Status :" +  bStatus);
+         else
+         {
+            // This sets up the FM radio device
+            FmConfig config = FmSharedPreferences.getFMConfiguration();
+            Log.d(LOGTAG, "fmOn: RadioBand   :"+ config.getRadioBand());
+            Log.d(LOGTAG, "fmOn: Emphasis    :"+ config.getEmphasis());
+            Log.d(LOGTAG, "fmOn: ChSpacing   :"+ config.getChSpacing());
+            Log.d(LOGTAG, "fmOn: RdsStd      :"+ config.getRdsStd());
+            Log.d(LOGTAG, "fmOn: LowerLimit  :"+ config.getLowerLimit());
+            Log.d(LOGTAG, "fmOn: UpperLimit  :"+ config.getUpperLimit());
+            bStatus = mReceiver.enable(FmSharedPreferences.getFMConfiguration());
+            Log.d(LOGTAG, "mReceiver.enable done, Status :" +  bStatus);
+         }
 
-         /* Put the hardware into normal mode */
-         bStatus = setLowPowerMode(false);
-         Log.d(LOGTAG, "setLowPowerMode done, Status :" +  bStatus);
-         startNotification();
-         bStatus = true;
+         if (bStatus == true)
+         {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if(audioManager != null)
+            {
+               Log.d(LOGTAG, "mAudioManager.setFmRadioOn = true \n" );
+               audioManager.setParameters("FMRadioOn=true");
+               Log.d(LOGTAG, "mAudioManager.setFmRadioOn done \n" );
+            }
+            bStatus = mReceiver.registerRdsGroupProcessing(FmReceiver.FM_RX_RDS_GRP_RT_EBL|
+                                                           FmReceiver.FM_RX_RDS_GRP_PS_EBL|
+                                                           FmReceiver.FM_RX_RDS_GRP_AF_EBL|
+                                                           FmReceiver.FM_RX_RDS_GRP_PS_SIMPLE_EBL);
+            Log.d(LOGTAG, "registerRdsGroupProcessing done, Status :" +  bStatus);
+            bStatus = enableAutoAF(FmSharedPreferences.getAutoAFSwitch());
+            Log.d(LOGTAG, "enableAutoAF done, Status :" +  bStatus);
+            /* Put the hardware into normal mode */
+            bStatus = setLowPowerMode(false);
+            Log.d(LOGTAG, "setLowPowerMode done, Status :" +  bStatus);
+
+            /* There is no internal Antenna*/
+            bStatus = mReceiver.setInternalAntenna(false);
+            Log.d(LOGTAG, "setInternalAntenna done, Status :" +  bStatus);
+
+            startNotification();
+            bStatus = true;
+         }
+         else
+         {
+            stop();
+         }
       }
       return(bStatus);
    }
@@ -551,6 +648,27 @@ public class FMRadioService extends Service
       mCallbacks=null;
    }
 
+   /*
+   *  Route Audio to headset or speaker phone
+   *  @return true if routeAudio call succeeded, false if the route call failed.
+   */
+   public boolean routeAudio(int audioDevice) {
+      boolean bStatus=false;
+      Log.d(LOGTAG, "routeAudio:");
+      if (mReceiver != null)
+      {
+         if( (audioDevice == RADIO_AUDIO_DEVIVE_WIRED_HEADSET)
+            || (audioDevice == RADIO_AUDIO_DEVIVE_SPEAKER_PHONE))
+         {
+            //Add API call when audio routing is supported
+         }
+         else
+         {
+            Log.e(LOGTAG, "routeAudio: Unsupported Audio Device: "+ audioDevice);
+         }
+      }
+      return bStatus;
+   }
   /*
    *  Mute FM Hardware (SoC)
    * @return true if set mute mode api was invoked successfully, false if the api failed.
@@ -967,10 +1085,11 @@ public class FMRadioService extends Service
    public boolean isInternalAntennaAvailable()
    {
       boolean bAvailable  = false;
-      /* Update this when the API is available */
-      bAvailable = true;
-      //bAvailable = FmReceiver.internalAntennaAvailable();
-      Log.d(LOGTAG, "internalAntennaAvailable: " + bAvailable);
+      if (mReceiver != null)
+      {
+         bAvailable = mReceiver.getInternalAntenna();
+         Log.d(LOGTAG, "getInternalAntenna: " + bAvailable);
+      }
       return bAvailable;
    }
 

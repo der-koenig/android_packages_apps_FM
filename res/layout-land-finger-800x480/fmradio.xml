@@ -41,13 +41,12 @@
         >
 
     <LinearLayout
-         android:background="@drawable/station_border"
+        android:background="@drawable/station_border"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_weight="1"
         android:orientation="vertical"
-       android:gravity="top|fill_vertical"
-        >
+        android:gravity="top|fill_vertical" >
         <RelativeLayout android:id="@+id/station_layout"
            android:layout_width="fill_parent"
            android:layout_height="fill_parent">
@@ -86,26 +85,21 @@
         </RelativeLayout>
     </LinearLayout>
     <LinearLayout
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:orientation="vertical"
-       android:layout_gravity="center"
-       android:layout_marginLeft="5px"
-       android:layout_marginRight="5px"
-       android:layout_marginBottom="2px"
-        >
+       android:layout_width="wrap_content" android:layout_height="wrap_content"
+       android:orientation="vertical" android:layout_gravity="center"
+       android:layout_marginLeft="10px" android:layout_marginRight="10px" >
        <!-- On-Off button -->
        <ImageButton android:id="@+id/btn_onoff"
-           android:layout_width="70px"
-           android:layout_height="60px"
+           android:layout_width="75px"
+           android:layout_height="75px"
            android:src="@drawable/ic_btn_onoff"
-           android:layout_marginBottom="15px"
+           android:layout_marginBottom="40px"
        />
 
        <ImageButton android:id="@+id/btn_silent"
            android:src="@drawable/ic_silent_mode_off"
-           android:layout_width="70px"
-           android:layout_height="60px"
+           android:layout_width="75px"
+           android:layout_height="75px"
        />
 
     </LinearLayout>

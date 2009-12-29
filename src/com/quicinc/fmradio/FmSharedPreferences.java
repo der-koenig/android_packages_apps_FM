@@ -98,6 +98,7 @@ public class FmSharedPreferences
    //private static final String FMCONFIG_EMPH = "fmconfig_emphasis";
    //private static final String FMCONFIG_RDSSTD = "fmconfig_rdsstd";
    /* Storage key String */
+   private static final String LAST_LIST_INDEX = "last_list_index";
    private static final String PREF_LAST_TUNED_FREQUENCY = "last_frequency";
 
 
@@ -390,7 +391,6 @@ public class FmSharedPreferences
       mListOfPlists.clear();
 
       int num_lists = sp.getInt(LIST_NUM, 1);
-
       for (int listIter = 0; listIter < num_lists; listIter++)
       {
          String listName = sp.getString(LIST_NAME + listIter, "FM - " + (listIter+1));
@@ -433,7 +433,12 @@ public class FmSharedPreferences
 
       /* Load Configuration */
       setCountry(sp.getInt(FMCONFIG_COUNTRY, 0));
-      mListIndex = 0;
+      /* Last list the user was navigating */
+      mListIndex = sp.getInt(LAST_LIST_INDEX, 0);
+      if(mListIndex >= num_lists)
+      {
+         mListIndex=0;
+      }
    }
 
    public void Save() {
@@ -450,6 +455,8 @@ public class FmSharedPreferences
       ed.putInt(PREF_LAST_TUNED_FREQUENCY, mTunedFrequency);
 
       ed.putInt(LIST_NUM, numLists);
+      /* Last list the user was navigating */
+      ed.putInt(LAST_LIST_INDEX, mListIndex);
 
       for (int listIter = 0; listIter < numLists; listIter++)
       {
