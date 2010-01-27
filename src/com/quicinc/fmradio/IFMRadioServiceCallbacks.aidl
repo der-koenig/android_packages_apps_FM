@@ -30,20 +30,9 @@ package com.quicinc.fmradio;
 
 interface IFMRadioServiceCallbacks
 {
-  /**
-  * @param bStatus true: if enable succeeded, false if enable
-  *                failed..
-  *  Command : radioOn(true) -> FmApi_Enable()
-  *  Event/Callback : READY_EVENT -> FmRxEvEnableReceiver
-  *
-  */
-  void onEnabled(boolean bStatus);
-
-/**
-*  Command : radioOff(false) -> FmApi_Disable()
-*  Event/Callback : ?? -> FmRxEvEnableReceiver
-*/
+  void onEnabled();
   void onDisabled();
+
   void onTuneStatusChanged();
   void onProgramServiceChanged();
   void onRadioTextChanged();

@@ -159,7 +159,6 @@ public class FMRadio extends Activity
    private static final int PRESETS_OPTIONS_SEARCHPI = 4;
 
    private static IFMRadioService mService = null;
-   private BroadcastReceiver mHeadsetReceiver = null;
    private static FmSharedPreferences mPrefs;
 
    /* Button Resources */
@@ -202,9 +201,6 @@ public class FMRadio extends Activity
    private static boolean mIsSearching = false;
    private static int mScanPty = 0;
 
-   private boolean mHeadsetPlugged = false;
-   private boolean mInternalAntennaAvailable = false;
-
    private Animation mAnimation = null;
    private ScrollerText mRadioTextScroller = null;
 
@@ -228,7 +224,6 @@ public class FMRadio extends Activity
    public void onCreate(Bundle savedInstanceState) {
 
       super.onCreate(savedInstanceState);
-      registerHeadsetListener();
 
       mPrefs = new FmSharedPreferences(this);
       mCommandActive = CMD_NONE;
@@ -371,10 +366,6 @@ public class FMRadio extends Activity
       endSleepTimer();
       unbindFromService(this);
       mService = null;
-      if (mHeadsetReceiver != null) {
-          unregisterReceiver(mHeadsetReceiver);
-          mHeadsetReceiver = null;
-      }
       Log.d(LOGTAG, "onDestroy: unbindFromService completed");
       super.onDestroy();
    }
@@ -433,7 +424,7 @@ public class FMRadio extends Activity
          item.setVisible(sleepActive && radioOn);
       }
 
-      if (isHeadsetPlugged())
+      if (isWiredHeadsetAvailable())
       {
          item = menu.add(0, MENU_WIRED_HEADSET, 0,
                          R.string.menu_wired_headset).setIcon(R.drawable.ic_stereo);
@@ -493,7 +484,7 @@ public class FMRadio extends Activity
          item.setVisible(sleepActive && radioOn);
       }
 
-      if (isHeadsetPlugged() && radioOn)
+      if (isWiredHeadsetAvailable() && radioOn)
       {
          if (menu.findItem(MENU_WIRED_HEADSET) == null)
          {
@@ -553,6 +544,7 @@ public class FMRadio extends Activity
 
       case MENU_WIRED_HEADSET:
          DebugToasts("Route Audio over headset", Toast.LENGTH_SHORT);
+         /* Call the mm interface to route the wired headset*/
          return true;
       default:
          break;
@@ -709,66 +701,42 @@ public class FMRadio extends Activity
 
 
 
-     /**
-     * Registers an intent to listen for ACTION_HEADSET_PLUG
-     * notifications. This intent is called to know if the headset
-     * was plugged in/out
-     */
-    public void registerHeadsetListener() {
-        if (mHeadsetReceiver == null) {
-            mHeadsetReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    String action = intent.getAction();
-                    if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
-                       Log.d(LOGTAG, "ACTION_HEADSET_PLUG Intent received");
-                       // Listen for ACTION_HEADSET_PLUG broadcasts.
-                       Log.d(LOGTAG, "mReceiver: ACTION_HEADSET_PLUG");
-                       Log.d(LOGTAG, "==> intent: " + intent);
-                       Log.d(LOGTAG, "    state: " + intent.getIntExtra("state", 0));
-                       Log.d(LOGTAG, "    name: " + intent.getStringExtra("name"));
-                       mHeadsetPlugged = (intent.getIntExtra("state", 0) == 1);
-                       mHandler.post(mHeadsetPluginHandler);
-                    }
-                }
-            };
-            IntentFilter iFilter = new IntentFilter();
-            iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
-            registerReceiver(mHeadsetReceiver, iFilter);
-        }
-    }
-
-    /**
-     * @return true if a wired headset is currently plugged in.
-     *
-     * @see #registerHeadsetListener
-     */
-    boolean isHeadsetPlugged() {
-        return mHeadsetPlugged;
-    }
+   /**
+    * @return true if a wired headset is connected.
+    */
+   boolean isWiredHeadsetAvailable() {
+      boolean bAvailable = false;
+      if(mService != null)
+      {
+         try
+         {
+            bAvailable = mService.isWiredHeadsetAvailable();
+         } catch (RemoteException e)
+         {
+            e.printStackTrace();
+         }
+      }
+      Log.e(LOGTAG, "isWiredHeadsetAvailable: " + bAvailable);
+      return bAvailable;
+   }
 
     /**
      * @return true if a internal antenna is available.
      *
      */
-    boolean isInternalAntennaAvailable() {
-        return mInternalAntennaAvailable;
-    }
-
-    /**
-     * @return true if a internal antenna is available.
-     *
-     */
-    boolean isAnyAntennaAvailable() {
+    boolean isAntennaAvailable() {
        boolean bAvailable = false;
-       if (isInternalAntennaAvailable())
+       if(mService != null)
        {
-          bAvailable = true;
+          try
+          {
+             bAvailable = mService.isAntennaAvailable();
+          } catch (RemoteException e)
+          {
+             e.printStackTrace();
+          }
        }
-       if (isHeadsetPlugged())
-       {
-          bAvailable = true;
-       }
+       Log.e(LOGTAG, "isAntennaAvailable: " + bAvailable);
        return bAvailable;
     }
 
@@ -1543,8 +1511,7 @@ public class FMRadio extends Activity
             bStatus = mService.fmOn();
             if(bStatus)
             {
-               readInternalAntennaAvailable();
-               if(isAnyAntennaAvailable())
+               if(isAntennaAvailable())
                {
                   tuneRadio(FmSharedPreferences.getTunedFrequency());
                   enableRadioOnOffUI();
@@ -1679,7 +1646,7 @@ public class FMRadio extends Activity
    private void enableRadioOnOffUI() {
       boolean bEnable = isFmOn();
       /* Disable if no antenna/headset is available */
-      if(!isAnyAntennaAvailable())
+      if(!isAntennaAvailable())
       {
          bEnable = false;
       }
@@ -1726,7 +1693,7 @@ public class FMRadio extends Activity
       mProgramServiceTV.setVisibility(((bEnable == true) ? View.VISIBLE
                                   : View.INVISIBLE));
 
-      if(!isAnyAntennaAvailable())
+      if(!isAntennaAvailable())
       {
          mRadioTextTV.setVisibility(View.VISIBLE);
          mRadioTextTV.setText(getString(R.string.msg_noantenna));
@@ -2042,23 +2009,6 @@ public class FMRadio extends Activity
       }
    }
 
-   /** get Internal Antenna Available mode Stations */
-   private boolean readInternalAntennaAvailable() {
-      mInternalAntennaAvailable = false;
-      if(mService != null)
-      {
-         try
-         {
-            mInternalAntennaAvailable = mService.isInternalAntennaAvailable();
-         } catch (RemoteException e)
-         {
-            e.printStackTrace();
-         }
-      }
-      Log.e(LOGTAG, "readInternalAntennaAvailable: internalAntenna : " + mInternalAntennaAvailable);
-      return mInternalAntennaAvailable;
-   }
-
    private static final int UPDATE_PROGRESS_DLG = 1;
    private static final int END_PROGRESS_DLG = 2;
    private static final int TIMEOUT_PROGRESS_DLG = 3;
@@ -2342,7 +2292,17 @@ public class FMRadio extends Activity
 
    final Runnable mRadioEnabled = new Runnable() {
       public void run() {
-         //tuneRadio(FmSharedPreferences.getTunedFrequency());
+         /* Update UI to FM On State */
+         enableRadioOnOffUI(true);
+         /* Tune to the last tuned frequency */
+         tuneRadio(FmSharedPreferences.getTunedFrequency());
+      }
+   };
+
+   final Runnable mRadioDisabled = new Runnable() {
+      public void run() {
+         /* Update UI to FM Off State */
+         enableRadioOnOffUI(false);
       }
    };
 
@@ -2435,19 +2395,6 @@ public class FMRadio extends Activity
          else
          {
             mStereoTV.setText("");
-         }
-      }
-   };
-   final Runnable    mHeadsetPluginHandler = new Runnable() {
-      public void run() {
-         /* Update the UI based on the state change of the headset/antenna*/
-         if(!isAnyAntennaAvailable())
-         {
-            disableRadio();
-         }
-         else
-         {
-            enableRadioOnOffUI();
          }
       }
    };
@@ -2787,26 +2734,16 @@ public class FMRadio extends Activity
 
    private IFMRadioServiceCallbacks.Stub  mServiceCallbacks = new IFMRadioServiceCallbacks.Stub()
    {
-      /**
-      * @param bStatus true: if enable succeeded, false if enable
-      *                failed..
-      *  Command : fmOn(true) -> FmApi_Enable()
-      *  Event/Callback : READY_EVENT -> FmRxEvEnableReceiver
-      *
-      */
-      public void onEnabled(boolean bStatus)
+      public void onEnabled()
       {
-         Log.d(LOGTAG, "mServiceCallbacks.onEnabled : " + bStatus);
-         //mHandler.post(mRadioEnabled);
+         Log.d(LOGTAG, "mServiceCallbacks.onEnabled :");
+         mHandler.post(mRadioEnabled);
       }
 
-      /**
-      *  Command : fmOff(false) -> FmApi_Disable()
-      *  Event/Callback : ?? -> FmRxEvEnableReceiver
-      */
       public void onDisabled()
       {
          Log.d(LOGTAG, "mServiceCallbacks.onDisabled :");
+         mHandler.post(mRadioDisabled);
       }
 
       public void onTuneStatusChanged()

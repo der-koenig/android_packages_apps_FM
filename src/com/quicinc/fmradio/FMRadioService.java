@@ -70,10 +70,12 @@ public class FMRadioService extends Service
    private static final String LOGTAG = "FMService";//FMRadio.LOGTAG;
 
    private FmReceiver mReceiver;
+   private BroadcastReceiver mHeadsetReceiver = null;
 
    private IFMRadioServiceCallbacks mCallbacks;
    private static FmSharedPreferences mPrefs;
-
+   private boolean mHeadsetPlugged = false;
+   private boolean mInternalAntennaAvailable = false;
    private WakeLock mWakeLock;
    private int mServiceStartId = -1;
    private boolean mServiceInUse = false;
@@ -104,6 +106,7 @@ public class FMRadioService extends Service
       mWakeLock.setReferenceCounted(false);
       /* Register for Screen On/off broadcast notifications */
       registerScreenOnOffListener();
+      registerHeadsetListener();
 
       // If the service was idle, but got killed before it stopped itself, the
       // system will relaunch it. Make sure it gets stopped again in that case.
@@ -126,6 +129,11 @@ public class FMRadioService extends Service
           unregisterReceiver(mScreenOnOffReceiver);
           mScreenOnOffReceiver = null;
       }
+      /* Unregister the headset Broadcase receiver */
+      if (mHeadsetReceiver != null) {
+          unregisterReceiver(mHeadsetReceiver);
+          mHeadsetReceiver = null;
+      }
 
       /* Since the service is closing, disable the receiver */
       fmOff();
@@ -139,6 +147,86 @@ public class FMRadioService extends Service
       mWakeLock.release();
       super.onDestroy();
    }
+
+
+
+     /**
+     * Registers an intent to listen for ACTION_HEADSET_PLUG
+     * notifications. This intent is called to know if the headset
+     * was plugged in/out
+     */
+    public void registerHeadsetListener() {
+        if (mHeadsetReceiver == null) {
+            mHeadsetReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+                    if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
+                       Log.d(LOGTAG, "ACTION_HEADSET_PLUG Intent received");
+                       // Listen for ACTION_HEADSET_PLUG broadcasts.
+                       Log.d(LOGTAG, "mReceiver: ACTION_HEADSET_PLUG");
+                       Log.d(LOGTAG, "==> intent: " + intent);
+                       Log.d(LOGTAG, "    state: " + intent.getIntExtra("state", 0));
+                       Log.d(LOGTAG, "    name: " + intent.getStringExtra("name"));
+                       mHeadsetPlugged = (intent.getIntExtra("state", 0) == 1);
+                       mHandler.post(mHeadsetPluginHandler);
+                    }
+                }
+            };
+            IntentFilter iFilter = new IntentFilter();
+            iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
+            registerReceiver(mHeadsetReceiver, iFilter);
+        }
+    }
+
+
+   final Runnable    mHeadsetPluginHandler = new Runnable() {
+      public void run() {
+         /* Update the UI based on the state change of the headset/antenna*/
+         if(!isAntennaAvailable())
+         {
+            /* Disable FM and let the UI know */
+	         fmOff();
+            try
+            {
+               /* Notify the UI/Activity, only if the service is "bound"
+                  by an activity and if Callbacks are registered
+                  */
+               if((mServiceInUse) && (mCallbacks != null) )
+               {
+                  mCallbacks.onDisabled();
+               }
+            } catch (RemoteException e)
+            {
+               e.printStackTrace();
+            }
+         }
+         else
+         {
+            /* headset is plugged back in,
+               So turn on FM if:
+               - FM is not already ON.
+               - If the FM UI/Activity is in the foreground
+                 (the service is "bound" by an activity
+                  and if Callbacks are registered)
+               */
+            if ( (!isFmOn())
+                 && (mServiceInUse) 
+                 && (mCallbacks != null) )
+            {
+               fmOn();
+               try
+               {
+                  mCallbacks.onEnabled();
+               } catch (RemoteException e)
+               {
+                  e.printStackTrace();
+               }
+            }
+         }
+      }
+   };
+
 
    @Override
    public IBinder onBind(Intent intent) {
@@ -177,6 +265,7 @@ public class FMRadioService extends Service
       Log.d(LOGTAG, "onUnbind");
 
       /* Application/UI is not attached, so go into lower power mode */
+      unregisterCallbacks();
       setLowPowerMode(true);
       if (isFmOn())
       {
@@ -359,6 +448,19 @@ public class FMRadioService extends Service
       stopForeground(true);
    }
 
+   /** Read's the internal Antenna available state from the FM
+    *  Device.
+    */
+   public void readInternalAntennaAvailable()
+   {
+      mInternalAntennaAvailable  = false;
+      if (mReceiver != null)
+      {
+         mInternalAntennaAvailable = mReceiver.getInternalAntenna();
+         Log.d(LOGTAG, "getInternalAntenna: " + mInternalAntennaAvailable);
+      }
+   }
+
    /*
     * By making this a static class with a WeakReference to the Service, we
     * ensure that the Service can be GCd even when the system process still
@@ -487,9 +589,13 @@ public class FMRadioService extends Service
       {
          return(mService.get().enableStereo(bEnable));
       }
-      public boolean isInternalAntennaAvailable()
+      public boolean isAntennaAvailable()
       {
-         return(mService.get().isInternalAntennaAvailable());
+         return(mService.get().isAntennaAvailable());
+      }
+      public boolean isWiredHeadsetAvailable()
+      {
+         return(mService.get().isWiredHeadsetAvailable());
       }
    }
 
@@ -558,6 +664,9 @@ public class FMRadioService extends Service
             /* There is no internal Antenna*/
             bStatus = mReceiver.setInternalAntenna(false);
             Log.d(LOGTAG, "setInternalAntenna done, Status :" +  bStatus);
+
+            /* Read back to verify the internal Antenna mode*/
+            readInternalAntennaAvailable();
 
             startNotification();
             bStatus = true;
@@ -1078,19 +1187,32 @@ public class FMRadioService extends Service
    }
 
    /** Determines if an internal Antenna is available.
+    *  Returns the cached value initialized on FMOn.
     *
-    * @return true if internal antenna is available, false if
-    *         internal antenna is not available.
+    * @return true if internal antenna is available or wired 
+    *         headset is plugged in, false if internal antenna is
+    *         not available and wired headset is not plugged in.
     */
-   public boolean isInternalAntennaAvailable()
+   public boolean isAntennaAvailable()
    {
-      boolean bAvailable  = false;
-      if (mReceiver != null)
+      boolean bAvailable = false;
+      if ((mInternalAntennaAvailable) || (mHeadsetPlugged) )
       {
-         bAvailable = mReceiver.getInternalAntenna();
-         Log.d(LOGTAG, "getInternalAntenna: " + bAvailable);
+         bAvailable = true;
       }
       return bAvailable;
+   }
+
+   /** Determines if a Wired headset is plugged in. Returns the
+    *  cached value initialized on broadcast receiver
+    *  initialization.
+    *
+    * @return true if wired headset is plugged in, false if wired 
+    *         headset is not plugged in.
+    */
+   public boolean isWiredHeadsetAvailable()
+   {
+      return (mHeadsetPlugged);
    }
 
    /* Receiver callbacks back from the FM Stack */
@@ -1098,16 +1220,6 @@ public class FMRadioService extends Service
    {
       public void FmRxEvEnableReceiver() {
          Log.d(LOGTAG, "FmRxEvEnableReceiver");
-         try
-         {
-            if(mCallbacks != null)
-            {
-               mCallbacks.onEnabled(true);
-            }
-         } catch (RemoteException e)
-         {
-            e.printStackTrace();
-         }
       }
 
       public void FmRxEvDisableReceiver()

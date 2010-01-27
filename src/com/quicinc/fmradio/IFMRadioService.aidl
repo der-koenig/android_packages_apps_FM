@@ -29,6 +29,7 @@ interface IFMRadioService
     int getPowerMode();
     boolean enableAutoAF(boolean bEnable);
     boolean enableStereo(boolean bEnable);
-    boolean isInternalAntennaAvailable();
+    boolean isAntennaAvailable();
+    boolean isWiredHeadsetAvailable();
 }
 
