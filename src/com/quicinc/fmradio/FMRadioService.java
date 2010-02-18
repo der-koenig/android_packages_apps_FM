@@ -62,8 +62,8 @@ import android.hardware.fmradio.FmConfig;
 public class FMRadioService extends Service
 {
 
-   public static final int RADIO_AUDIO_DEVIVE_WIRED_HEADSET = 0;
-   public static final int RADIO_AUDIO_DEVIVE_SPEAKER_PHONE = 1;
+   public static final int RADIO_AUDIO_DEVICE_WIRED_HEADSET = 0;
+   public static final int RADIO_AUDIO_DEVICE_SPEAKER = 1;
 
    private static final int FMRADIOSERVICE_STATUS = 101;
    private static final String FMRADIO_DEVICE_FD_STRING = "/dev/radio0";
@@ -81,8 +81,10 @@ public class FMRadioService extends Service
    private boolean mServiceInUse = false;
    private boolean mMuted = false;
    private boolean mResumeAfterCall = false;
+   private static String mAudioDevice="headset";
 
    private boolean mFMOn = false;
+   private static boolean mRadioState = true;
    private BroadcastReceiver mScreenOnOffReceiver = null;
    final Handler mHandler = new Handler();
 
@@ -212,16 +214,29 @@ public class FMRadioService extends Service
                */
             if ( (!isFmOn())
                  && (mServiceInUse) 
-                 && (mCallbacks != null) )
+                 && (mCallbacks != null))
             {
-               fmOn();
-               try
-               {
-                  mCallbacks.onEnabled();
-               } catch (RemoteException e)
-               {
-                  e.printStackTrace();
-               }
+	       if (mRadioState) {
+                 fmOn();
+
+                 try
+                 {
+                    mCallbacks.onEnabled();
+                 } catch (RemoteException e)
+                 {
+                    e.printStackTrace();
+                 }
+	       }
+	       else {
+                 try
+                 {
+                    mCallbacks.onDisabled();
+                 } catch (RemoteException e)
+                 {
+                    e.printStackTrace();
+                 }
+
+	       }
             }
          }
       }
@@ -327,7 +342,7 @@ public class FMRadioService extends Service
                // when the call was answered
                //unMute-FM
                unMute();
-               audioManager.setParameters("FMRadioOn=true");
+               audioManager.setParameters("FMRadioOn="+mAudioDevice);
                mResumeAfterCall = false;
                try
                {
@@ -477,11 +492,13 @@ public class FMRadioService extends Service
 
       public boolean fmOn() throws RemoteException
       {
+         mRadioState=true;
          return(mService.get().fmOn());
       }
 
       public boolean fmOff() throws RemoteException
       {
+         mRadioState=false;
          return(mService.get().fmOff());
       }
 
@@ -608,7 +625,6 @@ public class FMRadioService extends Service
    */
    private boolean fmOn() {
       boolean bStatus=false;
-      Log.d(LOGTAG, "fmOn");
 
       if(mReceiver == null)
       {
@@ -647,7 +663,7 @@ public class FMRadioService extends Service
             if(audioManager != null)
             {
                Log.d(LOGTAG, "mAudioManager.setFmRadioOn = true \n" );
-               audioManager.setParameters("FMRadioOn=true");
+               audioManager.setParameters("FMRadioOn="+mAudioDevice);
                Log.d(LOGTAG, "mAudioManager.setFmRadioOn done \n" );
             }
             bStatus = mReceiver.registerRdsGroupProcessing(FmReceiver.FM_RX_RDS_GRP_RT_EBL|
@@ -686,7 +702,7 @@ public class FMRadioService extends Service
    */
    private boolean fmOff() {
       boolean bStatus=false;
-      Log.d(LOGTAG, "fmOff" );
+
       AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
       if(audioManager != null)
       {
@@ -763,21 +779,36 @@ public class FMRadioService extends Service
    */
    public boolean routeAudio(int audioDevice) {
       boolean bStatus=false;
-      Log.d(LOGTAG, "routeAudio:");
+      AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+      Log.d(LOGTAG, "routeAudio: " + audioDevice);
+
+      switch (audioDevice) {
+
+        case RADIO_AUDIO_DEVICE_WIRED_HEADSET:
+	   mAudioDevice = "headset";
+	   break;
+
+	case RADIO_AUDIO_DEVICE_SPEAKER:
+	   mAudioDevice = "speaker";
+	   break;
+
+        default:
+	   mAudioDevice = "headset";
+	   break;
+      }
+
       if (mReceiver != null)
       {
-         if( (audioDevice == RADIO_AUDIO_DEVIVE_WIRED_HEADSET)
-            || (audioDevice == RADIO_AUDIO_DEVIVE_SPEAKER_PHONE))
-         {
-            //Add API call when audio routing is supported
-         }
-         else
-         {
-            Log.e(LOGTAG, "routeAudio: Unsupported Audio Device: "+ audioDevice);
-         }
-      }
-      return bStatus;
+	  audioManager.setParameters("FMRadioOn=false");
+	  Log.d(LOGTAG, "mAudioManager.setFmRadioOn =" + mAudioDevice );
+	  audioManager.setParameters("FMRadioOn="+mAudioDevice);
+	  Log.d(LOGTAG, "mAudioManager.setFmRadioOn done \n");
+       }
+
+       return bStatus;
    }
+
   /*
    *  Mute FM Hardware (SoC)
    * @return true if set mute mode api was invoked successfully, false if the api failed.

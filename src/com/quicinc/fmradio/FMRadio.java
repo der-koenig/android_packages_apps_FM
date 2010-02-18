@@ -194,6 +194,9 @@ public class FMRadio extends Activity
    private int mPresetPageNumber = 0;
    private int mStereo = -1;
 
+   // default audio device - speaker
+   private static int mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET;
+
    /* Current Status Indicators */
    private static boolean mRecording = false;
    private static boolean mIsScaning = false;
@@ -426,8 +429,13 @@ public class FMRadio extends Activity
 
       if (isWiredHeadsetAvailable())
       {
-         item = menu.add(0, MENU_WIRED_HEADSET, 0,
-                         R.string.menu_wired_headset).setIcon(R.drawable.ic_stereo);
+
+	    if (mAudioRoute == FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER) {
+              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_wired_headset);
+	    }
+	    else {
+              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_speaker);
+	    }
          if (item != null)
          {
             item.setCheckable(true);
@@ -441,6 +449,7 @@ public class FMRadio extends Activity
 
    @Override
    public boolean onPrepareOptionsMenu(Menu menu) {
+
       super.onPrepareOptionsMenu(menu);
 
       MenuItem item;
@@ -488,14 +497,27 @@ public class FMRadio extends Activity
       {
          if (menu.findItem(MENU_WIRED_HEADSET) == null)
          {
-            item = menu.add(0, MENU_WIRED_HEADSET, 0,
-                            R.string.menu_wired_headset).setIcon(
-                                                                R.drawable.ic_stereo);
-            if (item != null)
-            {
-               item.setCheckable(true);
-               item.setChecked(false);
-            }
+	    if (mAudioRoute == FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER) {
+              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_wired_headset);
+	    }
+	    else {
+              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_speaker);
+	    }
+         }
+	 else {
+            menu.removeItem(MENU_WIRED_HEADSET);
+	    if (mAudioRoute == FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER) {
+              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_wired_headset);
+	    }
+	    else {
+              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_speaker);
+	    }
+
+	 }
+         if (item != null)
+         {
+           item.setCheckable(true);
+           item.setChecked(false);
          }
       } else
       {
@@ -543,13 +565,48 @@ public class FMRadio extends Activity
          return true;
 
       case MENU_WIRED_HEADSET:
-         DebugToasts("Route Audio over headset", Toast.LENGTH_SHORT);
          /* Call the mm interface to route the wired headset*/
+
+	 switch (mAudioRoute)
+	 {
+
+	   case  FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET:
+	         mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER;
+		 break;
+
+	   case  FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER:
+	         mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET;
+		 break;
+
+           default:
+	         mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET;
+		 break;
+
+	  }
+
+	 audioRoute (mAudioRoute);
+
          return true;
       default:
          break;
       }
       return super.onOptionsItemSelected(item);
+   }
+
+   private void audioRoute (int audioDevice)
+   {
+      boolean bStatus;
+      if(mService != null)
+      {
+         try
+         {
+            bStatus = mService.routeAudio(audioDevice);
+         } catch (RemoteException e)
+         {
+            e.printStackTrace();
+         }
+      }
+
    }
 
    @Override
@@ -736,8 +793,8 @@ public class FMRadio extends Activity
              e.printStackTrace();
           }
        }
-       Log.e(LOGTAG, "isAntennaAvailable: " + bAvailable);
        return bAvailable;
+
     }
 
    private Dialog createSearchDlg(int id) {
@@ -1646,7 +1703,7 @@ public class FMRadio extends Activity
    private void enableRadioOnOffUI() {
       boolean bEnable = isFmOn();
       /* Disable if no antenna/headset is available */
-      if(!isAntennaAvailable())
+      if(!isAntennaAvailable() )
       {
          bEnable = false;
       }
@@ -1654,6 +1711,7 @@ public class FMRadio extends Activity
    }
 
    private void enableRadioOnOffUI(boolean bEnable) {
+
       mMuteButton.setEnabled(bEnable);
       setMuteModeButtonImage(false);
       if (bEnable)
