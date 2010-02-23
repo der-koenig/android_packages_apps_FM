@@ -628,8 +628,10 @@ public class FMRadioService extends Service
 
       if(mReceiver == null)
       {
-         mReceiver = new FmReceiver(FMRADIO_DEVICE_FD_STRING, fmCallbacks);
-         if (mReceiver == null)
+         try {
+            mReceiver = new FmReceiver(FMRADIO_DEVICE_FD_STRING, fmCallbacks);
+	 }
+	 catch (InstantiationException e)
          {
             throw new RuntimeException("FmReceiver service not available!");
          }
@@ -659,6 +661,9 @@ public class FMRadioService extends Service
 
          if (bStatus == true)
          {
+            /* Put the hardware into normal mode */
+            bStatus = setLowPowerMode(false);
+            Log.d(LOGTAG, "setLowPowerMode done, Status :" +  bStatus);
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             if(audioManager != null)
             {
@@ -673,9 +678,6 @@ public class FMRadioService extends Service
             Log.d(LOGTAG, "registerRdsGroupProcessing done, Status :" +  bStatus);
             bStatus = enableAutoAF(FmSharedPreferences.getAutoAFSwitch());
             Log.d(LOGTAG, "enableAutoAF done, Status :" +  bStatus);
-            /* Put the hardware into normal mode */
-            bStatus = setLowPowerMode(false);
-            Log.d(LOGTAG, "setLowPowerMode done, Status :" +  bStatus);
 
             /* There is no internal Antenna*/
             bStatus = mReceiver.setInternalAntenna(false);

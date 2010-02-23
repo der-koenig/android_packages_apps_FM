@@ -554,11 +554,15 @@ public class FMTransmitterService extends Service
          mTransmitter = null;
       }
 
-      mReceiver = new FmReceiver(FMRADIO_DEVICE_FD_STRING, fmCallbacks);
-      if (mReceiver == null)
-      {
-         throw new RuntimeException("FmReceiver service not available!");
+      if (mReceiver == null) {
+        try {
+          mReceiver = new FmReceiver(FMRADIO_DEVICE_FD_STRING, fmCallbacks);
+	}
+	catch (InstantiationException e) {
+          throw new RuntimeException("FmReceiver service not available!");
+	}
       }
+
       if (mReceiver != null)
       {
          // This sets up the FM radio device
