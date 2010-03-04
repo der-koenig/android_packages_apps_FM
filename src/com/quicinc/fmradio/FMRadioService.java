@@ -1290,6 +1290,7 @@ public class FMRadioService extends Service
          try
          {
             FmSharedPreferences.setTunedFrequency(frequency);
+            mPrefs.Save();
             //Log.d(LOGTAG, "Call mCallbacks.onTuneStatusChanged");
             /* Since the Tuned Status changed, clear out the RDSData cached */
             mFMRxRDSData = null;
