@@ -189,8 +189,11 @@ public class Settings extends PreferenceActivity implements
 
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                         String key) {
+
                 if (key.equals(REGIONAL_BAND_KEY)) {
-                        String[] summaryBandItems = getResources().getStringArray(
+		       int curListIndex = FmSharedPreferences.getCurrentListIndex();
+		           PresetList curList = FmSharedPreferences.getStationList(curListIndex);
+                           String[] summaryBandItems = getResources().getStringArray(
                                         R.array.regional_band_summary);
                         String valueStr = sharedPreferences.getString(key, "");
                         int index = 0;
@@ -206,6 +209,7 @@ public class Settings extends PreferenceActivity implements
                         mBandPreference.setSummary(summaryBandItems[index]);
                         FmSharedPreferences.setCountry(index);
                         FMRadio.fmConfigure();
+			curList.clear();
                 } else {
                         if (mRxMode) {
                                 if (key.equals(AUTO_AF)) {
@@ -265,6 +269,7 @@ public class Settings extends PreferenceActivity implements
                 if (mPrefs != null) {
                         mPrefs.Save();
                 }
+
         }
 
         public boolean onPreferenceClick(Preference preference) {
