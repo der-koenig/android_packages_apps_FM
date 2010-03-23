@@ -1303,11 +1303,6 @@ public class FMRadio extends Activity
                                             FmSharedPreferences.getCurrentListIndex();
                                          PresetList curList =
                                             FmSharedPreferences.getStationList(currentList);
-                                         curList.clear();
-                                         /* Since the presets will be changed,
-                                          * reset the page number
-                                          */
-                                         mPresetPageNumber = 0;
                                          initiateSearchList();
                                          //curList.addDummyStations();
                                          setupPresetLayout();
@@ -2406,6 +2401,11 @@ public class FMRadio extends Activity
                {
                   /* Add the stations into the preset list */
                   int currentList = FmSharedPreferences.getCurrentListIndex();
+                  PresetList curList =
+                       FmSharedPreferences.getStationList(currentList);
+                  curList.clear();
+                  mPresetPageNumber = 0;
+
                   for( int station=0;
                        (station < searchList.length) && (station < NUM_AUTO_PRESETS_SEARCH);
                        station++)
