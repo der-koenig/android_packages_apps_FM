@@ -359,6 +359,7 @@ public class FMRadio extends Activity
       }
       mHandler.post(mUpdateProgramService);
       mHandler.post(mUpdateRadioText);
+      mHandler.post(mOnStereo);
       updateStationInfoToUI();
       enableRadioOnOffUI();
    }
