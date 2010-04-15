@@ -814,7 +814,9 @@ public class FmSharedPreferences
          break;
        }
      case REGIONAL_BAND_FRANCE:
-       // - FRANCE         87500  TO 108000  IN 50 KHZ STEPS
+       // - FRANCE         87500  TO 108000  IN 100 KHZ STEPS
+         mFrequencyBand_Stepsize = 100;
+         break;
      case REGIONAL_BAND_GERMANY:
        // - GERMANY        87500  TO 108000  IN 50 KHZ STEPS
      case REGIONAL_BAND_GREECE:
