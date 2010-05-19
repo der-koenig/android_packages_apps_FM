@@ -32,13 +32,18 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothA2dp;
+import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
+import android.media.AudioSystem;
+import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -62,6 +67,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.text.TextUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -73,6 +80,7 @@ import java.util.ArrayList;
 import com.quicinc.utils.FrequencyPicker;
 import com.quicinc.utils.FrequencyPickerDialog;
 import android.content.ServiceConnection;
+import android.media.MediaRecorder;
 
 import android.hardware.fmradio.FmConfig;
 
@@ -81,7 +89,8 @@ public class FMRadio extends Activity
 {
    public static final String LOGTAG = "FMRadio";
 
-   public static final boolean RECORDING_ENABLE = false;
+   public static final boolean RECORDING_ENABLE = true;
+   MediaRecorder mRecorder = null;
 
    /* menu Identifiers */
    private static final int MENU_SCAN_START = Menu.FIRST + 2;
@@ -91,7 +100,7 @@ public class FMRadio extends Activity
    private static final int MENU_SLEEP = Menu.FIRST + 6;
    private static final int MENU_SLEEP_CANCEL = Menu.FIRST + 7;
    private static final int MENU_SETTINGS = Menu.FIRST + 8;
-   private static final int MENU_WIRED_HEADSET = Menu.FIRST + 9;
+   private static final int MENU_SPEAKER = Menu.FIRST + 9;
 
    /* Dialog Identifiers */
    private static final int DIALOG_SEARCH = 1;
@@ -196,6 +205,8 @@ public class FMRadio extends Activity
 
    // default audio device - speaker
    private static int mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET;
+   private boolean mSpeakerPhoneOn = false;
+
 
    /* Current Status Indicators */
    private static boolean mRecording = false;
@@ -402,13 +413,15 @@ public class FMRadio extends Activity
                 .setIcon(R.drawable.ic_menu_record);
          if (item != null)
          {
-            item.setVisible(!recording && radioOn);
+            item.setVisible(true);
+            item.setEnabled(!recording && radioOn);
          }
          item = menu.add(0, MENU_RECORD_STOP, 0, R.string.menu_record_stop)
                 .setIcon(R.drawable.ic_menu_record);
          if (item != null)
          {
-            item.setVisible(recording && radioOn);
+            item.setVisible(true);
+            item.setEnabled(recording && radioOn);
          }
       }
       /* Settings can be active */
@@ -428,22 +441,19 @@ public class FMRadio extends Activity
          item.setVisible(sleepActive && radioOn);
       }
 
-      if (isWiredHeadsetAvailable())
-      {
-
-	    if (mAudioRoute == FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER) {
-              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_wired_headset);
-	    }
-	    else {
-              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_speaker);
-	    }
-         if (item != null)
-         {
-            item.setCheckable(true);
-            item.setChecked(false);
-            item.setVisible(radioOn);
-         }
+      if (!mSpeakerPhoneOn) {
+          item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_on);
       }
+      else {
+          item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_off);
+      }
+      if (item != null)
+      {
+          item.setCheckable(true);
+          item.setChecked(false);
+          item.setVisible(radioOn);
+      }
+
 
       return true;
    }
@@ -473,12 +483,14 @@ public class FMRadio extends Activity
          item = menu.findItem(MENU_RECORD_START);
          if (item != null)
          {
-            item.setVisible(!recording && radioOn);
+          item.setVisible(true);
+          item.setEnabled(!recording && radioOn);
          }
          item = menu.findItem(MENU_RECORD_STOP);
          if (item != null)
          {
-            item.setVisible(recording && radioOn);
+          item.setVisible(true);
+          item.setEnabled(recording && radioOn);
          }
       }
 
@@ -494,27 +506,26 @@ public class FMRadio extends Activity
          item.setVisible(sleepActive && radioOn);
       }
 
-      if (isWiredHeadsetAvailable() && radioOn)
+      if (radioOn)
       {
-         if (menu.findItem(MENU_WIRED_HEADSET) == null)
-         {
-	    if (mAudioRoute == FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER) {
-              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_wired_headset);
-	    }
-	    else {
-              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_speaker);
-	    }
-         }
-	 else {
-            menu.removeItem(MENU_WIRED_HEADSET);
-	    if (mAudioRoute == FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER) {
-              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_wired_headset);
-	    }
-	    else {
-              item = menu.add(0, MENU_WIRED_HEADSET, 0, R.string.menu_speaker);
-	    }
-
-	 }
+          if (menu.findItem(MENU_SPEAKER) == null)
+          {
+              if (!mSpeakerPhoneOn) {
+                  item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_on);
+              }
+              else {
+                  item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_off);
+              }
+          }
+          else {
+              menu.removeItem(MENU_SPEAKER);
+              if (!mSpeakerPhoneOn) {
+                  item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_on);
+              }
+              else {
+                  item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_off);
+              }
+          }
          if (item != null)
          {
            item.setCheckable(true);
@@ -522,7 +533,7 @@ public class FMRadio extends Activity
          }
       } else
       {
-         menu.removeItem(MENU_WIRED_HEADSET);
+         menu.removeItem(MENU_SPEAKER);
       }
       return true;
    }
@@ -549,11 +560,11 @@ public class FMRadio extends Activity
          return true;
 
       case MENU_RECORD_START:
-         startRecord();
+         startRecording();
          return true;
 
       case MENU_RECORD_STOP:
-         stopRecord();
+         stopRecording();
          return true;
 
       case MENU_SLEEP:
@@ -565,33 +576,28 @@ public class FMRadio extends Activity
          endSleepTimer();
          return true;
 
-      case MENU_WIRED_HEADSET:
+      case MENU_SPEAKER:
          /* Call the mm interface to route the wired headset*/
+          enableSpeaker();
+          return true;
 
-	 switch (mAudioRoute)
-	 {
-
-	   case  FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET:
-	         mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER;
-		 break;
-
-	   case  FMRadioService.RADIO_AUDIO_DEVICE_SPEAKER:
-	         mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET;
-		 break;
-
-           default:
-	         mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET;
-		 break;
-
-	  }
-
-	 audioRoute (mAudioRoute);
-
-         return true;
       default:
          break;
       }
       return super.onOptionsItemSelected(item);
+   }
+
+   private void enableSpeaker(){
+       if(mSpeakerPhoneOn){
+           Log.d(LOGTAG, "Speaker phone is turned off");
+           mSpeakerPhoneOn=false;
+           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
+       }else{
+           Log.d(LOGTAG, "Speaker phone is turned on");
+           mSpeakerPhoneOn=true;
+           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
+       }
+
    }
 
    private void audioRoute (int audioDevice)
@@ -1672,19 +1678,38 @@ public class FMRadio extends Activity
       }
    }
 
-   private boolean startRecord() {
-      mRecording = true;
-      DebugToasts("Started Recording", Toast.LENGTH_SHORT);
-      return mRecording;
+
+
+   private void startRecording() {
+      if(mService != null)
+      {
+         try
+         {
+            mRecording = mService.startRecording();
+         } catch (RemoteException e)
+         {
+            e.printStackTrace();
+         }
+      }
    }
+
+   private void stopRecording() {
+       mRecording = false;
+       DebugToasts("Stopped Recording", Toast.LENGTH_SHORT);
+       if(mService != null)
+          {
+             try
+             {
+                mService.stopRecording();
+             } catch (RemoteException e)
+             {
+                e.printStackTrace();
+             }
+          }
+   }
+
 
    private boolean isRecording() {
-      return mRecording;
-   }
-
-   private boolean stopRecord() {
-      mRecording = false;
-      DebugToasts("Stopped Recording", Toast.LENGTH_SHORT);
       return mRecording;
    }
 
