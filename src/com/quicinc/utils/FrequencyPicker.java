@@ -27,8 +27,8 @@ import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 
 import com.quicinc.fmradio.R;
-import com.android.internal.widget.NumberPicker;
-import com.android.internal.widget.NumberPicker.OnChangedListener;
+import android.widget.NumberPicker;
+import android.widget.NumberPicker.OnChangedListener;
 
 /**
  * A view for selecting the frequency
