@@ -101,6 +101,7 @@ public class FMRadioService extends Service
    private FmRxRdsData mFMRxRDSData=null;
    // interval after which we stop the service when idle
    private static final int IDLE_DELAY = 60000;
+   private File mA2DPSampleFile = null;
 
    public FMRadioService() {
    }
@@ -183,18 +184,20 @@ public class FMRadioService extends Service
                        mHeadsetPlugged = (intent.getIntExtra("state", 0) == 1);
                        mHandler.post(mHeadsetPluginHandler);
                     } else if (action.equals(BluetoothA2dp.ACTION_SINK_STATE_CHANGED)) {
-                        int state = intent.getIntExtra(BluetoothA2dp.EXTRA_SINK_STATE,
-                                BluetoothA2dp.STATE_DISCONNECTED);
-                        if(state != BluetoothA2dp.STATE_CONNECTED && state != BluetoothA2dp.STATE_PLAYING) {
-                            if(mOverA2DP == true) {
-                                stopFM();
-                                startFM();
-                            }
-                        } else if (state == BluetoothA2dp.STATE_CONNECTED ||
-                                state == BluetoothA2dp.STATE_PLAYING){
-                            if(mOverA2DP == false) {
-                                stopFM();
-                                startFM();
+                        if(mFMOn == true){
+                            int state = intent.getIntExtra(BluetoothA2dp.EXTRA_SINK_STATE,
+                                    BluetoothA2dp.STATE_DISCONNECTED);
+                            if(state != BluetoothA2dp.STATE_CONNECTED && state != BluetoothA2dp.STATE_PLAYING) {
+                                if(mOverA2DP == true) {
+                                    stopFM();
+                                    startFM();
+                                }
+                            } else if (state == BluetoothA2dp.STATE_CONNECTED ||
+                                    state == BluetoothA2dp.STATE_PLAYING){
+                                if(mOverA2DP == false) {
+                                    stopFM();
+                                    startFM();
+                                }
                             }
                         }
                     }
@@ -358,34 +361,25 @@ public class FMRadioService extends Service
             mSampleFile = File
                     .createTempFile("FMRecording", ".3gpp", sampleDir);
         } catch (IOException e) {
-            /*new AlertDialog.Builder(this)
-           .setTitle(R.string.app_name)
-           .setMessage(R.string.error_sdcard_access)
-           .setPositiveButton(R.string.button_ok, null)
-           .setCancelable(false)
-           .show();*/
             Log.e(LOGTAG, "Not able to access SD Card");
+            Toast.makeText(this, "Not able to access SD Card", Toast.LENGTH_SHORT).show();
             return false;
         }
-
         mRecorder = new MediaRecorder();
         try {
         mRecorder.setAudioSource(MediaRecorder.AudioSource.FM_RX);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         } catch (RuntimeException exception) {
-            //setError(UNSUPPORTED_FORMAT);
             mRecorder.reset();
             mRecorder.release();
             mRecorder = null;
             return false;
         }
         mRecorder.setOutputFile(mSampleFile.getAbsolutePath());
-        // Handle IOException
         try {
             mRecorder.prepare();
         } catch (IOException exception) {
-            //setError(INTERNAL_ERROR);
             mRecorder.reset();
             mRecorder.release();
             mRecorder = null;
@@ -396,17 +390,28 @@ public class FMRadioService extends Service
   }
 
    public boolean startA2dpPlayback() {
-        Log.d(LOGTAG, "In stopA2dpPlayback");
+        Log.d(LOGTAG, "In startA2dpPlayback");
         stopA2dpPlayback();
         mA2dp = new MediaRecorder();
         try {
             mA2dp.setAudioSource(MediaRecorder.AudioSource.FM_RX_A2DP);
             mA2dp.setOutputFormat(MediaRecorder.OutputFormat.RAW_AMR);
-            mA2dp.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
+            mA2dp.setAudioEncoder(MediaRecorder.OutputFormat.DEFAULT);
+            File sampleDir = Environment.getExternalStorageDirectory();
+            if (!sampleDir.canWrite())
+                sampleDir = new File("/sdcard/sdcard");
+            try {
+                mA2DPSampleFile = File
+                    .createTempFile("FMRecording", ".3gpp", sampleDir);
+            } catch (IOException e) {
+                Log.e(LOGTAG, "Not able to access SD Card");
+                Toast.makeText(this, "Not able to access SD Card", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            mA2dp.setOutputFile(mA2DPSampleFile.getAbsolutePath());
             mA2dp.prepare();
             mA2dp.start();
         } catch (Exception exception) {
-            //setError(UNSUPPORTED_FORMAT);
             mA2dp.reset();
             mA2dp.release();
             mA2dp = null;
@@ -418,7 +423,8 @@ public class FMRadioService extends Service
    public void stopA2dpPlayback() {
        if (mA2dp == null)
            return;
-
+      if(mA2DPSampleFile != null)
+            mA2DPSampleFile.delete();
        mA2dp.stop();
        mA2dp.reset();
        mA2dp.release();
