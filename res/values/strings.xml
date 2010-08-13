@@ -173,7 +173,14 @@
     <string name="default_station"> FM </string>
     <string name="default_blank"> </string>
     <string name="stop_scanning">Stop Scanning</string>
-
     <string name="transmit_msg_string">Transmitting at:</string>
+    <!-- the name under which recordings will be visible in the media database is formatted like this -->
+    <string name="audio_db_title_format"><xliff:g id="format">yyyy-MM-dd HH:mm:ss</xliff:g></string>
+    <!-- all recordings will show up in the media database with this 'artist' name -->
+    <string name="audio_db_artist_name">My FM recordings</string>
+    <!-- all recordings will show up in the media database with this 'album' name -->
+    <string name="audio_db_album_name">FM recordings</string>
+    <!-- all recordings will show up in the media database in a playlist with this name -->
+    <string name="audio_db_playlist_name">FM recordings</string>
 
 </resources>

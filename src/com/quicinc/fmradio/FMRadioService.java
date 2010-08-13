@@ -62,6 +62,15 @@ import android.hardware.fmradio.FmReceiver;
 import android.hardware.fmradio.FmRxEvCallbacksAdaptor;
 import android.hardware.fmradio.FmRxRdsData;
 import android.hardware.fmradio.FmConfig;
+import android.net.Uri;
+import android.content.res.Resources;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import android.provider.MediaStore;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.database.Cursor;
+
 
 /**
  * Provides "background" FM Radio (that uses the hardware) capabilities,
@@ -102,6 +111,8 @@ public class FMRadioService extends Service
    // interval after which we stop the service when idle
    private static final int IDLE_DELAY = 60000;
    private File mA2DPSampleFile = null;
+   private File mSampleFile = null;
+   long mSampleStart = 0;
 
    public FMRadioService() {
    }
@@ -352,7 +363,7 @@ public class FMRadioService extends Service
    public boolean startRecording() {
         Log.d(LOGTAG, "In startRecording of Recorder");
         stopRecording();
-        File mSampleFile = null;
+        mSampleFile = null;
         File sampleDir = Environment.getExternalStorageDirectory();
         if (!sampleDir.canWrite()) // Workaround for broken sdcard support on
                                     // the device.
@@ -386,6 +397,7 @@ public class FMRadioService extends Service
             return false;
         }
         mRecorder.start();
+        mSampleStart = System.currentTimeMillis();
         return true;
   }
 
@@ -435,16 +447,121 @@ public class FMRadioService extends Service
    public void stopRecording() {
        if (mRecorder == null)
            return;
-
        mRecorder.stop();
        mRecorder.reset();
        mRecorder.release();
        mRecorder = null;
+       int sampleLength = (int)((System.currentTimeMillis() - mSampleStart)/1000 );
+       if (sampleLength == 0)
+           return;
+       this.addToMediaDB(mSampleFile);
        return;
    }
 
+   /*
+    * Adds file and returns content uri.
+    */
+   private Uri addToMediaDB(File file) {
+       Log.d(LOGTAG, "In addToMediaDB");
+       Resources res = getResources();
+       ContentValues cv = new ContentValues();
+       long current = System.currentTimeMillis();
+       long modDate = file.lastModified();
+       Date date = new Date(current);
+       SimpleDateFormat formatter = new SimpleDateFormat(
+               res.getString(R.string.audio_db_title_format));
+       String title = formatter.format(date);
 
+       // Lets label the recorded audio file as NON-MUSIC so that the file
+       // won't be displayed automatically, except for in the playlist.
+       cv.put(MediaStore.Audio.Media.IS_MUSIC, "1");
 
+       cv.put(MediaStore.Audio.Media.TITLE, title);
+       cv.put(MediaStore.Audio.Media.DATA, file.getAbsolutePath());
+       cv.put(MediaStore.Audio.Media.DATE_ADDED, (int) (current / 1000));
+       cv.put(MediaStore.Audio.Media.DATE_MODIFIED, (int) (modDate / 1000));
+       cv.put(MediaStore.Audio.Media.MIME_TYPE, "AUDIO_AAC_MP4");
+       cv.put(MediaStore.Audio.Media.ARTIST,
+               res.getString(R.string.audio_db_artist_name));
+       cv.put(MediaStore.Audio.Media.ALBUM,
+               res.getString(R.string.audio_db_album_name));
+       Log.d(LOGTAG, "Inserting audio record: " + cv.toString());
+       ContentResolver resolver = getContentResolver();
+       Uri base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+       Log.d(LOGTAG, "ContentURI: " + base);
+       Uri result = resolver.insert(base, cv);
+       if (result == null) {
+           Toast.makeText(this, "Unable to save recorded audio", Toast.LENGTH_SHORT).show();
+           return null;
+       }
+       if (getPlaylistId(res) == -1) {
+           createPlaylist(res, resolver);
+       }
+       int audioId = Integer.valueOf(result.getLastPathSegment());
+       addToPlaylist(resolver, audioId, getPlaylistId(res));
+
+       // Notify those applications such as Music listening to the
+       // scanner events that a recorded audio file just created.
+       sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, result));
+       return result;
+   }
+
+   private int getPlaylistId(Resources res) {
+       Uri uri = MediaStore.Audio.Playlists.getContentUri("external");
+       final String[] ids = new String[] { MediaStore.Audio.Playlists._ID };
+       final String where = MediaStore.Audio.Playlists.NAME + "=?";
+       final String[] args = new String[] { res.getString(R.string.audio_db_playlist_name) };
+       Cursor cursor = query(uri, ids, where, args, null);
+       if (cursor == null) {
+           Log.v(LOGTAG, "query returns null");
+       }
+       int id = -1;
+       if (cursor != null) {
+           cursor.moveToFirst();
+           if (!cursor.isAfterLast()) {
+               id = cursor.getInt(0);
+           }
+       }
+       cursor.close();
+       return id;
+   }
+
+   private Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+       try {
+           ContentResolver resolver = getContentResolver();
+           if (resolver == null) {
+               return null;
+           }
+           return resolver.query(uri, projection, selection, selectionArgs, sortOrder);
+        } catch (UnsupportedOperationException ex) {
+           return null;
+       }
+   }
+
+   private Uri createPlaylist(Resources res, ContentResolver resolver) {
+       ContentValues cv = new ContentValues();
+       cv.put(MediaStore.Audio.Playlists.NAME, res.getString(R.string.audio_db_playlist_name));
+       Uri uri = resolver.insert(MediaStore.Audio.Playlists.getContentUri("external"), cv);
+       if (uri == null) {
+           Toast.makeText(this, "Unable to save recorded audio", Toast.LENGTH_SHORT).show();
+       }
+       return uri;
+   }
+
+   private void addToPlaylist(ContentResolver resolver, int audioId, long playlistId) {
+       String[] cols = new String[] {
+               "count(*)"
+       };
+       Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
+       Cursor cur = resolver.query(uri, cols, null, null, null);
+       cur.moveToFirst();
+       final int base = cur.getInt(0);
+       cur.close();
+       ContentValues values = new ContentValues();
+       values.put(MediaStore.Audio.Playlists.Members.PLAY_ORDER, Integer.valueOf(base + audioId));
+       values.put(MediaStore.Audio.Playlists.Members.AUDIO_ID, audioId);
+       resolver.insert(uri, values);
+   }
 
    /* Handle Phone Call + FM Concurrency */
    private PhoneStateListener mPhoneStateListener = new PhoneStateListener() {
