@@ -22,7 +22,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
     <!-- MHz -->
-    <com.android.internal.widget.NumberPicker
+    <android.widget.NumberPicker
         android:id="@+id/mhz" 
         android:layout_width="80dip" 
         android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
         android:focusableInTouchMode="true" />
 
     <!-- KHz -->
-    <com.android.internal.widget.NumberPicker
+    <android.widget.NumberPicker
         android:id="@+id/khz"
         android:layout_width="80dip"
         android:layout_height="wrap_content"
