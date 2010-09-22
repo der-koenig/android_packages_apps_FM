@@ -78,6 +78,11 @@ public class FmSharedPreferences
    public static final int REGIONAL_BAND_UNITEDKINGDOM   = 34;
    public static final int REGIONAL_BAND_UNITED_STATES   = 35;
 
+   public static final int RECORD_DUR_INDEX_0_VAL        = 5;
+   public static final int RECORD_DUR_INDEX_1_VAL       = 15;
+   public static final int RECORD_DUR_INDEX_2_VAL       = 30;
+   public static final int RECORD_DUR_INDEX_3_VAL       = -1;
+
    private static final String LOGTAG = FMRadio.LOGTAG;
 
    private static final String SHARED_PREFS = "fmradio_prefs";
@@ -997,8 +1002,22 @@ public class FmSharedPreferences
       return mAudioOutputMode;
    }
 
-   public static void setRecordDuration(int duration) {
-      mRecordDuration = duration;
+   public static void setRecordDuration(int durationIndex) {
+
+      Log.d(LOGTAG, "setRecordDuration "+durationIndex);
+      switch( durationIndex ) {
+
+      case 0: mRecordDuration = RECORD_DUR_INDEX_0_VAL; break;
+      case 1: mRecordDuration = RECORD_DUR_INDEX_1_VAL; break;
+      case 2: mRecordDuration = RECORD_DUR_INDEX_2_VAL; break;
+      case 3: mRecordDuration = RECORD_DUR_INDEX_3_VAL; break;
+      default:
+        {
+           Log.d(LOGTAG, "Invalid: durationIndex "+durationIndex);
+        }
+
+      }
+      return;
    }
 
    public static int getRecordDuration() {

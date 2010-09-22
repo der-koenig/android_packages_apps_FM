@@ -944,6 +944,10 @@ public class FMRadioService extends Service
             /* Put the hardware into normal mode */
             bStatus = setLowPowerMode(false);
             Log.d(LOGTAG, "setLowPowerMode done, Status :" +  bStatus);
+
+            //Set the default value for Record duration
+            FmSharedPreferences.setRecordDuration(0);
+
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             if(audioManager != null)
             {

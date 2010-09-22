@@ -600,6 +600,132 @@ public class FMRadio extends Activity
 
    }
 
+   private static final int RECORDTIMER_EXPIRED = 0x1003;
+   private static final int RECORDTIMER_UPDATE = 0x1004;
+
+   private boolean hasRecordTimerExpired() {
+      boolean expired = true;
+      if (isRecordTimerActive())
+      {
+         long timeNow = ((SystemClock.elapsedRealtime()));
+         //Log.d(LOGTAG, "hasSleepTimerExpired - " + mSleepAtPhoneTime + " now: "+ timeNow);
+         if (mRecording == false || timeNow < mRecordDuration)
+         {
+            expired = false;
+         }
+      }
+      return expired;
+   }
+
+   private boolean isRecordTimerActive() {
+      boolean active = false;
+      if (mRecordDuration > 0)
+      {
+         active = true;
+      }
+      return active;
+   }
+
+   private void updateExpiredRecordTime() {
+      int vis = View.VISIBLE;
+      if ( mRecordUntilStopped || isRecordTimerActive())
+      {
+         long timeNow = ((SystemClock.elapsedRealtime()));
+         if (mRecordUntilStopped || mRecordDuration >= timeNow)
+         {
+            long seconds = (timeNow - mRecordStartTime) / 1000;
+            String Msg = makeTimeString(seconds);
+            mRecordingMsgTV.setText(Msg);
+         } else
+         {
+            /* Clean up timer */
+            mRecordDuration = 0;
+         }
+      }
+      mRecordingMsgTV.setVisibility(vis);
+   }
+
+   /* Recorder Thread processing */
+   private Runnable doRecordProcessing = new Runnable() {
+      public void run() {
+         boolean recordTimerExpired;
+         if( mRecordUntilStopped )
+         {
+             recordTimerExpired = false;
+         }
+         else
+         {
+             recordTimerExpired = hasRecordTimerExpired();
+         }
+         while (recordTimerExpired == false &&  mRecording != false )
+         {
+            try
+            {
+               Thread.sleep(500);
+            } catch (InterruptedException e)
+            {
+               Thread.currentThread().interrupt();
+            }
+            Message statusUpdate = new Message();
+            statusUpdate.what = RECORDTIMER_UPDATE;
+            mUIUpdateHandlerHandler.sendMessage(statusUpdate);
+            if( mRecordUntilStopped )
+            {
+                recordTimerExpired = false;
+            }
+            else
+            {
+                recordTimerExpired = hasRecordTimerExpired();
+            }
+         }
+         Message finished = new Message();
+         finished.what = RECORDTIMER_EXPIRED;
+         mUIUpdateHandlerHandler.sendMessage(finished);
+      }
+   };
+
+   private long mRecordDuration = 0;
+   private long mRecordStartTime = 0;
+   private boolean mRecordUntilStopped =false;
+   private Thread mRecordUpdateHandlerThread = null;
+
+   private void initiateRecordDurationTimer(long mins ) {
+
+      if( mins == FmSharedPreferences.RECORD_DUR_INDEX_3_VAL )
+      {
+          mRecordUntilStopped = true;
+          mRecordStartTime = SystemClock.elapsedRealtime();
+      }
+      else
+      {
+          mRecordUntilStopped = false;
+          mRecordDuration = ( mRecordStartTime = SystemClock.elapsedRealtime()) + (mins * 60 * 1000);
+      }
+
+      Log.d(LOGTAG, "Stop Recording in mins : " + mins);
+
+      //mSleepCancelled = false;
+      if (mRecordUpdateHandlerThread == null)
+      {
+         mRecordUpdateHandlerThread = new Thread(null, doRecordProcessing,
+                                                "RecordUpdateThread");
+      }
+      /* Launch the dummy thread to simulate the transfer progress */
+      Log.d(LOGTAG, "Thread State: " + mRecordUpdateHandlerThread.getState());
+      if (mRecordUpdateHandlerThread.getState() == Thread.State.TERMINATED)
+      {
+         mRecordUpdateHandlerThread = new Thread(null, doRecordProcessing,
+                                                "RecordUpdateThread");
+      }
+      /* If the thread state is "new" then the thread has not yet started */
+      if (mRecordUpdateHandlerThread.getState() == Thread.State.NEW)
+      {
+         mRecordUpdateHandlerThread.start();
+      }
+   }
+
+
+
    private void audioRoute (int audioDevice)
    {
       boolean bStatus;
@@ -1597,6 +1723,11 @@ public class FMRadio extends Activity
       boolean bStatus = false;
       cancelSearch();
       endSleepTimer();
+      if( mRecording )
+      {
+         //Stop if there is an ongoing Record
+         stopRecording();
+      }
       if(mService != null)
       {
          try
@@ -1690,6 +1821,11 @@ public class FMRadio extends Activity
          {
             e.printStackTrace();
          }
+         //Initiate record timer thread here
+         int durationInMins = FmSharedPreferences.getRecordDuration();
+         Log.e(LOGTAG, " Fected duration:" + durationInMins );
+
+         initiateRecordDurationTimer( durationInMins );
       }
    }
 
@@ -2228,6 +2364,23 @@ public class FMRadio extends Activity
          case SLEEPTIMER_UPDATE: {
                //Log.d(LOGTAG, "mUIUpdateHandlerHandler - SLEEPTIMER_UPDATE");
                updateExpiredSleepTime();
+               break;
+            }
+         case RECORDTIMER_EXPIRED: {
+               Log.d(LOGTAG, "mUIUpdateHandlerHandler - RECORDTIMER_EXPIRED");
+               mRecordDuration = 0;
+               //Clear the Recorder text
+               mRecordingMsgTV.setText("");
+               if (mRecording != false)
+               {
+                  DebugToasts("Stop Recording", Toast.LENGTH_SHORT);
+                  stopRecording();
+               }
+              return;
+            }
+         case RECORDTIMER_UPDATE: {
+               Log.d(LOGTAG, "mUIUpdateHandlerHandler - RECORDTIMER_UPDATE");
+               updateExpiredRecordTime();
                break;
             }
          default:
