@@ -1816,7 +1816,7 @@ public class FMRadio extends Activity
       {
          try
          {
-            mRecording = mService.startRecording();
+           mRecording = mService.startRecording();
          } catch (RemoteException e)
          {
             e.printStackTrace();
@@ -1846,7 +1846,18 @@ public class FMRadio extends Activity
 
 
    private boolean isRecording() {
-      return mRecording;
+      mRecording = false;
+      if(mService != null)
+      {
+         try
+         {
+             mRecording = mService.isFmRecordingOn();
+         } catch (RemoteException e)
+         {
+            e.printStackTrace();
+         }
+      }
+      return(mRecording);
    }
 
    private void addToPresets() {

@@ -103,6 +103,7 @@ public class FMRadioService extends Service
    MediaRecorder mRecorder = null;
    MediaRecorder mA2dp = null;
    private boolean mFMOn = false;
+   private boolean mFmRecordingOn = false;
    private static boolean mRadioState = true;
    private BroadcastReceiver mScreenOnOffReceiver = null;
    final Handler mHandler = new Handler();
@@ -397,6 +398,7 @@ public class FMRadioService extends Service
             return false;
         }
         mRecorder.start();
+        mFmRecordingOn = true;
         mSampleStart = System.currentTimeMillis();
         return true;
   }
@@ -445,6 +447,7 @@ public class FMRadioService extends Service
    }
 
    public void stopRecording() {
+       mFmRecordingOn = false;
        if (mRecorder == null)
            return;
        mRecorder.stop();
@@ -574,6 +577,7 @@ public class FMRadioService extends Service
              int ringvolume = audioManager.getStreamVolume(AudioManager.STREAM_RING);
              if (ringvolume > 0) {
                 mute();
+                stopRecording();
                 stopFM();
                 mResumeAfterCall = true;
                 try
@@ -776,6 +780,12 @@ public class FMRadioService extends Service
       {
          return(mService.get().isFmOn());
       }
+
+      public boolean isFmRecordingOn()
+      {
+         return(mService.get().isFmRecordingOn());
+      }
+
       public boolean fmReconfigure()
       {
          return(mService.get().fmReconfigure());
@@ -1015,6 +1025,10 @@ public class FMRadioService extends Service
     */
    public boolean isFmOn() {
       return mFMOn;
+   }
+
+   public boolean isFmRecordingOn() {
+      return mFmRecordingOn;
    }
 
   /*
