@@ -45,6 +45,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.media.AudioManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -134,6 +135,7 @@ public class FMTransmitterActivity extends Activity {
         public void onCreate(Bundle savedInstanceState) {
 
                 super.onCreate(savedInstanceState);
+                setVolumeControlStream(AudioManager.STREAM_FM);
                 mPrefs = new FmSharedPreferences(this);
                 Log.d(LOGTAG, "onCreate - Height : "
                                 + getWindowManager().getDefaultDisplay().getHeight()

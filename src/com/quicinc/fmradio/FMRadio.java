@@ -41,6 +41,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.media.AudioSystem;
+import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -55,6 +56,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.KeyEvent;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
@@ -240,7 +242,7 @@ public class FMRadio extends Activity
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-
+      setVolumeControlStream(AudioManager.STREAM_FM);
       mPrefs = new FmSharedPreferences(this);
       mCommandActive = CMD_NONE;
       mCommandFailed = CMD_NONE;

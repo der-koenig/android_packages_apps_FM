@@ -595,7 +595,6 @@ public class FMRadioService extends Service
          if (state == TelephonyManager.CALL_STATE_RINGING) {
              int ringvolume = audioManager.getStreamVolume(AudioManager.STREAM_RING);
              if (ringvolume > 0) {
-                mute();
                 stopRecording();
                 stopFM();
                 mResumeAfterCall = true;
@@ -613,7 +612,6 @@ public class FMRadioService extends Service
          } //ringing
          else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
              // pause the music while a conversation is in progress
-            mute();
             stopRecording();
             stopFM();
             mResumeAfterCall = true;
@@ -635,7 +633,6 @@ public class FMRadioService extends Service
                // resume playback only if FM Radio was playing
                // when the call was answered
                //unMute-FM
-               unMute();
                startFM();
                mResumeAfterCall = false;
                try
@@ -1035,6 +1032,7 @@ public class FMRadioService extends Service
       if(audioManager != null)
       {
          Log.d(LOGTAG, "audioManager.setFmRadioOn = false \n" );
+         unMute();
          stopFM();
          //audioManager.setParameters("FMRadioOn=false");
          Log.d(LOGTAG, "audioManager.setFmRadioOn false done \n" );
@@ -1156,12 +1154,15 @@ public class FMRadioService extends Service
    * @return true if set mute mode api was invoked successfully, false if the api failed.
    */
    public boolean mute() {
-      boolean bCommandSent=false;
+      boolean bCommandSent=true;
+      if(isMuted())
+          return bCommandSent;
+      AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
       Log.d(LOGTAG, "mute:");
-      if (mReceiver != null)
+      if (audioManager != null)
       {
          mMuted = true;
-         bCommandSent = mReceiver.setMuteMode(FmReceiver.FM_RX_MUTE);
+         audioManager.setStreamMute(AudioManager.STREAM_FM,true);
       }
       return bCommandSent;
    }
@@ -1171,12 +1172,15 @@ public class FMRadioService extends Service
    * @return true if set mute mode api was invoked successfully, false if the api failed.
    */
    public boolean unMute() {
-      boolean bCommandSent=false;
+      boolean bCommandSent=true;
+      if(!isMuted())
+          return bCommandSent;
       Log.d(LOGTAG, "unMute:");
-      if (mReceiver != null)
+      AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+      if (audioManager != null)
       {
          mMuted = false;
-         bCommandSent = mReceiver.setMuteMode(FmReceiver.FM_RX_UNMUTE);
+         audioManager.setStreamMute(AudioManager.STREAM_FM,false);
          if (mResumeAfterCall)
          {
             //We are unmuting FM in a voice call. Need to enable FM audio routing.
