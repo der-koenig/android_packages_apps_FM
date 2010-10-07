@@ -1116,13 +1116,12 @@ public class FMRadioService extends Service
    * @return true if set mute mode api was invoked successfully, false if the api failed.
    */
    public boolean mute() {
-      AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-      boolean bCommandSent=true;
+      boolean bCommandSent=false;
       Log.d(LOGTAG, "mute:");
       if (mReceiver != null)
       {
          mMuted = true;
-         audioManager.setParameters("FmMute=true");
+         bCommandSent = mReceiver.setMuteMode(FmReceiver.FM_RX_MUTE);
       }
       return bCommandSent;
    }
@@ -1132,13 +1131,12 @@ public class FMRadioService extends Service
    * @return true if set mute mode api was invoked successfully, false if the api failed.
    */
    public boolean unMute() {
-      AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-      boolean bCommandSent=true;
+      boolean bCommandSent=false;
       Log.d(LOGTAG, "unMute:");
       if (mReceiver != null)
       {
          mMuted = false;
-         audioManager.setParameters("FmMute=false");
+         bCommandSent = mReceiver.setMuteMode(FmReceiver.FM_RX_UNMUTE);
       }
       return bCommandSent;
    }
