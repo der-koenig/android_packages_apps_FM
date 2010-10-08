@@ -163,6 +163,8 @@
         <string name="fm_cmd_failed_msg">FM operation failed. If problem
             persists, please turn off FM and turn it back on.
         </string>
+        <string name="fm_cmd_failed_msg_hdmi">FM operation failed. FM and HDMI concurrecny is not supported.
+        </string>
 
     <skip/>
     <!-- Do not translate. Duration format. -->

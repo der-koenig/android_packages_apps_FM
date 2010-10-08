@@ -83,6 +83,8 @@ import android.content.ServiceConnection;
 import android.media.MediaRecorder;
 
 import android.hardware.fmradio.FmConfig;
+import android.os.ServiceManager;
+import android.os.IHDMIService;
 
 
 public class FMRadio extends Activity
@@ -116,6 +118,7 @@ public class FMRadio extends Activity
    private static final int DIALOG_PRESET_RENAME = 11;
    private static final int DIALOG_CMD_TIMEOUT = 12;
    private static final int DIALOG_CMD_FAILED = 13;
+   private static final int DIALOG_CMD_FAILED_HDMI_ON = 14;
 
    /* Activity Return ResultIdentifiers */
    private static final int ACTIVITY_RESULT_SETTINGS = 1;
@@ -236,7 +239,6 @@ public class FMRadio extends Activity
    /** Called when the activity is first created. */
    @Override
    public void onCreate(Bundle savedInstanceState) {
-
       super.onCreate(savedInstanceState);
 
       mPrefs = new FmSharedPreferences(this);
@@ -311,12 +313,19 @@ public class FMRadio extends Activity
       }
 
       enableRadioOnOffUI(false);
-      if (false == bindToService(this, osc))
+      //HDMI and FM concurrecny is not supported.
+      if (isHdmiOn())
       {
-         Log.d(LOGTAG, "onCreate: Failed to Start Service");
-      } else
-      {
-         Log.d(LOGTAG, "onCreate: Start Service completed successfully");
+         showDialog(DIALOG_CMD_FAILED_HDMI_ON);
+      }
+      else {
+          if (false == bindToService(this, osc))
+          {
+             Log.d(LOGTAG, "onCreate: Failed to Start Service");
+          } else
+          {
+             Log.d(LOGTAG, "onCreate: Start Service completed successfully");
+          }
       }
    }
 
@@ -587,6 +596,18 @@ public class FMRadio extends Activity
       return super.onOptionsItemSelected(item);
    }
 
+   private boolean isHdmiOn() {
+     //HDMI and FM concurrecny is not supported.
+          try {
+              IHDMIService hdmiService = IHDMIService.Stub.asInterface(ServiceManager.getService("hdmi"));
+              if(hdmiService != null && hdmiService.isHDMIConnected()) {
+                  return true;
+              }
+          }
+          catch (Exception ex){
+          }
+          return false;
+   }
    private void enableSpeaker(){
        if(mSpeakerPhoneOn){
            Log.d(LOGTAG, "Speaker phone is turned off");
@@ -785,6 +806,9 @@ public class FMRadio extends Activity
       }
       case DIALOG_CMD_FAILED:{
          return createCmdFailedDlg(id);
+      }
+      case DIALOG_CMD_FAILED_HDMI_ON:{
+         return createCmdFailedDlgHdmiOn(id);
       }
       default:
          break;
@@ -1496,6 +1520,23 @@ public class FMRadio extends Activity
       return(dlgBuilder.create());
    }
 
+   private Dialog createCmdFailedDlgHdmiOn(int id) {
+      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
+      dlgBuilder.setIcon(R.drawable.alert_dialog_icon)
+                .setTitle(R.string.fm_command_failed_title);
+      dlgBuilder.setMessage(R.string.fm_cmd_failed_msg_hdmi);
+
+      dlgBuilder.setPositiveButton(R.string.alert_dialog_ok,
+                                   new DialogInterface.OnClickListener() {
+                                      public void onClick(DialogInterface dialog,
+                                                          int whichButton) {
+                                         removeDialog(DIALOG_CMD_TIMEOUT);
+                                         mCommandFailed = CMD_NONE;
+                                      }
+                                   });
+
+      return(dlgBuilder.create());
+   }
 
    private void RestoreDefaults() {
       FmSharedPreferences.SetDefaults();
@@ -1689,33 +1730,39 @@ public class FMRadio extends Activity
       mIsSeeking = false;
       mIsSearching=false;
       boolean bStatus = false;
-      if(mService != null)
+      if (isHdmiOn())
       {
-         try
-         {
-            bStatus = mService.fmOn();
-            if(bStatus)
-            {
-               if(isAntennaAvailable())
-               {
-                  tuneRadio(FmSharedPreferences.getTunedFrequency());
-                  enableRadioOnOffUI();
-               }
-               else
-               {
-                  disableRadio();
-               }
-            }
-            else
-            {
-               Log.e(LOGTAG, " mService.fmOn failed");
-               mCommandFailed = CMD_FMON;
-               showDialog(DIALOG_CMD_FAILED);
-            }
-         } catch (RemoteException e)
-         {
-            e.printStackTrace();
-         }
+          showDialog(DIALOG_CMD_FAILED_HDMI_ON);
+      } else
+      {
+          if(mService != null)
+          {
+             try
+             {
+                bStatus = mService.fmOn();
+                if(bStatus)
+                {
+                   if(isAntennaAvailable())
+                   {
+                      tuneRadio(FmSharedPreferences.getTunedFrequency());
+                      enableRadioOnOffUI();
+                   }
+                   else
+                   {
+                      disableRadio();
+                   }
+                }
+                else
+                {
+                   Log.e(LOGTAG, " mService.fmOn failed");
+                   mCommandFailed = CMD_FMON;
+                   showDialog(DIALOG_CMD_FAILED);
+                }
+             } catch (RemoteException e)
+             {
+                e.printStackTrace();
+             }
+          }
       }
    }
 

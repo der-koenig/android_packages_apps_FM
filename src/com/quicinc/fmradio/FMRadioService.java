@@ -212,12 +212,30 @@ public class FMRadioService extends Service
                                 }
                             }
                         }
+                    } else if (action.equals("HDMI_CONNECTED")) {
+                        //FM should be off when HDMI is connected.
+                        fmOff();
+                        try
+                        {
+                            /* Notify the UI/Activity, only if the service is "bound"
+                               by an activity and if Callbacks are registered
+                             */
+                            if((mServiceInUse) && (mCallbacks != null) )
+                            {
+                                mCallbacks.onDisabled();
+                            }
+                        } catch (RemoteException e)
+                        {
+                            e.printStackTrace();
+                        }
                     }
                 }
             };
             IntentFilter iFilter = new IntentFilter();
             iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
             iFilter.addAction(BluetoothA2dp.ACTION_SINK_STATE_CHANGED);
+            iFilter.addAction("HDMI_CONNECTED");
+            iFilter.addCategory(Intent.CATEGORY_DEFAULT);
             registerReceiver(mHeadsetReceiver, iFilter);
         }
     }
