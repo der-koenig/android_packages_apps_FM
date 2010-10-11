@@ -1155,6 +1155,11 @@ public class FMRadioService extends Service
       {
          mMuted = false;
          bCommandSent = mReceiver.setMuteMode(FmReceiver.FM_RX_UNMUTE);
+         if (mResumeAfterCall)
+         {
+            //We are unmuting FM in a voice call. Need to enable FM audio routing.
+            startFM();
+         }
       }
       return bCommandSent;
    }
