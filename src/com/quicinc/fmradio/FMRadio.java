@@ -599,8 +599,11 @@ public class FMRadio extends Activity
    private boolean isHdmiOn() {
      //HDMI and FM concurrecny is not supported.
           try {
+              String hdmiUserOption = android.provider.Settings.System.getString(
+                                            getContentResolver(), "HDMI_USEROPTION");
               IHDMIService hdmiService = IHDMIService.Stub.asInterface(ServiceManager.getService("hdmi"));
-              if(hdmiService != null && hdmiService.isHDMIConnected()) {
+              if( hdmiUserOption != null && hdmiUserOption.equals("HDMI_ON") &&
+                  hdmiService != null && hdmiService.isHDMIConnected()) {
                   return true;
               }
           }
