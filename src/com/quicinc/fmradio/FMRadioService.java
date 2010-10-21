@@ -613,6 +613,7 @@ public class FMRadioService extends Service
          else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
              // pause the music while a conversation is in progress
             mute();
+            stopRecording();
             stopFM();
             mResumeAfterCall = true;
             try
