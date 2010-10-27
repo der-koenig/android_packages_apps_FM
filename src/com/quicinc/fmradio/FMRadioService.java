@@ -104,6 +104,7 @@ public class FMRadioService extends Service
    MediaRecorder mA2dp = null;
    private boolean mFMOn = false;
    private boolean mFmRecordingOn = false;
+   private boolean mSpeakerPhoneOn = false;
    private static boolean mRadioState = true;
    private BroadcastReceiver mScreenOnOffReceiver = null;
    final Handler mHandler = new Handler();
@@ -824,6 +825,7 @@ public class FMRadioService extends Service
       {
          return(mService.get().routeAudio(device));
       }
+
       public boolean mute()
       {
          return(mService.get().mute());
@@ -858,6 +860,12 @@ public class FMRadioService extends Service
       {
          return(mService.get().seek(up));
       }
+
+      public void enableSpeaker(boolean speakerOn)
+      {
+          mService.get().enableSpeaker(speakerOn);
+      }
+
       public boolean scan(int pty)
       {
          return(mService.get().scan(pty));
@@ -1018,6 +1026,10 @@ public class FMRadioService extends Service
    */
    private boolean fmOff() {
       boolean bStatus=false;
+      if ( mSpeakerPhoneOn) {
+          mSpeakerPhoneOn = false;
+          AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
+      }
 
       AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
       if(audioManager != null)
@@ -1050,6 +1062,15 @@ public class FMRadioService extends Service
       return mFmRecordingOn;
    }
 
+   public void enableSpeaker(boolean speakerOn) {
+       mSpeakerPhoneOn = speakerOn;
+       if (speakerOn) {
+           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
+       }
+       else {
+           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
+       }
+   }
   /*
    *  ReConfigure the FM Setup parameters
    *  - Band

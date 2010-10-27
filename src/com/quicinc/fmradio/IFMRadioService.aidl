@@ -19,6 +19,7 @@ interface IFMRadioService
     void stopRecording();
     boolean tune(int frequency);
     boolean seek(boolean up);
+    void enableSpeaker(boolean speakerOn);
     boolean scan(int pty);
     boolean seekPI(int piCode);
     boolean searchStrongStationList(int numStations);

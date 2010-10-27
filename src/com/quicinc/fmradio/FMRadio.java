@@ -208,7 +208,7 @@ public class FMRadio extends Activity
 
    // default audio device - speaker
    private static int mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET;
-   private boolean mSpeakerPhoneOn = false;
+   private static boolean mSpeakerPhoneOn = false;
 
 
    /* Current Status Indicators */
@@ -449,7 +449,6 @@ public class FMRadio extends Activity
       {
          item.setVisible(sleepActive && radioOn);
       }
-
       if (!mSpeakerPhoneOn) {
           item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_on);
       }
@@ -611,17 +610,25 @@ public class FMRadio extends Activity
           }
           return false;
    }
-   private void enableSpeaker(){
-       if(mSpeakerPhoneOn){
-           Log.d(LOGTAG, "Speaker phone is turned off");
-           mSpeakerPhoneOn=false;
-           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
-       }else{
-           Log.d(LOGTAG, "Speaker phone is turned on");
-           mSpeakerPhoneOn=true;
-           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
-       }
 
+   private void enableSpeaker() {
+       if(mService != null)
+          {
+           try {
+               if(mSpeakerPhoneOn){
+                   Log.d(LOGTAG, "Speaker phone is turned off");
+                   mSpeakerPhoneOn = false;
+                   mService.enableSpeaker(mSpeakerPhoneOn);
+               }else{
+                   Log.d(LOGTAG, "Speaker phone is turned on");
+                   mSpeakerPhoneOn = true;
+                   mService.enableSpeaker(mSpeakerPhoneOn);
+               }
+           } catch (RemoteException e)
+           {
+                e.printStackTrace();
+           }
+       }
    }
 
    private static final int RECORDTIMER_EXPIRED = 0x1003;
@@ -1782,6 +1789,11 @@ public class FMRadio extends Activity
       {
          try
          {
+            if( mSpeakerPhoneOn )
+            {
+                mSpeakerPhoneOn = false;
+                mService.enableSpeaker( mSpeakerPhoneOn );
+            }
             bStatus = mService.fmOff();
             enableRadioOnOffUI();
             if(bStatus == false)
@@ -1859,8 +1871,6 @@ public class FMRadio extends Activity
       }
    }
 
-
-
    private void startRecording() {
       if(mService != null)
       {
@@ -1893,7 +1903,6 @@ public class FMRadio extends Activity
              }
           }
    }
-
 
    private boolean isRecording() {
       mRecording = false;
