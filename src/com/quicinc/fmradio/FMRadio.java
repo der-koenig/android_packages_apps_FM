@@ -165,7 +165,6 @@ public class FMRadio extends Activity
    private static final int CMD_SET_AUTOAF = 13;
    private static final int CMD_GET_INTERNALANTENNA_MODE = 14;
 
-
    private static final int PRESETS_OPTIONS_TUNE = 0;
    private static final int PRESETS_OPTIONS_REPLACE = 1;
    private static final int PRESETS_OPTIONS_RENAME = 2;
@@ -402,6 +401,7 @@ public class FMRadio extends Activity
       MenuItem item;
       boolean radioOn = isFmOn();
       boolean recording = isRecording();
+      boolean mSpeakerPhoneOn = isSpeakerEnabled();
       boolean sleepActive = isSleepTimerActive();
       boolean searchActive = isScanActive() || isSeekActive();
 
@@ -476,6 +476,7 @@ public class FMRadio extends Activity
       MenuItem item;
       boolean radioOn = isFmOn();
       boolean recording = isRecording();
+      boolean mSpeakerPhoneOn = isSpeakerEnabled();
       boolean searchActive = isScanActive() || isSeekActive();
 
       item = menu.findItem(MENU_SCAN_START);
@@ -1919,6 +1920,21 @@ public class FMRadio extends Activity
          }
       }
       return(mRecording);
+   }
+
+   private boolean isSpeakerEnabled() {
+      boolean speakerEnabled = false;
+      if(mService != null)
+      {
+         try
+         {
+             speakerEnabled = mService.isSpeakerEnabled();
+         } catch (RemoteException e)
+         {
+             e.printStackTrace();
+         }
+      }
+      return(speakerEnabled);
    }
 
    private void addToPresets() {

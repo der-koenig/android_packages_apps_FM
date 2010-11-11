@@ -803,6 +803,11 @@ public class FMRadioService extends Service
          return(mService.get().isFmRecordingOn());
       }
 
+      public boolean isSpeakerEnabled()
+      {
+         return(mService.get().isSpeakerEnabled());
+      }
+
       public boolean fmReconfigure()
       {
          return(mService.get().fmReconfigure());
@@ -1060,6 +1065,9 @@ public class FMRadioService extends Service
       return mFmRecordingOn;
    }
 
+   public boolean isSpeakerEnabled() {
+      return mSpeakerPhoneOn;
+   }
    public void enableSpeaker(boolean speakerOn) {
        mSpeakerPhoneOn = speakerOn;
        if (speakerOn) {

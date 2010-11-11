@@ -8,6 +8,7 @@ interface IFMRadioService
     boolean fmOff();
     boolean isFmOn();
     boolean isFmRecordingOn();
+    boolean isSpeakerEnabled();
     boolean fmReconfigure();
     void registerCallbacks(IFMRadioServiceCallbacks cb);
     void unregisterCallbacks();
