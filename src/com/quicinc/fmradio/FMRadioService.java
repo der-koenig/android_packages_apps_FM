@@ -1028,11 +1028,15 @@ public class FMRadioService extends Service
    */
    private boolean fmOff() {
       boolean bStatus=false;
-      if ( mSpeakerPhoneOn) {
+      if ( mSpeakerPhoneOn)
+      {
           mSpeakerPhoneOn = false;
           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
       }
-
+      if (isFmRecordingOn())
+      {
+          stopRecording();
+      }
       AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
       if(audioManager != null)
       {
