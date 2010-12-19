@@ -1,3 +1,5 @@
+ifneq ($(BUILD_ID), GINGERBREAD)
+
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -11,3 +13,5 @@ LOCAL_PACKAGE_NAME := FM
 LOCAL_CERTIFICATE := platform
 
 include $(BUILD_PACKAGE)
+
+endif
