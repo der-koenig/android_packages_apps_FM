@@ -209,7 +209,6 @@ public class FMRadio extends Activity
 
    // default audio device - speaker
    private static int mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET;
-   private static boolean mSpeakerPhoneOn = false;
 
 
    /* Current Status Indicators */
@@ -615,17 +614,17 @@ public class FMRadio extends Activity
    }
 
    private void enableSpeaker() {
+    //This method with toggle Speaker phone based on existing state .
+       boolean bSpeakerPhoneOn = isSpeakerEnabled();
        if(mService != null)
           {
            try {
-               if(mSpeakerPhoneOn){
-                   Log.d(LOGTAG, "Speaker phone is turned off");
-                   mSpeakerPhoneOn = false;
-                   mService.enableSpeaker(mSpeakerPhoneOn);
-               }else{
+               if(bSpeakerPhoneOn){  // as Speaker is already on turn it off.
+                   mService.enableSpeaker(false);
+                   Log.d(LOGTAG, "Speaker phone is  turned off");
+               }else{ // as Speaker is off turn it on.
+                   mService.enableSpeaker(true);
                    Log.d(LOGTAG, "Speaker phone is turned on");
-                   mSpeakerPhoneOn = true;
-                   mService.enableSpeaker(mSpeakerPhoneOn);
                }
            } catch (RemoteException e)
            {
@@ -1781,6 +1780,7 @@ public class FMRadio extends Activity
 
    private void disableRadio() {
       boolean bStatus = false;
+      boolean bSpeakerPhoneOn = isSpeakerEnabled();
       cancelSearch();
       endSleepTimer();
       if( mRecording )
@@ -1792,10 +1792,9 @@ public class FMRadio extends Activity
       {
          try
          {
-            if( mSpeakerPhoneOn )
+            if( bSpeakerPhoneOn )
             {
-                mSpeakerPhoneOn = false;
-                mService.enableSpeaker( mSpeakerPhoneOn );
+                mService.enableSpeaker(false);
             }
             bStatus = mService.fmOff();
             enableRadioOnOffUI();
