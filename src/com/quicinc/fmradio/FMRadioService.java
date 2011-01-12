@@ -584,69 +584,61 @@ public class FMRadioService extends Service
        values.put(MediaStore.Audio.Playlists.Members.AUDIO_ID, audioId);
        resolver.insert(uri, values);
    }
-
+   private void fmActionOnCallState( int state ) {
+   //if Call Status is non IDLE we need to Mute FM as well stop recording if
+   //any. Similarly once call is ended FM should be unmuted.
+       AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+       if((TelephonyManager.CALL_STATE_OFFHOOK == state)||
+          (TelephonyManager.CALL_STATE_RINGING == state)) {
+           if (state == TelephonyManager.CALL_STATE_RINGING) {
+               int ringvolume = audioManager.getStreamVolume(AudioManager.STREAM_RING);
+               if (ringvolume == 0) {
+                   return;
+               }
+           }
+           stopRecording();
+           stopFM();
+           mResumeAfterCall = true;
+           try
+           {
+              if(mCallbacks != null)
+              {
+                 mCallbacks.onMute(true);
+              }
+           } catch (RemoteException e)
+           {
+              e.printStackTrace();
+           }
+       }
+       else if (state == TelephonyManager.CALL_STATE_IDLE) {
+          // start playing again
+          if (mResumeAfterCall)
+          {
+             // resume playback only if FM Radio was playing
+             // when the call was answered
+             //unMute-FM
+             startFM();
+             mResumeAfterCall = false;
+             try
+             {
+                if(mCallbacks != null)
+                {
+                   mCallbacks.onMute(false);
+                }
+             } catch (RemoteException e)
+             {
+                e.printStackTrace();
+             }
+          }
+       }//idle
+   }
    /* Handle Phone Call + FM Concurrency */
    private PhoneStateListener mPhoneStateListener = new PhoneStateListener() {
       @Override
       public void onCallStateChanged(int state, String incomingNumber) {
           Log.d(LOGTAG, "onCallStateChanged: State - " + state );
           Log.d(LOGTAG, "onCallStateChanged: incomingNumber - " + incomingNumber );
-             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-         if (state == TelephonyManager.CALL_STATE_RINGING) {
-             int ringvolume = audioManager.getStreamVolume(AudioManager.STREAM_RING);
-             if (ringvolume > 0) {
-                stopRecording();
-                stopFM();
-                mResumeAfterCall = true;
-                try
-                {
-                   if(mCallbacks != null)
-                   {
-                      mCallbacks.onMute(true);
-                   }
-                } catch (RemoteException e)
-                {
-                   e.printStackTrace();
-                }
-             }
-         } //ringing
-         else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-             // pause the music while a conversation is in progress
-            stopRecording();
-            stopFM();
-            mResumeAfterCall = true;
-            try
-            {
-               if(mCallbacks != null)
-               {
-                  mCallbacks.onMute(true);
-               }
-            } catch (RemoteException e)
-            {
-               e.printStackTrace();
-            }
-         } //offhook
-         else if (state == TelephonyManager.CALL_STATE_IDLE) {
-            // start playing again
-            if (mResumeAfterCall)
-            {
-               // resume playback only if FM Radio was playing
-               // when the call was answered
-               //unMute-FM
-               startFM();
-               mResumeAfterCall = false;
-               try
-               {
-                  if(mCallbacks != null)
-                  {
-                     mCallbacks.onMute(false);
-                  }
-               } catch (RemoteException e)
-               {
-                  e.printStackTrace();
-               }
-            }
-         }//idle
+          fmActionOnCallState(state );
       }
    };
 
@@ -992,7 +984,14 @@ public class FMRadioService extends Service
             {
                Log.d(LOGTAG, "mAudioManager.setFmRadioOn = true \n" );
                //audioManager.setParameters("FMRadioOn="+mAudioDevice);
-               startFM();
+               TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+               int state =  tmgr.getCallState();
+               if ( TelephonyManager.CALL_STATE_IDLE != state )
+               {
+                 fmActionOnCallState(state);
+               } else {
+                   startFM(); // enable FM Audio only when Call is IDLE
+               }
                Log.d(LOGTAG, "mAudioManager.setFmRadioOn done \n" );
             }
             bStatus = mReceiver.registerRdsGroupProcessing(FmReceiver.FM_RX_RDS_GRP_RT_EBL|
