@@ -36,5 +36,6 @@ interface IFMRadioService
     boolean enableStereo(boolean bEnable);
     boolean isAntennaAvailable();
     boolean isWiredHeadsetAvailable();
+    boolean isCallActive();
 }
 

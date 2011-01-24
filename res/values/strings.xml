@@ -165,6 +165,7 @@
         </string>
         <string name="fm_cmd_failed_msg_hdmi">FM operation failed. FM and HDMI concurrecny is not supported.
         </string>
+        <string name="fm_cmd_failed_call_on">FM operation failed. FM audio is not allowed during call. </string>
 
     <skip/>
     <!-- Do not translate. Duration format. -->

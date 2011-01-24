@@ -121,6 +121,8 @@ public class FMRadio extends Activity
    private static final int DIALOG_CMD_TIMEOUT = 12;
    private static final int DIALOG_CMD_FAILED = 13;
    private static final int DIALOG_CMD_FAILED_HDMI_ON = 14;
+   private static final int DIALOG_CMD_FAILED_CALL_ON = 15;
+
 
    /* Activity Return ResultIdentifiers */
    private static final int ACTIVITY_RESULT_SETTINGS = 1;
@@ -822,6 +824,9 @@ public class FMRadio extends Activity
       case DIALOG_CMD_FAILED_HDMI_ON:{
          return createCmdFailedDlgHdmiOn(id);
       }
+      case DIALOG_CMD_FAILED_CALL_ON:{
+          return createCmdFailedDlgCallOn(id);
+      }
       default:
          break;
       }
@@ -964,6 +969,20 @@ public class FMRadio extends Activity
        }
        return bAvailable;
 
+    }
+    boolean isCallActive(){
+        boolean bCallActive = false;
+        if( mService != null)
+        {
+            try
+            {
+                bCallActive = mService.isCallActive();
+            } catch (RemoteException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return bCallActive;
     }
 
    private Dialog createSearchDlg(int id) {
@@ -1550,6 +1569,23 @@ public class FMRadio extends Activity
       return(dlgBuilder.create());
    }
 
+   private Dialog createCmdFailedDlgCallOn(int id) {
+       AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
+       dlgBuilder.setIcon(R.drawable.alert_dialog_icon)
+                 .setTitle(R.string.fm_command_failed_title);
+       dlgBuilder.setMessage(R.string.fm_cmd_failed_call_on);
+
+       dlgBuilder.setPositiveButton(R.string.alert_dialog_ok,
+                                    new DialogInterface.OnClickListener() {
+                                       public void onClick(DialogInterface dialog,
+                                                           int whichButton) {
+                                          removeDialog(DIALOG_CMD_TIMEOUT);
+                                          mCommandFailed = CMD_NONE;
+                                       }
+                                    });
+
+       return(dlgBuilder.create());
+    }
    private void RestoreDefaults() {
       FmSharedPreferences.SetDefaults();
       mPrefs.Save();
@@ -1680,7 +1716,11 @@ public class FMRadio extends Activity
                else
                {
                   mCommandFailed = CMD_MUTE;
-                  showDialog(DIALOG_CMD_FAILED);
+                  if( isCallActive() ) {
+                      showDialog(DIALOG_CMD_FAILED_CALL_ON);
+                  } else {
+                      showDialog(DIALOG_CMD_FAILED);
+                  }
                }
             } catch (RemoteException e)
             {

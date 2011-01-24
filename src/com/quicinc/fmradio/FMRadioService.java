@@ -113,6 +113,8 @@ public class FMRadioService extends Service
    // interval after which we stop the service when idle
    private static final int IDLE_DELAY = 60000;
    private File mA2DPSampleFile = null;
+   //Track FM playback for reenter App usecases
+   private boolean mPlaybackInProgress = false;
    private File mSampleFile = null;
    long mSampleStart = 0;
 
@@ -355,21 +357,34 @@ public class FMRadioService extends Service
 
    private void startFM(){
        Log.d(LOGTAG, "In startFM");
+       if (isCallActive()) { // when Call is active never let audio playback
+           mResumeAfterCall = true;
+           return;
+       }
+       if ( true == mPlaybackInProgress ) // no need to resend event
+           return;
+
        BluetoothA2dp a2dp = new BluetoothA2dp(getApplicationContext());
        if (a2dp.getConnectedSinks().size() != 0) {
            startA2dpPlayback();
            mOverA2DP=true;
        } else {
            Log.d(LOGTAG, "FMRadio: sending the intent");
+           //reason for resending the Speaker option is we are sending
+           //ACTION_FM=1 to AudioManager, the previous state of Speaker we set
+           //need not be retained by the Audio Manager.
+           if(isSpeakerEnabled())
+               enableSpeaker(true);
            Intent intent = new Intent(Intent.ACTION_FM);
            intent.putExtra("state", 1);
            getApplicationContext().sendBroadcast(intent);
        }
+       mPlaybackInProgress = true;
    }
 
    private void stopFM(){
        Log.d(LOGTAG, "In stopFM");
-       if(mOverA2DP==true){
+       if (mOverA2DP==true){
            mOverA2DP=false;
            stopA2dpPlayback();
        }else{
@@ -378,6 +393,7 @@ public class FMRadioService extends Service
            intent.putExtra("state", 0);
            getApplicationContext().sendBroadcast(intent);
        }
+       mPlaybackInProgress = false;
    }
 
    public boolean startRecording() {
@@ -456,12 +472,22 @@ public class FMRadioService extends Service
    public void stopA2dpPlayback() {
        if (mA2dp == null)
            return;
-      if(mA2DPSampleFile != null)
-            mA2DPSampleFile.delete();
-       mA2dp.stop();
-       mA2dp.reset();
-       mA2dp.release();
-       mA2dp = null;
+       if(mA2DPSampleFile != null)
+       {
+          try {
+              mA2DPSampleFile.delete();
+          } catch (Exception e) {
+              Log.e(LOGTAG, "Not able to delete file");
+          }
+       }
+       try {
+           mA2dp.stop();
+           mA2dp.reset();
+           mA2dp.release();
+           mA2dp = null;
+       } catch (Exception exception ) {
+           Log.e( LOGTAG, "Stop failed with exception"+ exception);
+       }
        return;
    }
 
@@ -603,6 +629,7 @@ public class FMRadioService extends Service
            {
               if(mCallbacks != null)
               {
+                 mMuted = true;
                  mCallbacks.onMute(true);
               }
            } catch (RemoteException e)
@@ -623,6 +650,7 @@ public class FMRadioService extends Service
              {
                 if(mCallbacks != null)
                 {
+                   mMuted = false;
                    mCallbacks.onMute(false);
                 }
              } catch (RemoteException e)
@@ -925,6 +953,10 @@ public class FMRadioService extends Service
       {
          return(mService.get().isWiredHeadsetAvailable());
       }
+      public boolean isCallActive()
+      {
+          return(mService.get().isCallActive());
+      }
    }
 
    private final IBinder mBinder = new ServiceStub(this);
@@ -980,13 +1012,12 @@ public class FMRadioService extends Service
             FmSharedPreferences.setRecordDuration(0);
 
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            if(audioManager != null)
+            if( (audioManager != null) &&(false == mPlaybackInProgress) )
             {
                Log.d(LOGTAG, "mAudioManager.setFmRadioOn = true \n" );
                //audioManager.setParameters("FMRadioOn="+mAudioDevice);
-               TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-               int state =  tmgr.getCallState();
-               if ( TelephonyManager.CALL_STATE_IDLE != state )
+               int state =  getCallState();
+               if ( TelephonyManager.CALL_STATE_IDLE != getCallState() )
                {
                  fmActionOnCallState(state);
                } else {
@@ -1072,6 +1103,8 @@ public class FMRadioService extends Service
       return mSpeakerPhoneOn;
    }
    public void enableSpeaker(boolean speakerOn) {
+       if(isCallActive())
+           return ;
        mSpeakerPhoneOn = speakerOn;
        if (speakerOn) {
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
@@ -1168,6 +1201,8 @@ public class FMRadioService extends Service
       boolean bCommandSent=true;
       if(isMuted())
           return bCommandSent;
+      if(isCallActive())
+         return false;
       AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
       Log.d(LOGTAG, "mute:");
       if (audioManager != null)
@@ -1186,6 +1221,8 @@ public class FMRadioService extends Service
       boolean bCommandSent=true;
       if(!isMuted())
           return bCommandSent;
+      if(isCallActive())
+         return false;
       Log.d(LOGTAG, "unMute:");
       AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
       if (audioManager != null)
@@ -1194,8 +1231,8 @@ public class FMRadioService extends Service
          audioManager.setStreamMute(AudioManager.STREAM_FM,false);
          if (mResumeAfterCall)
          {
-            //We are unmuting FM in a voice call. Need to enable FM audio routing.
-            startFM();
+             //We are unmuting FM in a voice call. Need to enable FM audio routing.
+             startFM();
          }
       }
       return bCommandSent;
@@ -1606,6 +1643,16 @@ public class FMRadioService extends Service
    public boolean isWiredHeadsetAvailable()
    {
       return (mHeadsetPlugged);
+   }
+   public boolean isCallActive()
+   {
+       if(0 != getCallState()) return true;
+       return false;
+   }
+   public int getCallState()
+   {
+       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+       return tmgr.getCallState();
    }
 
    /* Receiver callbacks back from the FM Stack */
