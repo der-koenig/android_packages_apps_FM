@@ -692,7 +692,7 @@ public class FMRadio extends Activity
          {
              recordTimerExpired = hasRecordTimerExpired();
          }
-         while (recordTimerExpired == false &&  mRecording != false )
+         while (recordTimerExpired == false &&  (false != isRecording()) )
          {
             try
             {

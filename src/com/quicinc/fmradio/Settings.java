@@ -150,16 +150,31 @@ public class Settings extends PreferenceActivity implements
          {
             String[] summaryRecordItems = getResources().getStringArray(
                   R.array.record_durations_entries);
+            int nRecordDuration = 0;
             mRecordDurPreference = new ListPreference(this);
             mRecordDurPreference.setEntries(R.array.record_durations_entries);
             mRecordDurPreference.setEntryValues(R.array.record_duration_values);
             mRecordDurPreference.setDialogTitle(R.string.sel_rec_dur);
             mRecordDurPreference.setKey(RECORD_DURATION_KEY);
             mRecordDurPreference.setTitle(R.string.record_dur);
-            index = FmSharedPreferences.getRecordDuration();
+            nRecordDuration = FmSharedPreferences.getRecordDuration();
             Log
                   .d(LOGTAG, "createPreferenceHierarchy: recordDuration: "
-                        + index);
+                        + nRecordDuration);
+            switch( nRecordDuration ) {
+             case FmSharedPreferences.RECORD_DUR_INDEX_0_VAL:
+                 index =0;
+                 break;
+             case FmSharedPreferences.RECORD_DUR_INDEX_1_VAL:
+                 index =1;
+                 break;
+             case FmSharedPreferences.RECORD_DUR_INDEX_2_VAL:
+                 index =2;
+                 break;
+             case FmSharedPreferences.RECORD_DUR_INDEX_3_VAL:
+                 index =3;
+                 break;
+             }
             // Get the preference and list the value.
             if ((index < 0) || (index >= summaryRecordItems.length)) {
                index = 0;
