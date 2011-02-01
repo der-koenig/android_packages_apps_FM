@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -117,6 +117,11 @@ public class FMRadioService extends Service
    private boolean mPlaybackInProgress = false;
    private File mSampleFile = null;
    long mSampleStart = 0;
+   // Messages handled in FM Service
+   private static final int FM_STOP =1;
+   private static final int RESET_NOTCH_FILTER =2;
+   //Track notch filter settings
+   private boolean mNotchFilterSet = false;
 
    public FMRadioService() {
    }
@@ -128,7 +133,8 @@ public class FMRadioService extends Service
       mPrefs = new FmSharedPreferences(this);
       mCallbacks = null;
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-      tmgr.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+      tmgr.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE |
+                                       PhoneStateListener.LISTEN_DATA_ACTIVITY);
       PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
       mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, this.getClass().getName());
       mWakeLock.setReferenceCounted(false);
@@ -139,6 +145,7 @@ public class FMRadioService extends Service
       // If the service was idle, but got killed before it stopped itself, the
       // system will relaunch it. Make sure it gets stopped again in that case.
       Message msg = mDelayedStopHandler.obtainMessage();
+      msg.what = FM_STOP;
       mDelayedStopHandler.sendMessageDelayed(msg, IDLE_DELAY);
    }
 
@@ -333,6 +340,7 @@ public class FMRadioService extends Service
       // just started but not bound to and nothing is playing
       mDelayedStopHandler.removeCallbacksAndMessages(null);
       Message msg = mDelayedStopHandler.obtainMessage();
+      msg.what = FM_STOP;
       mDelayedStopHandler.sendMessageDelayed(msg, IDLE_DELAY);
    }
 
@@ -668,18 +676,54 @@ public class FMRadioService extends Service
           Log.d(LOGTAG, "onCallStateChanged: incomingNumber - " + incomingNumber );
           fmActionOnCallState(state );
       }
-   };
+
+   @Override
+   public void onDataActivity (int direction) {
+         Log.d(LOGTAG, "onDataActivity - " + direction );
+	if (direction == TelephonyManager.DATA_ACTIVITY_NONE ||
+            direction == TelephonyManager.DATA_ACTIVITY_DORMANT) {
+		if (mReceiver != null) {
+                    Message msg = mDelayedStopHandler.obtainMessage(RESET_NOTCH_FILTER);
+                    mDelayedStopHandler.sendMessageDelayed(msg, 10000);
+                }
+	} else {
+	      if (mReceiver != null) {
+                  if( true == mNotchFilterSet )
+                  {
+                      mDelayedStopHandler.removeMessages(RESET_NOTCH_FILTER);
+                  }
+                  else
+                  {
+                      mReceiver.setNotchFilter(true);
+                      mNotchFilterSet = true;
+                  }
+              }
+	}
+  }
+
+
+ };
 
    private Handler mDelayedStopHandler = new Handler() {
       @Override
       public void handleMessage(Message msg) {
-         // Check again to make sure nothing is playing right now
-         if (isFmOn() || mServiceInUse)
-         {
-            return;
-         }
-         Log.d(LOGTAG, "mDelayedStopHandler: stopSelf");
-         stopSelf(mServiceStartId);
+          switch (msg.what) {
+          case FM_STOP:
+              // Check again to make sure nothing is playing right now
+              if (isFmOn() || mServiceInUse)
+              {
+                   return;
+              }
+              Log.d(LOGTAG, "mDelayedStopHandler: stopSelf");
+              stopSelf(mServiceStartId);
+              break;
+          case RESET_NOTCH_FILTER:
+              if (mReceiver != null) {
+                  mReceiver.setNotchFilter(false);
+                  mNotchFilterSet = false;
+              }
+              break;
+          }
       }
    };
 
@@ -766,6 +810,7 @@ public class FMRadioService extends Service
    private void gotoIdleState() {
       mDelayedStopHandler.removeCallbacksAndMessages(null);
       Message msg = mDelayedStopHandler.obtainMessage();
+      msg.what = FM_STOP;
       mDelayedStopHandler.sendMessageDelayed(msg, IDLE_DELAY);
       //NotificationManager nm =
       //(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -1708,6 +1753,7 @@ public class FMRadioService extends Service
             }
             /* Update the frequency in the StatusBar's Notification */
             startNotification();
+
          }
          catch (RemoteException e)
          {
