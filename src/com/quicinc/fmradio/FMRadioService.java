@@ -373,7 +373,7 @@ public class FMRadioService extends Service
            return;
 
        BluetoothA2dp a2dp = new BluetoothA2dp(getApplicationContext());
-       if (a2dp.getConnectedSinks().size() != 0) {
+       if ((a2dp.getConnectedSinks().size() != 0)&& (!isSpeakerEnabled())) {
            startA2dpPlayback();
            mOverA2DP=true;
        } else {
@@ -1152,6 +1152,16 @@ public class FMRadioService extends Service
        if(isCallActive())
            return ;
        mSpeakerPhoneOn = speakerOn;
+       //Need to turn off BT path when Speaker is set on vice versa.
+       BluetoothA2dp a2dp = new BluetoothA2dp(getApplicationContext());
+       if(a2dp.getConnectedSinks().size() != 0) {
+           if( ((true == mOverA2DP) && (true == speakerOn)) ||
+               ((false == mOverA2DP) && (false == speakerOn)) ) {
+              //disable A2DP playback for speaker option
+               stopFM();
+               startFM();
+           }
+       }
        if (speakerOn) {
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
        }
