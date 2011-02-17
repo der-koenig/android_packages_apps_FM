@@ -1152,6 +1152,9 @@ public class FMRadioService extends Service
        if(isCallActive())
            return ;
        mSpeakerPhoneOn = speakerOn;
+       if (false == speakerOn) {
+           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
+       }
        //Need to turn off BT path when Speaker is set on vice versa.
        BluetoothA2dp a2dp = new BluetoothA2dp(getApplicationContext());
        if(a2dp.getConnectedSinks().size() != 0) {
@@ -1165,9 +1168,7 @@ public class FMRadioService extends Service
        if (speakerOn) {
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
        }
-       else {
-           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
-       }
+
    }
   /*
    *  ReConfigure the FM Setup parameters
