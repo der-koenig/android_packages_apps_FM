@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -50,6 +50,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -105,6 +106,7 @@ public class FMRadio extends Activity
    private static final int MENU_SLEEP_CANCEL = Menu.FIRST + 7;
    private static final int MENU_SETTINGS = Menu.FIRST + 8;
    private static final int MENU_SPEAKER = Menu.FIRST + 9;
+   private static final int MENU_STAT_TEST = Menu.FIRST + 10;
 
    /* Dialog Identifiers */
    private static final int DIALOG_SEARCH = 1;
@@ -211,6 +213,7 @@ public class FMRadio extends Activity
 
    // default audio device - speaker
    private static int mAudioRoute = FMRadioService.RADIO_AUDIO_DEVICE_WIRED_HEADSET;
+   private static boolean mFMStats = false;
 
 
    /* Current Status Indicators */
@@ -452,6 +455,11 @@ public class FMRadio extends Activity
       {
          item.setVisible(sleepActive && radioOn);
       }
+      mFMStats = SystemProperties.getBoolean("persist.fm.stats",false);
+      if(mFMStats) {
+          item = menu.add(0, MENU_STAT_TEST, 0,R.string.menu_stats).setIcon(
+                                                                            android.R.drawable.ic_menu_info_details);
+      }
       if (!mSpeakerPhoneOn) {
           item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_on);
       }
@@ -562,6 +570,11 @@ public class FMRadio extends Activity
                                 ACTIVITY_RESULT_SETTINGS);
          //startActivity(launchPreferencesIntent);
          return true;
+      case MENU_STAT_TEST:
+          Intent launchFMStatIntent = new Intent().setClass(this,
+                                                            FMStats.class);
+          startActivity(launchFMStatIntent);
+          return true;
 
       case MENU_SCAN_START:
          showDialog(DIALOG_SEARCH);

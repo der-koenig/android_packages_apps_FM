@@ -63,6 +63,12 @@
 
 
      <service android:name=".FMTransmitterService" android:exported="true" />
+        <activity android:name=".FMStats"
+                  android:label="@string/test_menu">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
         <service android:name=".FMRadioService" android:exported="true" />
 
 

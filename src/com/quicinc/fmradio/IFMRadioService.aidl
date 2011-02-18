@@ -37,5 +37,8 @@ interface IFMRadioService
     boolean isAntennaAvailable();
     boolean isWiredHeadsetAvailable();
     boolean isCallActive();
+    int getRssi();
+    int getIoC();
+    int getInfDet();
 }
 

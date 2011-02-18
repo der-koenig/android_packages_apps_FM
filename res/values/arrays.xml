@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
- * Copyright (c) 2009, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009, 2011 Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -323,4 +323,10 @@
     <item>United States (88.1MHz To 107.9MHz In 200 Khz Steps)</item>
   </string-array>
 
+<string-array name="test_summary">
+	<item> Get Current Station Parameters</item>
+	<item> Get Station Parameters Repeat 20 times</item>
+	<item> Get Search  station parameters</item>
+	<item> Get FM Band sweep parameters</item>
+</string-array>
 </resources>

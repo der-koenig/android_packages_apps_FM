@@ -1002,6 +1002,18 @@ public class FMRadioService extends Service
       {
           return(mService.get().isCallActive());
       }
+      public int getRssi()
+      {
+          return (mService.get().getRssi());
+      }
+      public int getIoC()
+      {
+          return (mService.get().getIoC());
+      }
+      public int getInfDet()
+      {
+          return (mService.get().getInfDet());
+      }
    }
 
    private final IBinder mBinder = new ServiceStub(this);
@@ -1960,5 +1972,14 @@ public class FMRadioService extends Service
       double frequency = FmSharedPreferences.getTunedFrequency() / 1000.0;
       String frequencyString = getString(R.string.stat_notif_frequency, (""+frequency));
       return frequencyString;
+   }
+   public int getRssi() {
+           return mReceiver.getRssi();
+   }
+   public int getIoC(){
+           return mReceiver.getIoverc();
+   }
+   public int getInfDet(){
+           return mReceiver.getIntDet();
    }
 }
