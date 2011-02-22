@@ -2774,8 +2774,7 @@ public class FMRadio extends Activity
                str = mService.getRadioText();
 
                /* Update only if all the characters are printable */
-               if (TextUtils.isGraphic(str))
-               //if(isStringPrintable(str))
+               if (TextUtils.isPrintableAsciiOnly(str))
                {
                   Log.d(LOGTAG, "mUpdateRadioText: Updatable string: [" + str + "]");
                   mRadioTextTV.setText(str);
@@ -2824,7 +2823,7 @@ public class FMRadio extends Activity
                str = mService.getProgramService();
                /* Update only if all the characters are printable */
                //if(isStringPrintable(str))
-               if (TextUtils.isGraphic(str))
+               if (TextUtils.isPrintableAsciiOnly(str))
                {
                   Log.d(LOGTAG, "mUpdateProgramService: Updatable string: [" + str + "]");
                   mProgramServiceTV.setText(str);
