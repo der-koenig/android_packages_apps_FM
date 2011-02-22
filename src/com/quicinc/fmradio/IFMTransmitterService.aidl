@@ -16,5 +16,8 @@ interface IFMTransmitterService
     boolean cancelSearch();
     String getRadioText();
     boolean isInternalAntennaAvailable();
+    boolean isHeadsetPlugged();
+    boolean isCallActive();
+    String  getPSData();
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -224,6 +224,7 @@ public class Settings extends PreferenceActivity implements
                         mBandPreference.setSummary(summaryBandItems[index]);
                         FmSharedPreferences.setCountry(index);
                         FMRadio.fmConfigure();
+                        FMTransmitterActivity.fmConfigure();
 			curList.clear();
                 } else {
                         if (mRxMode) {

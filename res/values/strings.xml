@@ -29,7 +29,8 @@
 
     <string name="msg_noantenna">Please plug in a Headset to use FM
         Radio </string>
-
+    <string name="msg_headsetpluggedin">Disconnect all Headsets for using FM Tx</string>
+    <string name="msg_callactive">FM Tx is not supported when there is active voice call</string>
     <string name="dialog_sleep_title">Select Auto-Off Sleep Time</string>
         <string name="preset_select_name">Select "<xliff:g id="preset_name">%1$s</xliff:g>"</string>
         <string name="presetlist_select_name">Select "<xliff:g id="presetlist_name">%1$s</xliff:g>"</string>

@@ -35,4 +35,7 @@ interface IFMTransmitterServiceCallbacks
   void onTuneStatusChanged(int frequency);
   void onRadioTextChanged();
   void onSearchListComplete(boolean bStatus);
+  void onReconfigured();
+  void onMetaDataChanged(String str);
+  void onPSInfoSent(String str);
 }
