@@ -1103,6 +1103,10 @@ public class FMRadioService extends Service
          }
          else
          {
+            mReceiver = null; // as enable failed no need to disable
+                              // failure of enable can be because handle
+                              // already open which gets effected if
+                              // we disable
             stop();
          }
       }

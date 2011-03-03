@@ -75,7 +75,7 @@ public class FMTransmitterService extends Service
 
    private static final String FMRADIO_DEVICE_FD_STRING = "/dev/radio0";
    private static final String LOGTAG = "FMTxService";//FMRadio.LOGTAG;
-   private static final String QFM_STRING ="Q FM";
+   private static final String QFM_STRING ="QFMRADIO";
 
    private static FmReceiver mReceiver;
    private static FmTransmitter mTransmitter;
@@ -191,8 +191,10 @@ public class FMTransmitterService extends Service
                  //Set if PI and PTY
                  //as desired
                  if( mTransmitter != null ){
-                     mTransmitter.startRTInfo( intent.getStringExtra("album") +":" + intent.getStringExtra("track") +":"
-                                 + intent.getStringExtra("artist"), FM_TX_PROGRAM_TYPE, FM_TX_PROGRAM_ID );
+                     String szRTStr = intent.getStringExtra("album") +":" + intent.getStringExtra("track") +":"
+                     + intent.getStringExtra("artist");
+                     Log.d(LOGTAG,"RT string size is "+szRTStr.length());
+                     mTransmitter.startRTInfo(szRTStr , FM_TX_PROGRAM_TYPE, FM_TX_PROGRAM_ID );
                  }
                  try {
                      if( mCallbacks != null ) {
