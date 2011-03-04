@@ -489,6 +489,16 @@ public class FMTransmitterService extends Service
 
 
              bStatus = mTransmitter.enable(config);
+             if( false == bStatus ) {
+                Log.e(LOGTAG,"FM Enable failed");
+                return bStatus;
+             }
+             bStatus = mTransmitter.setTxPowerLevel(FmTransmitter.FM_TX_PWR_LEVEL_7);
+
+             if( false == bStatus ) {
+                Log.e(LOGTAG,"FM setPowerLevel failed");
+                return bStatus;
+             }
 
              Log.e(LOGTAG, "FMTx is on: sending the intent");
              Intent intent = new Intent(Intent.ACTION_FM_TX);
