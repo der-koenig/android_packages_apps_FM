@@ -40,5 +40,7 @@ interface IFMRadioService
     int getRssi();
     int getIoC();
     int getInfDet();
+    void delayedStop(long nDuration, int nType);
+    void cancelDelayedStop (int nType);
 }
 

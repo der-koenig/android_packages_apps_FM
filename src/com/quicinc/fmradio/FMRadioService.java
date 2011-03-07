@@ -120,8 +120,12 @@ public class FMRadioService extends Service
    // Messages handled in FM Service
    private static final int FM_STOP =1;
    private static final int RESET_NOTCH_FILTER =2;
+   private static final int STOPSERVICE_ONSLEEP = 3;
+   private static final int STOPRECORD_ONTIMEOUT = 4;
    //Track notch filter settings
    private boolean mNotchFilterSet = false;
+   public static final int STOP_SERVICE = 0;
+   public static final int STOP_RECORD = 1;
 
    public FMRadioService() {
    }
@@ -723,6 +727,12 @@ public class FMRadioService extends Service
                   mNotchFilterSet = false;
               }
               break;
+          case STOPSERVICE_ONSLEEP:
+              fmOff();
+              break;
+          case STOPRECORD_ONTIMEOUT:
+              stopRecording();
+              break;
           }
       }
    };
@@ -1013,6 +1023,14 @@ public class FMRadioService extends Service
       public int getInfDet()
       {
           return (mService.get().getInfDet());
+      }
+      public void delayedStop(long duration, int nType)
+      {
+          mService.get().delayedStop(duration, nType);
+      }
+      public void cancelDelayedStop(int nType)
+      {
+          mService.get().cancelDelayedStop(nType);
       }
    }
 
@@ -1985,5 +2003,15 @@ public class FMRadioService extends Service
    }
    public int getInfDet(){
            return mReceiver.getIntDet();
+   }
+   //handling the sleep and record stop when FM App not in focus
+   private void delayedStop(long duration, int nType) {
+       int whatId = (nType == STOP_SERVICE) ? STOPSERVICE_ONSLEEP: STOPRECORD_ONTIMEOUT ;
+       Message finished = mDelayedStopHandler.obtainMessage(whatId);
+       mDelayedStopHandler.sendMessageDelayed(finished,duration);
+   }
+   private void cancelDelayedStop(int nType) {
+       int whatId = (nType == STOP_SERVICE) ? STOPSERVICE_ONSLEEP: STOPRECORD_ONTIMEOUT ;
+       mDelayedStopHandler.removeMessages(whatId);
    }
 }

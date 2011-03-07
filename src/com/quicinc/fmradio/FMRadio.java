@@ -240,7 +240,6 @@ public class FMRadio extends Activity
    /* Command that failed (Sycnhronous or Asynchronous) */
    private static int mCommandFailed = 0;
 
-
    /** Called when the activity is first created. */
    @Override
    public void onCreate(Bundle savedInstanceState) {
@@ -343,6 +342,34 @@ public class FMRadio extends Activity
    @Override
    public void onStop() {
       Log.d(LOGTAG, "FMRadio: onStop");
+      if(isSleepTimerActive() ) {
+          mSleepUpdateHandlerThread.interrupt();
+          long timeNow = ((SystemClock.elapsedRealtime()));
+          if (timeNow < mSleepAtPhoneTime)
+          {
+              try {
+                if (null != mService) {
+                    mService.delayedStop((mSleepAtPhoneTime - timeNow),FMRadioService.STOP_SERVICE);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+          }
+      }
+      if(isRecordTimerActive() ) {
+          mRecordUpdateHandlerThread.interrupt();
+          long rtimeNow = ((SystemClock.elapsedRealtime()));
+          if (rtimeNow < mRecordDuration)
+          {
+              try {
+                if (null != mService) {
+                    mService.delayedStop((mRecordDuration - rtimeNow), FMRadioService.STOP_RECORD);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+          }
+      }
       super.onStop();
    }
 
@@ -360,6 +387,28 @@ public class FMRadio extends Activity
       catch (RemoteException e)
       {
          e.printStackTrace();
+      }
+      if(isSleepTimerActive()) {
+          Log.d(LOGTAG,"isSleepTimerActive is true");
+          try {
+            if (null != mService) {
+                mService.cancelDelayedStop(FMRadioService.STOP_SERVICE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        initiateSleepThread();
+      }
+      if(isRecordTimerActive()) {
+          Log.d(LOGTAG,"isRecordTimerActive is true");
+          try {
+            if (null != mService) {
+                mService.cancelDelayedStop(FMRadioService.STOP_RECORD);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        initiateRecordThread();
       }
 
    }
@@ -392,7 +441,13 @@ public class FMRadio extends Activity
    @Override
    public void onDestroy() {
       cleanupTimeoutHandler();
-      endSleepTimer();
+      try {
+        if(!mService.isFmOn()) {
+              endSleepTimer();
+          }
+      } catch (RemoteException e) {
+        e.printStackTrace();
+      }
       unbindFromService(this);
       mService = null;
       Log.d(LOGTAG, "onDestroy: unbindFromService completed");
@@ -705,35 +760,30 @@ public class FMRadio extends Activity
          {
              recordTimerExpired = hasRecordTimerExpired();
          }
-         while (recordTimerExpired == false &&  (false != isRecording()) )
+         while (recordTimerExpired == false &&  (!Thread.currentThread().isInterrupted()) )
          {
             try
             {
                Thread.sleep(500);
+               Message statusUpdate = new Message();
+               statusUpdate.what = RECORDTIMER_UPDATE;
+               mUIUpdateHandlerHandler.sendMessage(statusUpdate);
+               recordTimerExpired = hasRecordTimerExpired();
             } catch (InterruptedException e)
             {
                Thread.currentThread().interrupt();
             }
-            Message statusUpdate = new Message();
-            statusUpdate.what = RECORDTIMER_UPDATE;
-            mUIUpdateHandlerHandler.sendMessage(statusUpdate);
-            if( mRecordUntilStopped )
-            {
-                recordTimerExpired = false;
-            }
-            else
-            {
-                recordTimerExpired = hasRecordTimerExpired();
+            if( true == recordTimerExpired) {
+            Message finished = new Message();
+            finished.what = RECORDTIMER_EXPIRED;
+            mUIUpdateHandlerHandler.sendMessage(finished);
             }
          }
-         Message finished = new Message();
-         finished.what = RECORDTIMER_EXPIRED;
-         mUIUpdateHandlerHandler.sendMessage(finished);
       }
    };
 
-   private long mRecordDuration = 0;
-   private long mRecordStartTime = 0;
+   private static long mRecordDuration = 0;
+   private static long mRecordStartTime = 0;
    private boolean mRecordUntilStopped =false;
    private Thread mRecordUpdateHandlerThread = null;
 
@@ -751,8 +801,9 @@ public class FMRadio extends Activity
       }
 
       Log.d(LOGTAG, "Stop Recording in mins : " + mins);
-
-      //mSleepCancelled = false;
+      initiateRecordThread();
+    }
+    private void initiateRecordThread() {
       if (mRecordUpdateHandlerThread == null)
       {
          mRecordUpdateHandlerThread = new Thread(null, doRecordProcessing,
@@ -1859,7 +1910,6 @@ public class FMRadio extends Activity
             }
          } catch (RemoteException e)
          {
-            // TODO Auto-generated catch block
             e.printStackTrace();
          }
       }
@@ -1880,7 +1930,6 @@ public class FMRadio extends Activity
             }
          } catch (RemoteException e)
          {
-            // TODO Auto-generated catch block
             e.printStackTrace();
          }
       }
@@ -1900,7 +1949,6 @@ public class FMRadio extends Activity
             }
          } catch (RemoteException e)
          {
-            // TODO Auto-generated catch block
             e.printStackTrace();
          }
       }
@@ -1920,7 +1968,6 @@ public class FMRadio extends Activity
             }
          } catch (RemoteException e)
          {
-            // TODO Auto-generated catch block
             e.printStackTrace();
          }
       }
@@ -1947,11 +1994,18 @@ public class FMRadio extends Activity
    private void stopRecording() {
        mRecording = false;
        DebugToasts("Stopped Recording", Toast.LENGTH_SHORT);
+       if( null != mRecordUpdateHandlerThread) {
+           mRecordUpdateHandlerThread.interrupt();
+       }
+       if( null != mRecordingMsgTV ) {
+           mRecordingMsgTV.setVisibility(View.INVISIBLE);
+       }
        if(mService != null)
           {
              try
              {
                 mService.stopRecording();
+		mRecordDuration = 0;
              } catch (RemoteException e)
              {
                 e.printStackTrace();
@@ -2402,14 +2456,14 @@ public class FMRadio extends Activity
     * Phone time when the App has to be shut down, calculated based on what the
     * user configured
     */
-   private long mSleepAtPhoneTime = 0;
-   private boolean mSleepCancelled = false;
+   private static long mSleepAtPhoneTime = 0;
 
    private void initiateSleepTimer(long seconds) {
       mSleepAtPhoneTime = (SystemClock.elapsedRealtime()) + (seconds * 1000);
       Log.d(LOGTAG, "Sleep in seconds : " + seconds);
-
-      mSleepCancelled = false;
+      initiateSleepThread();
+   }
+   private void initiateSleepThread() {
       if (mSleepUpdateHandlerThread == null)
       {
          mSleepUpdateHandlerThread = new Thread(null, doSleepProcessing,
@@ -2431,7 +2485,12 @@ public class FMRadio extends Activity
 
    private void endSleepTimer() {
       mSleepAtPhoneTime = 0;
-      mSleepCancelled = true;
+      if( null != mSleepUpdateHandlerThread) {
+          mSleepUpdateHandlerThread.interrupt();
+      }
+      if( null != mSleepMsgTV ) {
+          mSleepMsgTV.setVisibility(View.INVISIBLE);
+      }
       // Log.d(LOGTAG, "endSleepTimer");
    }
 
@@ -2493,12 +2552,9 @@ public class FMRadio extends Activity
          {
          case SLEEPTIMER_EXPIRED: {
                mSleepAtPhoneTime = 0;
-               if (mSleepCancelled != true)
-               {
-                  //Log.d(LOGTAG, "mUIUpdateHandlerHandler - SLEEPTIMER_EXPIRED");
-                  DebugToasts("Turning Off FM Radio", Toast.LENGTH_SHORT);
-                  disableRadio();
-               }
+               //Log.d(LOGTAG, "mUIUpdateHandlerHandler - SLEEPTIMER_EXPIRED");
+               DebugToasts("Turning Off FM Radio", Toast.LENGTH_SHORT);
+               disableRadio();
                return;
             }
          case SLEEPTIMER_UPDATE: {
@@ -2534,23 +2590,25 @@ public class FMRadio extends Activity
    private Runnable doSleepProcessing = new Runnable() {
       public void run() {
          boolean sleepTimerExpired = hasSleepTimerExpired();
-         while (sleepTimerExpired == false)
+         while ((sleepTimerExpired == false)&& (!Thread.currentThread().isInterrupted()) )
          {
             try
             {
                Thread.sleep(500);
-            } catch (InterruptedException e)
-            {
-               Thread.currentThread().interrupt();
-            }
-            Message statusUpdate = new Message();
-            statusUpdate.what = SLEEPTIMER_UPDATE;
-            mUIUpdateHandlerHandler.sendMessage(statusUpdate);
-            sleepTimerExpired = hasSleepTimerExpired();
+               Message statusUpdate = new Message();
+               statusUpdate.what = SLEEPTIMER_UPDATE;
+               mUIUpdateHandlerHandler.sendMessage(statusUpdate);
+               sleepTimerExpired = hasSleepTimerExpired();
+            }catch ( Exception ex ) {
+                Log.d( LOGTAG,  "RunningThread InterruptedException");
+                Thread.currentThread().interrupt();
+            }//try
          }
-         Message finished = new Message();
-         finished.what = SLEEPTIMER_EXPIRED;
-         mUIUpdateHandlerHandler.sendMessage(finished);
+         if( true == sleepTimerExpired) {
+             Message finished = new Message();
+             finished.what = SLEEPTIMER_EXPIRED;
+             mUIUpdateHandlerHandler.sendMessage(finished);
+         }
       }
    };
 
@@ -2603,7 +2661,6 @@ public class FMRadio extends Activity
             }
          } catch (RemoteException e)
          {
-            // TODO Auto-generated catch block
             e.printStackTrace();
          }
       }
@@ -2674,6 +2731,8 @@ public class FMRadio extends Activity
    final Runnable mRadioDisabled = new Runnable() {
       public void run() {
          /* Update UI to FM Off State */
+         endSleepTimer();
+         stopRecording();
          enableRadioOnOffUI(false);
       }
    };
