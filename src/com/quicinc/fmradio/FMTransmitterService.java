@@ -842,6 +842,9 @@ public class FMTransmitterService extends Service
       if(null != mTransmitter ) {
           bAvailable = mTransmitter.getInternalAntenna();
           Log.d(LOGTAG, "internalAntennaAvailable: " + bAvailable);
+      } else if( null != mReceiver ) {
+          bAvailable = mReceiver.getInternalAntenna();
+          Log.d(LOGTAG, "internalAntennaAvailable: " + bAvailable);
       }
       return bAvailable;
    }

@@ -710,7 +710,7 @@ public class FMTransmitterActivity extends Activity {
                                 else if(!isFmOn() ) {
                                     mService.fmOn();
                                     tuneRadio(mTunedFrequency);
-							    }
+                                }
 
                                 enableRadioOnOffUI();
                         } catch (RemoteException e) {
@@ -742,7 +742,14 @@ public class FMTransmitterActivity extends Activity {
         }
 
         private void enableRadioOnOffUI() {
-                boolean bEnable = isFmOn();
+                boolean bEnable = true;
+                //decide enable or disable UI based on
+                //Tx Service status.This is valid only
+                // when search is not in progress. When
+                // search is in progress UI should be active
+                if( false == isSearchActive() ) {
+                    bEnable = isFmOn();
+                }
                 /* Disable if no antenna/headset is available */
                 if (!readInternalAntennaAvailable()) {
                     Log.d(LOGTAG,"finding internal antenna avialable as false");
