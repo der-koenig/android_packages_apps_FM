@@ -708,6 +708,11 @@ public class FMRadio extends Activity
 
    private boolean hasRecordTimerExpired() {
       boolean expired = true;
+
+      /* If record duration is 'until stopped' then return false and exit */
+      if ( mRecordUntilStopped )
+          return false;
+
       if (isRecordTimerActive())
       {
          long timeNow = ((SystemClock.elapsedRealtime()));
