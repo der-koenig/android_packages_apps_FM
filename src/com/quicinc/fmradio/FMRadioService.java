@@ -515,6 +515,15 @@ public class FMRadioService extends Service
        if (sampleLength == 0)
            return;
        this.addToMediaDB(mSampleFile);
+       try
+       {
+           if((mServiceInUse) && (mCallbacks != null) ) {
+               mCallbacks.onRecordingStopped();
+	   }
+       } catch (RemoteException e)
+       {
+           e.printStackTrace();
+       }
        return;
    }
 
