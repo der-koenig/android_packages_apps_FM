@@ -749,6 +749,10 @@ public class FMStats extends Activity  {
           {
              Log.d(LOGTAG, "mServiceCallbacks.onStationRDSSupported :" + bRDSSupported);
           }
+          public void onRecordingStopped()
+          {
+             Log.d(LOGTAG, "mServiceCallbacks.onDisabled :");
+          }
       };
       /* Radio Vars */
      final Handler mHandler = new Handler();

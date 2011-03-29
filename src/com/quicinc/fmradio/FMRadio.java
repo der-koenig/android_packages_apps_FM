@@ -3255,5 +3255,16 @@ public class FMRadio extends Activity
             mTunedStation.setRDSSupported(true);
          }
       }
+      public void onRecordingStopped()
+      {
+         Log.d(LOGTAG, "mServiceCallbacks.onDisabled :");
+         if( null != mRecordUpdateHandlerThread) {
+             mRecordUpdateHandlerThread.interrupt();
+         }
+         if( null != mRecordingMsgTV ) {
+             mRecordingMsgTV.setVisibility(View.INVISIBLE);
+         }
+
+      }
    };
 }
