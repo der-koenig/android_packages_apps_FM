@@ -36,8 +36,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.bluetooth.BluetoothA2dp;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -70,7 +68,7 @@ import android.provider.MediaStore;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
-
+import com.quicinc.utils.A2dpDeviceStatus;
 
 /**
  * Provides "background" FM Radio (that uses the hardware) capabilities,
@@ -126,6 +124,8 @@ public class FMRadioService extends Service
    private boolean mNotchFilterSet = false;
    public static final int STOP_SERVICE = 0;
    public static final int STOP_RECORD = 1;
+   // A2dp Device Status will be queried through this class
+   A2dpDeviceStatus mA2dpDeviceState = null;
 
    public FMRadioService() {
    }
@@ -143,9 +143,9 @@ public class FMRadioService extends Service
       mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, this.getClass().getName());
       mWakeLock.setReferenceCounted(false);
       /* Register for Screen On/off broadcast notifications */
+      mA2dpDeviceState = new A2dpDeviceStatus(getApplicationContext());
       registerScreenOnOffListener();
       registerHeadsetListener();
-
       // If the service was idle, but got killed before it stopped itself, the
       // system will relaunch it. Make sure it gets stopped again in that case.
       Message msg = mDelayedStopHandler.obtainMessage();
@@ -209,23 +209,17 @@ public class FMRadioService extends Service
                        Log.d(LOGTAG, "    name: " + intent.getStringExtra("name"));
                        mHeadsetPlugged = (intent.getIntExtra("state", 0) == 1);
                        mHandler.post(mHeadsetPluginHandler);
-                    } else if (action.equals(BluetoothA2dp.ACTION_SINK_STATE_CHANGED)) {
-                        if(mFMOn == true){
-                            int state = intent.getIntExtra(BluetoothA2dp.EXTRA_SINK_STATE,
-                                    BluetoothA2dp.STATE_DISCONNECTED);
-                            if(state != BluetoothA2dp.STATE_CONNECTED && state != BluetoothA2dp.STATE_PLAYING) {
-                                if(mOverA2DP == true) {
-                                    stopFM();
-                                    startFM();
-                                }
-                            } else if (state == BluetoothA2dp.STATE_CONNECTED ||
-                                    state == BluetoothA2dp.STATE_PLAYING){
-                                if(mOverA2DP == false) {
-                                    stopFM();
-                                    startFM();
-                                }
-                            }
-                        }
+                    } else if(mA2dpDeviceState.isA2dpStateChange(action)) {
+                        boolean  bA2dpConnected =
+                        mA2dpDeviceState.isConnected(intent);
+                       //when playback is overA2Dp and A2dp disconnected
+                       //when playback is not overA2DP and A2DP Connected
+                       // In above two cases we need to Stop and Start FM which
+                       // will take care of audio routing
+                       if( true == ((bA2dpConnected)^(mOverA2DP)) ) {
+                           stopFM();
+                           startFM();
+                       }
                     } else if (action.equals("HDMI_CONNECTED")) {
                         //FM should be off when HDMI is connected.
                         fmOff();
@@ -247,7 +241,7 @@ public class FMRadioService extends Service
             };
             IntentFilter iFilter = new IntentFilter();
             iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
-            iFilter.addAction(BluetoothA2dp.ACTION_SINK_STATE_CHANGED);
+            iFilter.addAction(mA2dpDeviceState.getActionSinkStateChangedString());
             iFilter.addAction("HDMI_CONNECTED");
             iFilter.addCategory(Intent.CATEGORY_DEFAULT);
             registerReceiver(mHeadsetReceiver, iFilter);
@@ -376,8 +370,8 @@ public class FMRadioService extends Service
        if ( true == mPlaybackInProgress ) // no need to resend event
            return;
 
-       BluetoothA2dp a2dp = new BluetoothA2dp(getApplicationContext());
-       if ((a2dp.getConnectedSinks().size() != 0)&& (!isSpeakerEnabled())) {
+       if ( (true == mA2dpDeviceState.isDeviceAvailable()) &&
+            (!isSpeakerEnabled())) {
            startA2dpPlayback();
            mOverA2DP=true;
        } else {
@@ -692,26 +686,26 @@ public class FMRadioService extends Service
 
    @Override
    public void onDataActivity (int direction) {
-         Log.d(LOGTAG, "onDataActivity - " + direction );
-	if (direction == TelephonyManager.DATA_ACTIVITY_NONE ||
-            direction == TelephonyManager.DATA_ACTIVITY_DORMANT) {
-		if (mReceiver != null) {
+      Log.d(LOGTAG, "onDataActivity - " + direction );
+      if (direction == TelephonyManager.DATA_ACTIVITY_NONE ||
+          direction == TelephonyManager.DATA_ACTIVITY_DORMANT) {
+              if (mReceiver != null) {
                     Message msg = mDelayedStopHandler.obtainMessage(RESET_NOTCH_FILTER);
                     mDelayedStopHandler.sendMessageDelayed(msg, 10000);
-                }
-	} else {
-	      if (mReceiver != null) {
-                  if( true == mNotchFilterSet )
-                  {
-                      mDelayedStopHandler.removeMessages(RESET_NOTCH_FILTER);
-                  }
-                  else
-                  {
-                      mReceiver.setNotchFilter(true);
-                      mNotchFilterSet = true;
-                  }
               }
-	}
+      } else {
+            if (mReceiver != null) {
+                if( true == mNotchFilterSet )
+                {
+                    mDelayedStopHandler.removeMessages(RESET_NOTCH_FILTER);
+                }
+                else
+                {
+                    mReceiver.setNotchFilter(true);
+                    mNotchFilterSet = true;
+                }
+            }
+      }
   }
 
 
@@ -1199,8 +1193,7 @@ public class FMRadioService extends Service
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
        }
        //Need to turn off BT path when Speaker is set on vice versa.
-       BluetoothA2dp a2dp = new BluetoothA2dp(getApplicationContext());
-       if(a2dp.getConnectedSinks().size() != 0) {
+       if(true == mA2dpDeviceState.isDeviceAvailable()) {
            if( ((true == mOverA2DP) && (true == speakerOn)) ||
                ((false == mOverA2DP) && (false == speakerOn)) ) {
               //disable A2DP playback for speaker option

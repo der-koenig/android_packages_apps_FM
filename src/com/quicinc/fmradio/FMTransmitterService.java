@@ -53,7 +53,6 @@ import android.widget.RemoteViews;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
-import android.bluetooth.BluetoothA2dp;
 
 import android.hardware.fmradio.FmReceiver;
 import android.hardware.fmradio.FmTransmitter;
@@ -61,6 +60,7 @@ import android.hardware.fmradio.FmRxEvCallbacksAdaptor;
 import android.hardware.fmradio.FmTransmitterCallbacksAdaptor;
 import android.hardware.fmradio.FmRxRdsData;
 import android.hardware.fmradio.FmConfig;
+import com.quicinc.utils.A2dpDeviceStatus;
 
 /**
  * Provides "background" FM Radio (that uses the hardware) capabilities,
@@ -96,6 +96,8 @@ public class FMTransmitterService extends Service
    final Handler mHandler = new Handler();
    private BroadcastReceiver mHeadsetReceiver = null;
    boolean mHeadsetPlugged = false;
+   // Track A2dp Device status changes
+   private A2dpDeviceStatus mA2dpDeviceState = null;
    // interval after which we stop the service when idle
    private static final int IDLE_DELAY = 60000;
 
@@ -119,6 +121,8 @@ public class FMTransmitterService extends Service
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
       tmgr.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 
+      //register for A2DP utility interface
+      mA2dpDeviceState = new A2dpDeviceStatus(getApplicationContext());
       Message msg = mDelayedStopHandler.obtainMessage();
       mDelayedStopHandler.sendMessageDelayed(msg, IDLE_DELAY);
       registerHeadsetListener();
@@ -468,7 +472,7 @@ public class FMTransmitterService extends Service
       }
       if (mTransmitter != null)
       {
-	     if (isFmOn())
+         if (isFmOn())
          {
             /* FM Is already on,*/
             bStatus = true;
@@ -506,25 +510,25 @@ public class FMTransmitterService extends Service
              getApplicationContext().sendBroadcast(intent);
 
 
-		 }
+         }
 
-		 if(true == bStatus )
-		 {
-	            bStatus = mTransmitter.setRdsOn();
-	            if( true != bStatus ) {
-	                Log.d(LOGTAG, "FMTx setRdsOn failed");
-	            } else {
-	                if(false == mTransmitter.getInternalAntenna()) {
-	                    Log.d(LOGTAG, "Setting internal antenna explicitly");
-	                    mTransmitter.setInternalAntenna(true);
-	                }
-	                startNotification();
-	            }
-		 }
-		 else
-		 {
-		     stop();
-		 }
+         if(true == bStatus )
+         {
+                bStatus = mTransmitter.setRdsOn();
+                if( true != bStatus ) {
+                    Log.d(LOGTAG, "FMTx setRdsOn failed");
+                } else {
+                    if(false == mTransmitter.getInternalAntenna()) {
+                        Log.d(LOGTAG, "Setting internal antenna explicitly");
+                        mTransmitter.setInternalAntenna(true);
+                    }
+                    startNotification();
+                }
+         }
+         else
+         {
+             stop();
+         }
       }
       return(bStatus);
    }
@@ -960,17 +964,15 @@ public class FMTransmitterService extends Service
                       mHeadsetPlugged = (intent.getIntExtra("state", 0) == 1);
                       mHandler.post(mChangeFMTxState);
 
-                   } else if (action.equals(BluetoothA2dp.ACTION_SINK_STATE_CHANGED)) {
-
-                       int state = intent.getIntExtra(BluetoothA2dp.EXTRA_SINK_STATE,
-                                   BluetoothA2dp.STATE_DISCONNECTED);
-                       if( state == BluetoothA2dp.STATE_PLAYING ){
+                   } else if ((mA2dpDeviceState.isA2dpPlayStateChange(action))||
+                               (mA2dpDeviceState.isA2dpStateChange(action))) {
+                       if( mA2dpDeviceState.isPlaying(intent) ){
                            mHeadsetPlugged = true;
                            if( mFMOn == true)
                            {
                                mHandler.post(mChangeFMTxState);
                            }
-                       } else if ( state == BluetoothA2dp.STATE_DISCONNECTED) {
+                       } else if( !mA2dpDeviceState.isConnected(intent)) {
                            mHeadsetPlugged = false;
                            if( mFMOn == false) // when FM Tx App open, DISC BT
                            {
@@ -988,7 +990,8 @@ public class FMTransmitterService extends Service
            };
            IntentFilter iFilter = new IntentFilter();
            iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
-           iFilter.addAction(BluetoothA2dp.ACTION_SINK_STATE_CHANGED);
+           iFilter.addAction(mA2dpDeviceState.getActionSinkStateChangedString());
+           iFilter.addAction(mA2dpDeviceState.getActionPlayStateChangedString());
            iFilter.addAction("HDMI_CONNECTED");
            iFilter.addCategory(Intent.CATEGORY_DEFAULT);
            registerReceiver(mHeadsetReceiver, iFilter);
