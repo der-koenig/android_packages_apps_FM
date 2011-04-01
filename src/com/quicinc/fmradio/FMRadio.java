@@ -1860,24 +1860,28 @@ public class FMRadio extends Activity
           {
              try
              {
-                bStatus = mService.fmOn();
-                if(bStatus)
-                {
-                   if(isAntennaAvailable())
-                   {
-                      tuneRadio(FmSharedPreferences.getTunedFrequency());
+                if( false == mService.isFmOn()) {
+                    bStatus = mService.fmOn();
+                    if(bStatus)
+                    {
+                       if(isAntennaAvailable())
+                       {
+                          tuneRadio(FmSharedPreferences.getTunedFrequency());
+                          enableRadioOnOffUI();
+                       }
+                       else
+                       {
+                          disableRadio();
+                       }
+                    }
+                    else
+                    {
+                       Log.e(LOGTAG, " mService.fmOn failed");
+                       mCommandFailed = CMD_FMON;
+                       showDialog(DIALOG_CMD_FAILED);
+                    }
+                } else {
                       enableRadioOnOffUI();
-                   }
-                   else
-                   {
-                      disableRadio();
-                   }
-                }
-                else
-                {
-                   Log.e(LOGTAG, " mService.fmOn failed");
-                   mCommandFailed = CMD_FMON;
-                   showDialog(DIALOG_CMD_FAILED);
                 }
              } catch (RemoteException e)
              {
@@ -1989,10 +1993,11 @@ public class FMRadio extends Activity
             e.printStackTrace();
          }
          //Initiate record timer thread here
-         int durationInMins = FmSharedPreferences.getRecordDuration();
-         Log.e(LOGTAG, " Fected duration:" + durationInMins );
-
-         initiateRecordDurationTimer( durationInMins );
+         if( mRecording == true ) {
+             int durationInMins = FmSharedPreferences.getRecordDuration();
+             Log.e(LOGTAG, " Fected duration:" + durationInMins );
+             initiateRecordDurationTimer( durationInMins );
+         }
       }
    }
 
@@ -2005,17 +2010,16 @@ public class FMRadio extends Activity
        if( null != mRecordingMsgTV ) {
            mRecordingMsgTV.setVisibility(View.INVISIBLE);
        }
-       if(mService != null)
-          {
-             try
-             {
-                mService.stopRecording();
-		mRecordDuration = 0;
-             } catch (RemoteException e)
-             {
-                e.printStackTrace();
-             }
-          }
+       if(mService != null) {
+           try
+           {
+              mService.stopRecording();
+           } catch (RemoteException e)
+           {
+              e.printStackTrace();
+           }
+        }
+        mRecordDuration = 0;
    }
 
    private boolean isRecording() {
@@ -2086,6 +2090,7 @@ public class FMRadio extends Activity
       {
          mTuneStationFrequencyTV.setOnLongClickListener(null);
          mRadioTextScroller.stopScroll();
+         stopRecording();
       }
 
       mForwardButton.setVisibility(((bEnable == true) ? View.VISIBLE
@@ -3262,14 +3267,8 @@ public class FMRadio extends Activity
       }
       public void onRecordingStopped()
       {
-         Log.d(LOGTAG, "mServiceCallbacks.onDisabled :");
-         if( null != mRecordUpdateHandlerThread) {
-             mRecordUpdateHandlerThread.interrupt();
-         }
-         if( null != mRecordingMsgTV ) {
-             mRecordingMsgTV.setVisibility(View.INVISIBLE);
-         }
-
+         Log.d(LOGTAG, "mServiceCallbacks.onRecordingStopped:");
+         stopRecording();
       }
    };
 }

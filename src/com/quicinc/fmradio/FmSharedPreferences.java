@@ -105,6 +105,7 @@ public class FmSharedPreferences
    /* Storage key String */
    private static final String LAST_LIST_INDEX = "last_list_index";
    private static final String PREF_LAST_TUNED_FREQUENCY = "last_frequency";
+   private static final String LAST_RECORD_DURATION = "last_record_duration";
 
 
    private static Map<String, String> mNameMap = new HashMap<String, String>();
@@ -392,6 +393,7 @@ public class FmSharedPreferences
       }
       SharedPreferences sp = mContext.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
       mTunedFrequency = sp.getInt(PREF_LAST_TUNED_FREQUENCY, DEFAULT_NO_FREQUENCY);
+      mRecordDuration = sp.getInt(LAST_RECORD_DURATION, RECORD_DUR_INDEX_0_VAL);
       /* Reset the Lists before reading the preferences */
       mListOfPlists.clear();
 
@@ -492,6 +494,7 @@ public class FmSharedPreferences
 
       /* Save Configuration */
       ed.putInt(FMCONFIG_COUNTRY, mCountry);
+      ed.putInt(LAST_RECORD_DURATION, mRecordDuration);
 
       ed.commit();
    }

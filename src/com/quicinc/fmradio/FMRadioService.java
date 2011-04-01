@@ -513,7 +513,7 @@ public class FMRadioService extends Service
        {
            if((mServiceInUse) && (mCallbacks != null) ) {
                mCallbacks.onRecordingStopped();
-	   }
+       }
        } catch (RemoteException e)
        {
            e.printStackTrace();
@@ -1086,9 +1086,6 @@ public class FMRadioService extends Service
             bStatus = setLowPowerMode(false);
             Log.d(LOGTAG, "setLowPowerMode done, Status :" +  bStatus);
 
-            //Set the default value for Record duration
-            if( false == mPlaybackInProgress)
-                FmSharedPreferences.setRecordDuration(0);
 
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             if( (audioManager != null) &&(false == mPlaybackInProgress) )
