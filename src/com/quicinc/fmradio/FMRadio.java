@@ -2380,18 +2380,10 @@ public class FMRadio extends Activity
                   || (mIsSeeking == true)
                   || (mIsSearching == true))
                {
-                  if(true == mService.cancelSearch())
-                  {
-                      mIsScaning = false;
-                      mIsSeeking = false;
-                      mIsSearching=false;
-                  }
-                  else
-                  {
-                     mCommandFailed = CMD_CANCELSEARCH;
-                     Log.e(LOGTAG, " mService.cancelSearch failed");
-                     showDialog(DIALOG_CMD_FAILED);
-                  }
+                  mService.cancelSearch();
+                  mIsScaning = false;
+                  mIsSeeking = false;
+                  mIsSearching=false;
                }
             } catch (RemoteException e)
             {
@@ -2742,6 +2734,7 @@ public class FMRadio extends Activity
          /* Update UI to FM Off State */
          endSleepTimer();
          stopRecording();
+         cancelSearch();
          enableRadioOnOffUI(false);
       }
    };
