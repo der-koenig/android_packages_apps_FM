@@ -252,7 +252,6 @@ public class FMRadio extends Activity
       Log.d(LOGTAG, "onCreate - Height : "+ getWindowManager().getDefaultDisplay().getHeight()
             + " - Width  : "+ getWindowManager().getDefaultDisplay().getWidth());
 
-      requestWindowFeature(Window.FEATURE_NO_TITLE);
       setContentView(R.layout.fmradio);
       mAnimation = AnimationUtils.loadAnimation(this,
                                                 R.anim.preset_select);
