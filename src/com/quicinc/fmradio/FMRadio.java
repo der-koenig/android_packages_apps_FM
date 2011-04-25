@@ -2089,7 +2089,6 @@ public class FMRadio extends Activity
       {
          mTuneStationFrequencyTV.setOnLongClickListener(null);
          mRadioTextScroller.stopScroll();
-         stopRecording();
       }
 
       mForwardButton.setVisibility(((bEnable == true) ? View.VISIBLE
