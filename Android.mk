@@ -1,3 +1,4 @@
+ifneq ($(BUILD_ID),HMJ19)
 ifeq ($(BOARD_HAVE_QCOM_FM),true)
 
 LOCAL_PATH:= $(call my-dir)
@@ -20,4 +21,5 @@ LOCAL_CERTIFICATE := platform
 
 include $(BUILD_PACKAGE)
 
+endif
 endif
