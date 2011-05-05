@@ -39,7 +39,8 @@ interface IFMRadioService
     boolean isCallActive();
     int getRssi();
     int getIoC();
-    int getInfDet();
+    int getMpxDcc();
+    int getIntDet();
     void delayedStop(long nDuration, int nType);
     void cancelDelayedStop (int nType);
 }

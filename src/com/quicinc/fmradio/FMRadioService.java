@@ -1077,9 +1077,13 @@ public class FMRadioService extends Service
       {
           return (mService.get().getIoC());
       }
-      public int getInfDet()
+      public int getMpxDcc()
       {
-          return (mService.get().getInfDet());
+          return (mService.get().getMpxDcc());
+      }
+      public int getIntDet()
+      {
+          return (mService.get().getIntDet());
       }
       public void delayedStop(long duration, int nType)
       {
@@ -2072,8 +2076,11 @@ public class FMRadioService extends Service
    public int getIoC(){
            return mReceiver.getIoverc();
    }
-   public int getInfDet(){
+   public int getIntDet(){
            return mReceiver.getIntDet();
+   }
+   public int getMpxDcc(){
+           return mReceiver.getMpxDcc();
    }
    //handling the sleep and record stop when FM App not in focus
    private void delayedStop(long duration, int nType) {

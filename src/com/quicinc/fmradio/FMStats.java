@@ -74,6 +74,7 @@ public class FMStats extends Activity  {
       private String mRSSI;
       private String mIoC;
       private String mIntDet;
+      private String mMpxDcc;
 
 
       public void setFreq(String aFreq) {
@@ -107,6 +108,15 @@ public class FMStats extends Activity  {
       public String getIntDet() {
          return mIntDet;
       }
+
+      public void setMpxDcc(String aMpxDcc) {
+         this.mMpxDcc = aMpxDcc;
+      }
+
+      public String getMpxDcc() {
+         return mMpxDcc;
+      }
+
     };
 
     /*constant column header*/
@@ -178,6 +188,7 @@ public class FMStats extends Activity  {
 	mColumnHeader.setFreq("Freq");
 	mColumnHeader.setRSSI("RMSSI");
 	mColumnHeader.setIoC("IoC");
+	mColumnHeader.setMpxDcc("Offset");
 	mColumnHeader.setIntDet("IntDet");
     }
 
@@ -317,11 +328,12 @@ public class FMStats extends Activity  {
         colIoC.setWidth(width/4);
         tr2.addView(colIoC);
 
-        TextView colIntDet = new TextView(getApplicationContext());
-        colIntDet.setText(aRes.getIntDet());
-        colIntDet.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
-        colIntDet.setWidth(width/4);
-        tr2.addView(colIntDet);
+        TextView colMpxDcc = new TextView(getApplicationContext());
+        colMpxDcc.setText(aRes.getMpxDcc());
+        colMpxDcc.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+        colMpxDcc.setWidth(width/4);
+        tr2.addView(colMpxDcc);
+          /* Add row to TableLayout. */
           /* Add row to TableLayout. */
         tl.addView(tr2,new TableLayout.LayoutParams(
              LayoutParams.FILL_PARENT,
@@ -337,6 +349,8 @@ public class FMStats extends Activity  {
              tempStr.append(aRes.getIoC());
              tempStr.append('\t');
              tempStr.append(aRes.getIntDet());
+             tempStr.append('\t');
+             tempStr.append(aRes.getMpxDcc());
              tempStr.append('\n');
              String testStr = new String(tempStr);
              mFileCursor.write(testStr.getBytes());
@@ -401,7 +415,6 @@ public class FMStats extends Activity  {
                 break;
             case SEARCH_TEST:
                 try {
-                    mService.tune(FmSharedPreferences.getLowerLimit());
                     Log.d(LOGTAG, "start scanning\n");
                     mIsSearching = mService.scan(0);
                 } catch (RemoteException e) {
@@ -545,7 +558,8 @@ public class FMStats extends Activity  {
         result.setFreq(Integer.toString(freq));
         byte nRssi =0;
         int nIoC = 0;
-        int nInfDet = 0;
+        int nIntDet = 0;
+        int nMpxDcc = 0;
         if(null != mService) {
         try {
 
@@ -565,16 +579,25 @@ public class FMStats extends Activity  {
         }
 
         try {
-            nInfDet = mService.getInfDet();
+            nMpxDcc = mService.getMpxDcc();
         } catch (RemoteException e)
         {
             e.printStackTrace();
-	        }
+        }
+
+        try {
+            nIntDet = mService.getIntDet();
+
+        } catch (RemoteException e)
+        {
+            e.printStackTrace();
+        }
         }
 
         result.setRSSI(Byte.toString(nRssi));
         result.setIoC(Integer.toString(nIoC));
-        result.setIntDet(Integer.toString(nInfDet));
+        result.setIntDet(Integer.toString(nIntDet));
+        result.setMpxDcc(Integer.toString(nMpxDcc));
 
         return result;
     }
