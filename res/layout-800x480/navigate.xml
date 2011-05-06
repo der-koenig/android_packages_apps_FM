@@ -67,7 +67,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:layout_alignBaseline="@+id/record_msg_tv"
+        android:layout_alignBaseline="@+id/btn_presets_list"
         android:textSize="28sp"
         android:textStyle="bold"
         android:text="@string/default_sleep" />
