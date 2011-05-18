@@ -289,8 +289,9 @@ public class FMRadioService extends Service
                         && (mCallbacks != null))
                 {
                     if (mRadioState) {
-                        fmOn();
-
+                        if( true != fmOn() ) {
+                            return;
+                        }
                         try
                         {
                             mCallbacks.onEnabled();
@@ -649,20 +650,7 @@ public class FMRadioService extends Service
                    return;
                }
            }
-           stopRecording();
-           stopFM();
-           mResumeAfterCall = true;
-           try
-           {
-              mMuted = true;
-              if(mCallbacks != null)
-              {
-                 mCallbacks.onMute(true);
-              }
-           } catch (RemoteException e)
-           {
-              e.printStackTrace();
-           }
+           fmOff();
        }
        else if (state == TelephonyManager.CALL_STATE_IDLE) {
           // start playing again
@@ -1078,6 +1066,9 @@ public class FMRadioService extends Service
    */
    private boolean fmOn() {
       boolean bStatus=false;
+      if ( TelephonyManager.CALL_STATE_IDLE != getCallState() ) {
+         return bStatus;
+      }
 
       if(mReceiver == null)
       {
