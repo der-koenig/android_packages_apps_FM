@@ -41,6 +41,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.media.AudioManager;
+import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.AudioSystem;
 import android.media.MediaRecorder;
 import android.os.Environment;
@@ -120,6 +121,7 @@ public class FMRadioService extends Service
    private static final int RESET_NOTCH_FILTER =2;
    private static final int STOPSERVICE_ONSLEEP = 3;
    private static final int STOPRECORD_ONTIMEOUT = 4;
+   private static final int FOCUSCHANGE = 5;
    //Track notch filter settings
    private boolean mNotchFilterSet = false;
    public static final int STOP_SERVICE = 0;
@@ -163,6 +165,9 @@ public class FMRadioService extends Service
 
       // make sure there aren't any other messages coming
       mDelayedStopHandler.removeCallbacksAndMessages(null);
+      //release the audio focus listener
+      AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+      audioManager.abandonAudioFocus(mAudioFocusListener);
       /* Remove the Screen On/off listener */
       if (mScreenOnOffReceiver != null) {
           unregisterReceiver(mScreenOnOffReceiver);
@@ -326,6 +331,8 @@ public class FMRadioService extends Service
       mServiceInUse = true;
       /* Application/UI is attached, so get out of lower power mode */
       setLowPowerMode(false);
+      if(false == mPlaybackInProgress)
+         startFM();
       Log.d(LOGTAG, "onRebind");
    }
 
@@ -333,6 +340,10 @@ public class FMRadioService extends Service
    public void onStart(Intent intent, int startId) {
       Log.d(LOGTAG, "onStart");
       mServiceStartId = startId;
+      // adding code for audio focus gain.
+      AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+      audioManager.requestAudioFocus(mAudioFocusListener, AudioManager.STREAM_FM,
+              AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
 
       // make sure the service will shut down on its own if it was
       // just started but not bound to and nothing is playing
@@ -369,6 +380,7 @@ public class FMRadioService extends Service
        }
        if ( true == mPlaybackInProgress ) // no need to resend event
            return;
+
 
        if ( (true == mA2dpDeviceState.isDeviceAvailable()) &&
             (!isSpeakerEnabled())) {
@@ -735,6 +747,26 @@ public class FMRadioService extends Service
               break;
           case STOPRECORD_ONTIMEOUT:
               stopRecording();
+              break;
+          case FOCUSCHANGE:
+              switch (msg.arg1) {
+                  case AudioManager.AUDIOFOCUS_LOSS:
+                      Log.v(LOGTAG, "AudioFocus: received AUDIOFOCUS_LOSS");
+                      //intentional fall through.
+                  case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                  case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                      Log.v(LOGTAG, "AudioFocus: received AUDIOFOCUS_LOSS_TRANSIENT");
+                      if(true == mPlaybackInProgress)
+                          stopFM();
+                      break;
+                  case AudioManager.AUDIOFOCUS_GAIN:
+                      Log.v(LOGTAG, "AudioFocus: received AUDIOFOCUS_GAIN");
+                      if(false == mPlaybackInProgress)
+                          startFM();
+                      break;
+                  default:
+                      Log.e(LOGTAG, "Unknown audio focus change code");
+              }
               break;
           }
       }
@@ -2013,4 +2045,9 @@ public class FMRadioService extends Service
        int whatId = (nType == STOP_SERVICE) ? STOPSERVICE_ONSLEEP: STOPRECORD_ONTIMEOUT ;
        mDelayedStopHandler.removeMessages(whatId);
    }
+   private OnAudioFocusChangeListener mAudioFocusListener = new OnAudioFocusChangeListener() {
+       public void onAudioFocusChange(int focusChange) {
+           mDelayedStopHandler.obtainMessage(FOCUSCHANGE, focusChange, 0).sendToTarget();
+       }
+   };
 }

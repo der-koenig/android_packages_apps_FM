@@ -10,7 +10,7 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src/com/quicinc/fmradio) \
 	src/com/quicinc/fmradio/IFMTransmitterService.aidl \
 
 
-ifeq ($(BUILD_ID),HONEYCOMB)
+ifneq (, $(filter HONEYCOMB HMJ19, $(BUILD_ID)))
 LOCAL_SRC_FILES +=  $(call all-java-files-under, src/com/quicinc/hc_utils)
 else
 LOCAL_SRC_FILES +=  $(call all-java-files-under, src/com/quicinc/utils)
