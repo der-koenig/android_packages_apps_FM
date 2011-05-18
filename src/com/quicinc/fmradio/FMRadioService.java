@@ -108,6 +108,11 @@ public class FMRadioService extends Service
    private BroadcastReceiver mScreenOnOffReceiver = null;
    final Handler mHandler = new Handler();
 
+   //PhoneStateListener instances corresponding to each
+   //subscription
+   private PhoneStateListener[] mPhoneStateListener;
+   private int mNosOfSubscriptions;
+
    private FmRxRdsData mFMRxRDSData=null;
    // interval after which we stop the service when idle
    private static final int IDLE_DELAY = 60000;
@@ -139,8 +144,16 @@ public class FMRadioService extends Service
       mPrefs = new FmSharedPreferences(this);
       mCallbacks = null;
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-      tmgr.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE |
+
+      //Track call state and data activity on each subscription
+      mNosOfSubscriptions = TelephonyManager.getPhoneCount();
+      mPhoneStateListener = new PhoneStateListener[mNosOfSubscriptions];
+      for (int i=0; i < mNosOfSubscriptions; i++) {
+          mPhoneStateListener[i] = getPhoneStateListener(i);
+          tmgr.listen(mPhoneStateListener[i], PhoneStateListener.LISTEN_CALL_STATE |
                                        PhoneStateListener.LISTEN_DATA_ACTIVITY);
+      }
+
       PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
       mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, this.getClass().getName());
       mWakeLock.setReferenceCounted(false);
@@ -183,7 +196,11 @@ public class FMRadioService extends Service
       fmOff();
 
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-      tmgr.listen(mPhoneStateListener, 0);
+
+      //Un-Track call state and data activity on each subscription
+      for (int i=0; i < mNosOfSubscriptions; i++) {
+          tmgr.listen(mPhoneStateListener[i], 0);
+      }
 
       Log.d(LOGTAG, "onDestroy: unbindFromService completed");
 
@@ -675,41 +692,44 @@ public class FMRadioService extends Service
           }
        }//idle
    }
-   /* Handle Phone Call + FM Concurrency */
-   private PhoneStateListener mPhoneStateListener = new PhoneStateListener() {
-      @Override
-      public void onCallStateChanged(int state, String incomingNumber) {
-          Log.d(LOGTAG, "onCallStateChanged: State - " + state );
-          Log.d(LOGTAG, "onCallStateChanged: incomingNumber - " + incomingNumber );
-          fmActionOnCallState(state );
-      }
+    /* Handle Phone Call + FM Concurrency */
+    private PhoneStateListener getPhoneStateListener(int subscription) {
+        PhoneStateListener phoneStateListener = new PhoneStateListener(subscription) {
+            @Override
+            public void onCallStateChanged(int state, String incomingNumber) {
+                Log.d(LOGTAG, "onCallStateChanged Received on subscription :" + mSubscription);
+                Log.d(LOGTAG, "onCallStateChanged: State - " + state );
+                Log.d(LOGTAG, "onCallStateChanged: incomingNumber - " + incomingNumber );
+                fmActionOnCallState(state );
+            }
 
-   @Override
-   public void onDataActivity (int direction) {
-      Log.d(LOGTAG, "onDataActivity - " + direction );
-      if (direction == TelephonyManager.DATA_ACTIVITY_NONE ||
-          direction == TelephonyManager.DATA_ACTIVITY_DORMANT) {
-              if (mReceiver != null) {
-                    Message msg = mDelayedStopHandler.obtainMessage(RESET_NOTCH_FILTER);
-                    mDelayedStopHandler.sendMessageDelayed(msg, 10000);
-              }
-      } else {
-            if (mReceiver != null) {
-                if( true == mNotchFilterSet )
-                {
-                    mDelayedStopHandler.removeMessages(RESET_NOTCH_FILTER);
-                }
-                else
-                {
-                    mReceiver.setNotchFilter(true);
-                    mNotchFilterSet = true;
+            @Override
+            public void onDataActivity (int direction) {
+                Log.d(LOGTAG, "onDataActivity Received on subscription :" + mSubscription);
+                Log.d(LOGTAG, "onDataActivity - " + direction );
+                if (direction == TelephonyManager.DATA_ACTIVITY_NONE ||
+                    direction == TelephonyManager.DATA_ACTIVITY_DORMANT) {
+                    if (mReceiver != null) {
+                        Message msg = mDelayedStopHandler.obtainMessage(RESET_NOTCH_FILTER);
+                        mDelayedStopHandler.sendMessageDelayed(msg, 10000);
+                    }
+                } else {
+                    if (mReceiver != null) {
+                        if( true == mNotchFilterSet )
+                        {
+                            mDelayedStopHandler.removeMessages(RESET_NOTCH_FILTER);
+                        }
+                        else
+                        {
+                            mReceiver.setNotchFilter(true);
+                            mNotchFilterSet = true;
+                        }
+                    }
                 }
             }
-      }
-  }
-
-
- };
+        };
+        return phoneStateListener;
+    }
 
    private Handler mDelayedStopHandler = new Handler() {
       @Override
@@ -1116,9 +1136,15 @@ public class FMRadioService extends Service
                Log.d(LOGTAG, "mAudioManager.setFmRadioOn = true \n" );
                //audioManager.setParameters("FMRadioOn="+mAudioDevice);
                int state =  getCallState();
-               if ( TelephonyManager.CALL_STATE_IDLE != getCallState() )
+               if ( TelephonyManager.CALL_STATE_IDLE != state )
                {
-                 fmActionOnCallState(state);
+                 //Incase of multiple subscriptions, call state returned
+                 //is OR of call state on individual subscriptions and
+                 //hence accordingly handled.
+                 fmActionOnCallState((((state & TelephonyManager.CALL_STATE_OFFHOOK) ==
+                                        TelephonyManager.CALL_STATE_OFFHOOK) ?
+                                        TelephonyManager.CALL_STATE_OFFHOOK:
+                                        TelephonyManager.CALL_STATE_RINGING));
                } else {
                    startFM(); // enable FM Audio only when Call is IDLE
                }
@@ -1759,13 +1785,22 @@ public class FMRadioService extends Service
    }
    public boolean isCallActive()
    {
+       //Non-zero: Call state is RINGING or OFFHOOK on the available subscriptions
+       //zero: Call state is IDLE on all the available subscriptions
        if(0 != getCallState()) return true;
        return false;
    }
    public int getCallState()
    {
+       int callState = 0;
+       int currSubCallState = 0;
        TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-       return tmgr.getCallState();
+       for (int i=0; i < mNosOfSubscriptions; i++) {
+           Log.d(LOGTAG, "Subscription: " + i + "Call state" +
+                 (currSubCallState = tmgr.getCallState(i)));
+           callState |= currSubCallState;
+       }
+       return callState;
    }
 
    /* Receiver callbacks back from the FM Stack */

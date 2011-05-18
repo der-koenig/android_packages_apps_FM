@@ -89,6 +89,11 @@ public class FMTransmitterService extends Service
    private boolean mMuted = false;
    private boolean mResumeAfterCall = false;
 
+   //PhoneStateListener instances corresponding to each
+   //subscription
+   private PhoneStateListener[] mPhoneStateListener;
+   private int mNosOfSubscriptions;
+
    private boolean mFMOn = false;
    private int mFMSearchStations = 0;
 
@@ -119,7 +124,14 @@ public class FMTransmitterService extends Service
       // system will relaunch it. Make sure it gets stopped again in that case.
 
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-      tmgr.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+
+      //Track call state on each subscription
+      mNosOfSubscriptions = TelephonyManager.getPhoneCount();
+      mPhoneStateListener = new PhoneStateListener[mNosOfSubscriptions];
+      for (int i=0; i < mNosOfSubscriptions; i++) {
+          mPhoneStateListener[i] = getPhoneStateListener(i);
+          tmgr.listen(mPhoneStateListener[i], PhoneStateListener.LISTEN_CALL_STATE);
+      }
 
       //register for A2DP utility interface
       mA2dpDeviceState = new A2dpDeviceStatus(getApplicationContext());
@@ -152,7 +164,11 @@ public class FMTransmitterService extends Service
       fmOff();
 
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-      tmgr.listen(mPhoneStateListener, 0);
+
+      //Un-Track call state on each subscription
+      for (int i=0; i < mNosOfSubscriptions; i++) {
+          tmgr.listen(mPhoneStateListener[i], 0);
+      }
 
       mWakeLock.release();
       super.onDestroy();
@@ -266,16 +282,21 @@ public class FMTransmitterService extends Service
    }
 
    /* Handle Phone Call + FM Concurrency */
-   private PhoneStateListener mPhoneStateListener = new PhoneStateListener() {
-      @Override
-      public void onCallStateChanged(int state, String incomingNumber) {
-          Log.d(LOGTAG, "onCallStateChanged: State - " + state );
-          Log.d(LOGTAG, "onCallStateChanged: incomingNumber - " + incomingNumber );
-          fmActionOnCallState(state );
-      }
+    private PhoneStateListener getPhoneStateListener(int subscription) {
+        PhoneStateListener phoneStateListener = new PhoneStateListener(subscription) {
+            @Override
+            public void onCallStateChanged(int state, String incomingNumber) {
+                Log.d(LOGTAG, "onCallStateChanged Received on subscription :" + mSubscription);
+                Log.d(LOGTAG, "onCallStateChanged: State - " + state );
+                Log.d(LOGTAG, "onCallStateChanged: incomingNumber - " + incomingNumber );
+                fmActionOnCallState(state );
+            }
 
-      // NEED TO CHECK ACTION TO BE TAKEN ON DATA ACTIVITY
-   };
+            // NEED TO CHECK ACTION TO BE TAKEN ON DATA ACTIVITY
+        };
+        return phoneStateListener;
+    }
+
    private void fmActionOnCallState( int state ) {
        //if Call Status is non IDLE we need to Mute FM as well stop recording if
        //any. Similarly once call is ended FM should be unmuted.
@@ -1048,8 +1069,19 @@ public class FMTransmitterService extends Service
        return mHeadsetPlugged;
    }
    public boolean isCallActive() {
+       int callState = 0;
+       int currSubCallState = 0;
        TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-       if( TelephonyManager.CALL_STATE_IDLE !=tmgr.getCallState() )
+       for (int i=0; i < mNosOfSubscriptions; i++) {
+           Log.d(LOGTAG, "Subscription: " + i + "Call state" +
+                 (currSubCallState = tmgr.getCallState(i)));
+           callState |= currSubCallState;
+       }
+       //Non-zero: Call state is RINGING or OFFHOOK on the available subscriptions
+       //zero: Call state is IDLE on all the available subscriptions
+       //Incase of multiple subscriptions, call state computed above is OR of call state
+       //on individual subscriptions and hence accordingly handled.
+       if( TelephonyManager.CALL_STATE_IDLE != callState )
            return true;
        return false;
    }
