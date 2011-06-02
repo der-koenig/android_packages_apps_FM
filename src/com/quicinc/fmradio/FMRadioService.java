@@ -230,6 +230,14 @@ public class FMRadioService extends Service
                        Log.d(LOGTAG, "    state: " + intent.getIntExtra("state", 0));
                        Log.d(LOGTAG, "    name: " + intent.getStringExtra("name"));
                        mHeadsetPlugged = (intent.getIntExtra("state", 0) == 1);
+                       // if headset is plugged out it is required to disable
+                       // in minimal duration to avoid race conditions with
+                       // audio policy manager switch audio to speaker.
+                       if ((mHeadsetPlugged == false) && (mReceiver != null) &&
+                           (mInternalAntennaAvailable == false)) {
+                          mReceiver.disable();
+                          mReceiver = null;
+                       }
                        mHandler.post(mHeadsetPluginHandler);
                     } else if(mA2dpDeviceState.isA2dpStateChange(action)) {
                         boolean  bA2dpConnected =
