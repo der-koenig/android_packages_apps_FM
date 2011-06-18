@@ -721,6 +721,7 @@ public class FMRadioService extends Service
                }
            }
            fmOff();
+	   mResumeAfterCall = true;
        }
        else if (state == TelephonyManager.CALL_STATE_IDLE) {
           // start playing again
@@ -728,20 +729,25 @@ public class FMRadioService extends Service
           {
              // resume playback only if FM Radio was playing
              // when the call was answered
-             //unMute-FM
-             startFM();
-             mResumeAfterCall = false;
-             try
-             {
-                mMuted = false;
-                if(mCallbacks != null)
+              if ( (isAntennaAvailable())
+                        && (!isFmOn())
+                        && (mServiceInUse)
+                        && (mCallbacks != null))
                 {
-                   mCallbacks.onMute(false);
-                }
-             } catch (RemoteException e)
-             {
-                e.printStackTrace();
-             }
+                    if (mRadioState) {
+                        if( true != fmOn() ) {
+                            return;
+                        }
+                        mResumeAfterCall = false;
+                        try
+                        {
+                            mCallbacks.onEnabled();
+                        } catch (RemoteException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                 }
           }
        }//idle
    }
