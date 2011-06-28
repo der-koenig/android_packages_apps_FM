@@ -119,6 +119,7 @@ public class FMRadioService extends Service
    private File mA2DPSampleFile = null;
    //Track FM playback for reenter App usecases
    private boolean mPlaybackInProgress = false;
+   private boolean mStoppedOnFocusLoss = false;
    private File mSampleFile = null;
    long mSampleStart = 0;
    // Messages handled in FM Service
@@ -246,7 +247,8 @@ public class FMRadioService extends Service
                        //when playback is not overA2DP and A2DP Connected
                        // In above two cases we need to Stop and Start FM which
                        // will take care of audio routing
-                       if( true == ((bA2dpConnected)^(mOverA2DP)) ) {
+                       if( (true == ((bA2dpConnected)^(mOverA2DP))) &&
+                           (false == mStoppedOnFocusLoss) ) {
                            stopFM();
                            startFM();
                        }
@@ -772,13 +774,17 @@ public class FMRadioService extends Service
                   case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                   case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                       Log.v(LOGTAG, "AudioFocus: received AUDIOFOCUS_LOSS_TRANSIENT");
+                      if(true == isFmRecordingOn())
+                          stopRecording();
                       if(true == mPlaybackInProgress)
                           stopFM();
+                      mStoppedOnFocusLoss = true;
                       break;
                   case AudioManager.AUDIOFOCUS_GAIN:
                       Log.v(LOGTAG, "AudioFocus: received AUDIOFOCUS_GAIN");
                       if(false == mPlaybackInProgress)
                           startFM();
+                      mStoppedOnFocusLoss = false;
                       break;
                   default:
                       Log.e(LOGTAG, "Unknown audio focus change code");
