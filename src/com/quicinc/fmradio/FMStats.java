@@ -156,6 +156,7 @@ public class FMStats extends Activity  {
     private static final int SWEEP_TEST =3;
     private Band mBand =null;
     private Band mSync = null;
+    int Lo = 1, Auto = 0;
 
     private FileOutputStream mFileCursor =null;
     private String mCurrentFileName = null;
@@ -602,6 +603,13 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
                 int Spacing = FmSharedPreferences.getChSpacing();
                 int lowerFreq = FmSharedPreferences.getLowerLimit();
                 int higherFreq = FmSharedPreferences.getUpperLimit();
+                try {
+                    Log.d(LOGTAG, "Going to set low side injection\n");
+                    mService.setHiLoInj(Lo);
+                } catch (RemoteException e) {
+
+                    e.printStackTrace();
+                }
                 /* Set it to Ready to stop*/
                 SetButtonState(false);
                 createResult(mColumnHeader);
@@ -711,6 +719,12 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
             mTestRunning = false;
             Message updateStop = new Message();
             updateStop.what = STATUS_DONE;
+            try {
+              Log.d(LOGTAG, "Going to set auto hi-lo injection\n");
+              mService.setHiLoInj(Auto);
+            } catch (RemoteException e) {
+                    e.printStackTrace();
+            }
             mUIUpdateHandlerHandler.sendMessage(updateStop);
        }
     };
