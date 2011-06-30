@@ -407,7 +407,6 @@ public class FMRadio extends Activity
         } catch (Exception e) {
             e.printStackTrace();
         }
-        initiateRecordThread();
       }
 
    }
@@ -3149,6 +3148,9 @@ public class FMRadio extends Activity
             } catch (RemoteException e)
             {
                e.printStackTrace();
+            }
+            if(isRecording()) {
+                initiateRecordThread();
             }
             return;
          } else

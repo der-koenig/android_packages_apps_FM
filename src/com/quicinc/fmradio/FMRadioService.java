@@ -87,6 +87,7 @@ public class FMRadioService extends Service
 
    private FmReceiver mReceiver;
    private BroadcastReceiver mHeadsetReceiver = null;
+   private BroadcastReceiver mSdcardUnmountReceiver = null;
    private boolean mOverA2DP = false;
 
    private IFMRadioServiceCallbacks mCallbacks;
@@ -162,6 +163,7 @@ public class FMRadioService extends Service
       mA2dpDeviceState = new A2dpDeviceStatus(getApplicationContext());
       registerScreenOnOffListener();
       registerHeadsetListener();
+      registerExternalStorageListener();
       // If the service was idle, but got killed before it stopped itself, the
       // system will relaunch it. Make sure it gets stopped again in that case.
       Message msg = mDelayedStopHandler.obtainMessage();
@@ -210,6 +212,37 @@ public class FMRadioService extends Service
       super.onDestroy();
    }
 
+/**
+      * Registers an intent to listen for ACTION_MEDIA_UNMOUNTED notifications.
+      * The intent will call closeExternalStorageFiles() if the external media
+      * is going to be ejected, so applications can clean up.
+      */
+     public void registerExternalStorageListener() {
+         if (mSdcardUnmountReceiver == null) {
+             mSdcardUnmountReceiver = new BroadcastReceiver() {
+                 @Override
+                 public void onReceive(Context context, Intent intent) {
+                     String action = intent.getAction();
+                     if (action.equals(Intent.ACTION_MEDIA_UNMOUNTED) ) {
+                         Log.d(LOGTAG, "ACTION_MEDIA_UNMOUNTED Intent received");
+                         if (mFmRecordingOn == true) {
+                             try {
+                                  if ((mServiceInUse) && (mCallbacks != null) ) {
+                                       mCallbacks.onRecordingStopped();
+                                  }
+                             } catch (RemoteException e) {
+                                  e.printStackTrace();
+                             }
+                         }
+                     }
+                 }
+             };
+             IntentFilter iFilter = new IntentFilter();
+             iFilter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+             iFilter.addDataScheme("file");
+             registerReceiver(mSdcardUnmountReceiver, iFilter);
+         }
+     }
 
 
      /**
@@ -549,7 +582,16 @@ public class FMRadioService extends Service
        int sampleLength = (int)((System.currentTimeMillis() - mSampleStart)/1000 );
        if (sampleLength == 0)
            return;
-       this.addToMediaDB(mSampleFile);
+       String state = Environment.getExternalStorageState();
+       Log.d(LOGTAG, "storage state is " + state);
+
+       if (Environment.MEDIA_MOUNTED.equals(state)) {
+           this.addToMediaDB(mSampleFile);
+       }
+       else{
+           Log.e(LOGTAG, "SD card must have removed during recording. ");
+           Toast.makeText(this, "Recording aborted", Toast.LENGTH_SHORT).show();
+       }
        try
        {
            if((mServiceInUse) && (mCallbacks != null) ) {
