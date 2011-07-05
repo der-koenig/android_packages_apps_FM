@@ -56,6 +56,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+import android.view.KeyEvent;
 
 import android.hardware.fmradio.FmReceiver;
 import android.hardware.fmradio.FmRxEvCallbacksAdaptor;
@@ -87,6 +88,7 @@ public class FMRadioService extends Service
 
    private FmReceiver mReceiver;
    private BroadcastReceiver mHeadsetReceiver = null;
+   private BroadcastReceiver mHeadsetHookListener = null;
    private BroadcastReceiver mSdcardUnmountReceiver = null;
    private boolean mOverA2DP = false;
 
@@ -166,6 +168,9 @@ public class FMRadioService extends Service
       registerScreenOnOffListener();
       registerHeadsetListener();
       registerExternalStorageListener();
+      // registering media button receiver seperately as we need to set
+      // different priority for receiving media events
+      registerMediaButtonReceiver();
       // If the service was idle, but got killed before it stopped itself, the
       // system will relaunch it. Make sure it gets stopped again in that case.
       Message msg = mDelayedStopHandler.obtainMessage();
@@ -195,6 +200,14 @@ public class FMRadioService extends Service
       if (mHeadsetReceiver != null) {
           unregisterReceiver(mHeadsetReceiver);
           mHeadsetReceiver = null;
+      }
+      if( mHeadsetHookListener != null ) {
+          unregisterReceiver(mHeadsetHookListener);
+          mHeadsetHookListener = null;
+      }
+      if( mSdcardUnmountReceiver != null ) {
+          unregisterReceiver(mSdcardUnmountReceiver);
+          mSdcardUnmountReceiver = null;
       }
 
       /* Since the service is closing, disable the receiver */
@@ -307,6 +320,7 @@ public class FMRadioService extends Service
                     } else if( action.equals(Intent.ACTION_SHUTDOWN)) {
                         mAppShutdown = true;
                     }
+
                 }
             };
             IntentFilter iFilter = new IntentFilter();
@@ -318,8 +332,49 @@ public class FMRadioService extends Service
             registerReceiver(mHeadsetReceiver, iFilter);
         }
     }
-
-
+    public void registerMediaButtonReceiver() {
+        if (mHeadsetHookListener == null) {
+            mHeadsetHookListener = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                       Log.d(LOGTAG, "ACTION_MEDIA_BUTTON Intent received");
+                    String action = intent.getAction();
+                    if (action.equals(Intent.ACTION_MEDIA_BUTTON)) {
+                        KeyEvent event = (KeyEvent)
+                              intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                        if (event == null) {
+                            return;
+                        }
+                        int keycode = event.getKeyCode();
+                        if( (KeyEvent.KEYCODE_HEADSETHOOK == keycode) &&
+                             (isFmOn())){
+                            //FM should be off when Headset hook pressed.
+                            fmOff();
+                            try
+                            {
+                                /* Notify the UI/Activity, only if the service is "bound"
+                                   by an activity and if Callbacks are registered
+                                 */
+                                if((mServiceInUse) && (mCallbacks != null) )
+                                {
+                                    mCallbacks.onDisabled();
+                                }
+                            } catch (RemoteException e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            };
+            IntentFilter iFilter = new IntentFilter();
+            iFilter.addAction(Intent.ACTION_MEDIA_BUTTON);
+            iFilter.setPriority(10000); // AudioService registers with 1000 and
+                                        // consume the broadcast so our
+                                        // priority to be higher
+            registerReceiver(mHeadsetHookListener, iFilter);
+        }
+    }
     final Runnable    mHeadsetPluginHandler = new Runnable() {
         public void run() {
             /* Update the UI based on the state change of the headset/antenna*/
