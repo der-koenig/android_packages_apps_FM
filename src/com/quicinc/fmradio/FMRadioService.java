@@ -248,7 +248,8 @@ public class FMRadioService extends Service
                        // In above two cases we need to Stop and Start FM which
                        // will take care of audio routing
                        if( (true == ((bA2dpConnected)^(mOverA2DP))) &&
-                           (false == mStoppedOnFocusLoss) ) {
+                           (false == mStoppedOnFocusLoss) &&
+                           (!isSpeakerEnabled())) {
                            stopFM();
                            startFM();
                        }
