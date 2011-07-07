@@ -283,7 +283,9 @@ public class FMRadioService extends Service
                        // in minimal duration to avoid race conditions with
                        // audio policy manager switch audio to speaker.
                        if ((mHeadsetPlugged == false) && (mReceiver != null) &&
-                           (mInternalAntennaAvailable == false)) {
+                           (mInternalAntennaAvailable == false) &&
+                           (isFmRecordingOn() == false) &&
+                           (mOverA2DP == false)) {
                           mReceiver.disable();
                           mReceiver = null;
                        }
