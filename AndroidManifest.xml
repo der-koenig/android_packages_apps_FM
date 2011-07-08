@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE"/>
 
     <application
         android:icon="@drawable/ic_launcher_fmradio"
@@ -60,6 +61,11 @@
             </intent-filter>
         </activity>
 
+     <receiver android:name="FMTransmitterConfigReceiver">
+            <intent-filter>
+                   <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+  </receiver>
 
 
      <service android:name=".FMTransmitterService" android:exported="true" />
