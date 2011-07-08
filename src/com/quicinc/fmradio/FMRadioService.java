@@ -135,6 +135,8 @@ public class FMRadioService extends Service
    public static final int STOP_RECORD = 1;
    // A2dp Device Status will be queried through this class
    A2dpDeviceStatus mA2dpDeviceState = null;
+   //on shutdown not to send start Intent to AudioManager
+   private boolean mAppShutdown = false;
 
    public FMRadioService() {
    }
@@ -302,6 +304,8 @@ public class FMRadioService extends Service
                         {
                             e.printStackTrace();
                         }
+                    } else if( action.equals(Intent.ACTION_SHUTDOWN)) {
+                        mAppShutdown = true;
                     }
                 }
             };
@@ -309,6 +313,7 @@ public class FMRadioService extends Service
             iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
             iFilter.addAction(mA2dpDeviceState.getActionSinkStateChangedString());
             iFilter.addAction("HDMI_CONNECTED");
+            iFilter.addAction(Intent.ACTION_SHUTDOWN);
             iFilter.addCategory(Intent.CATEGORY_DEFAULT);
             registerReceiver(mHeadsetReceiver, iFilter);
         }
@@ -436,6 +441,9 @@ public class FMRadioService extends Service
 
    private void startFM(){
        Log.d(LOGTAG, "In startFM");
+       if(true == mAppShutdown) { // not to send intent to AudioManager in Shutdown
+           return;
+       }
        if (isCallActive()) { // when Call is active never let audio playback
            mResumeAfterCall = true;
            return;
