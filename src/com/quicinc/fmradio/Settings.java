@@ -204,7 +204,8 @@ public class Settings extends PreferenceActivity implements
 
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                         String key) {
-
+                int mTunedFreq = 0;
+                boolean bStatus = false;
                 if (key.equals(REGIONAL_BAND_KEY)) {
 		       int curListIndex = FmSharedPreferences.getCurrentListIndex();
 		           PresetList curList = FmSharedPreferences.getStationList(curListIndex);
@@ -223,9 +224,9 @@ public class Settings extends PreferenceActivity implements
                                                         + index);
                         mBandPreference.setSummary(summaryBandItems[index]);
                         FmSharedPreferences.setCountry(index);
-                        FMRadio.fmConfigure();
+                        bStatus = FMRadio.fmConfigure();
                         FMTransmitterActivity.fmConfigure();
-			curList.clear();
+                        curList.clear();
                 } else {
                         if (mRxMode) {
                                 if (key.equals(AUTO_AF)) {
@@ -282,10 +283,17 @@ public class Settings extends PreferenceActivity implements
                                 }
                         }
                 }
-                if (mPrefs != null) {
-                        mPrefs.Save();
+                if (mPrefs != null)
+                {
+                        if(bStatus)
+                                mPrefs.Save();
+                        else {
+                                mTunedFreq = FmSharedPreferences.getTunedFrequency();
+                                if (mTunedFreq > FmSharedPreferences.getUpperLimit())
+                                        FmSharedPreferences.setTunedFrequency(FmSharedPreferences.getLowerLimit());
+                                        mPrefs.Save();
+                        }
                 }
-
         }
 
         public boolean onPreferenceClick(Preference preference) {

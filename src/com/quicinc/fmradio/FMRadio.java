@@ -1922,7 +1922,7 @@ public class FMRadio extends Activity
       }
    }
 
-   public static void fmConfigure() {
+   public static boolean fmConfigure() {
       boolean bStatus = false;
       if(mService != null)
       {
@@ -1933,13 +1933,14 @@ public class FMRadio extends Activity
             {
                mCommandFailed = CMD_FMCONFIGURE;
                Log.e(LOGTAG, " mService.fmReconfigure failed");
-               //showDialog(DIALOG_CMD_FAILED);
+               return bStatus;
             }
          } catch (RemoteException e)
          {
             e.printStackTrace();
          }
       }
+      return bStatus;
    }
   public static void fmAutoAFSwitch() {
       boolean bStatus = false;
