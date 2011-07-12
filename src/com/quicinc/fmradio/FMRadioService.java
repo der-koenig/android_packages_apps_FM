@@ -514,13 +514,18 @@ public class FMRadioService extends Service
         mRecorder.setOutputFile(mSampleFile.getAbsolutePath());
         try {
             mRecorder.prepare();
-        } catch (IOException exception) {
+            mRecorder.start();
+        } catch (IOException e) {
+            mRecorder.reset();
+            mRecorder.release();
+            mRecorder = null;
+            return false;
+        } catch (RuntimeException e) {
             mRecorder.reset();
             mRecorder.release();
             mRecorder = null;
             return false;
         }
-        mRecorder.start();
         mFmRecordingOn = true;
         mSampleStart = System.currentTimeMillis();
         return true;
