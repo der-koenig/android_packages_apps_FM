@@ -289,9 +289,10 @@ public class Settings extends PreferenceActivity implements
                                 mPrefs.Save();
                         else {
                                 mTunedFreq = FmSharedPreferences.getTunedFrequency();
-                                if (mTunedFreq > FmSharedPreferences.getUpperLimit())
+                                if (mTunedFreq > FmSharedPreferences.getUpperLimit() || mTunedFreq < FmSharedPreferences.getLowerLimit()) {
                                         FmSharedPreferences.setTunedFrequency(FmSharedPreferences.getLowerLimit());
-                                        mPrefs.Save();
+                                }
+                                mPrefs.Save();
                         }
                 }
         }

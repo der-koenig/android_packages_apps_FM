@@ -1923,7 +1923,7 @@ public class FMRadio extends Activity
    }
 
    public static boolean fmConfigure() {
-      boolean bStatus = false;
+      boolean bStatus = true;
       if(mService != null)
       {
          try
@@ -1933,7 +1933,6 @@ public class FMRadio extends Activity
             {
                mCommandFailed = CMD_FMCONFIGURE;
                Log.e(LOGTAG, " mService.fmReconfigure failed");
-               return bStatus;
             }
          } catch (RemoteException e)
          {
