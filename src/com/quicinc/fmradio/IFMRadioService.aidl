@@ -7,6 +7,7 @@ interface IFMRadioService
     boolean fmOn();
     boolean fmOff();
     boolean isFmOn();
+    boolean isAnalogModeEnabled();
     boolean isFmRecordingOn();
     boolean isSpeakerEnabled();
     boolean fmReconfigure();

@@ -57,6 +57,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 import android.view.KeyEvent;
+import android.os.SystemProperties;
 
 import android.hardware.fmradio.FmReceiver;
 import android.hardware.fmradio.FmRxEvCallbacksAdaptor;
@@ -290,7 +291,8 @@ public class FMRadioService extends Service
                           mReceiver = null;
                        }
                        mHandler.post(mHeadsetPluginHandler);
-                    } else if(mA2dpDeviceState.isA2dpStateChange(action)) {
+                    } else if(mA2dpDeviceState.isA2dpStateChange(action)
+                               && !isAnalogModeSupported()) {
                         boolean  bA2dpConnected =
                         mA2dpDeviceState.isConnected(intent);
                        //when playback is overA2Dp and A2dp disconnected
@@ -791,7 +793,7 @@ public class FMRadioService extends Service
                }
            }
            fmOff();
-	   mResumeAfterCall = true;
+           mResumeAfterCall = true;
        }
        else if (state == TelephonyManager.CALL_STATE_IDLE) {
           // start playing again
@@ -1017,7 +1019,6 @@ public class FMRadioService extends Service
          Log.d(LOGTAG, "getInternalAntenna: " + mInternalAntennaAvailable);
       }
    }
-
    /*
     * By making this a static class with a WeakReference to the Service, we
     * ensure that the Service can be GCd even when the system process still
@@ -1047,6 +1048,11 @@ public class FMRadioService extends Service
       public boolean isFmOn()
       {
          return(mService.get().isFmOn());
+      }
+
+      public boolean isAnalogModeEnabled()
+      {
+         return(mService.get().isAnalogModeEnabled());
       }
 
       public boolean isFmRecordingOn()
@@ -1216,6 +1222,29 @@ public class FMRadioService extends Service
 
    private final IBinder mBinder = new ServiceStub(this);
 
+   private boolean setAudioPath(boolean analogMode) {
+
+        //TODO: Remove check for mReceiver!=null to enable analog mode
+        if (mReceiver == null || mReceiver != null) {
+                return false;
+        }
+        if (isAnalogModeEnabled() == analogMode) {
+                Log.d(LOGTAG,"Analog Path already is set to "+analogMode);
+                return false;
+        }
+        if (!isAnalogModeSupported()) {
+                Log.d(LOGTAG,"Analog Path is not supported ");
+                return false;
+        }
+        boolean state = mReceiver.setAnalogMode(analogMode);
+        if (false == state) {
+            Log.d(LOGTAG, "Error in toggling analog/digital path " + analogMode);
+            return false;
+        }
+        stopFM();
+        startFM();
+        return true;
+   }
   /*
    * Turn ON FM: Powers up FM hardware, and initializes the FM module
    *                                                                                 .
@@ -1257,6 +1286,7 @@ public class FMRadioService extends Service
             Log.d(LOGTAG, "fmOn: LowerLimit  :"+ config.getLowerLimit());
             Log.d(LOGTAG, "fmOn: UpperLimit  :"+ config.getUpperLimit());
             bStatus = mReceiver.enable(FmSharedPreferences.getFMConfiguration());
+            setAudioPath(true);
             Log.d(LOGTAG, "mReceiver.enable done, Status :" +  bStatus);
          }
 
@@ -1361,6 +1391,15 @@ public class FMRadioService extends Service
       return mFMOn;
    }
 
+   /* Returns true if Analog Path is enabled */
+   public boolean isAnalogModeEnabled() {
+       return SystemProperties.getBoolean("hw.fm.isAnalog",false);
+   }
+
+   public boolean isAnalogModeSupported() {
+      return SystemProperties.getBoolean("ro.fm.analogpath.supported",false);
+   }
+
    public boolean isFmRecordingOn() {
       return mFmRecordingOn;
    }
@@ -1373,6 +1412,7 @@ public class FMRadioService extends Service
            return ;
        mSpeakerPhoneOn = speakerOn;
        if (false == speakerOn) {
+           setAudioPath(true);
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
        }
        //Need to turn off BT path when Speaker is set on vice versa.
@@ -1385,6 +1425,7 @@ public class FMRadioService extends Service
            }
        }
        if (speakerOn) {
+           setAudioPath(false);
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
        }
 

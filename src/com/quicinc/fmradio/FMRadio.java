@@ -356,7 +356,11 @@ public class FMRadio extends Activity
           }
       }
       if(isRecordTimerActive() ) {
-          mRecordUpdateHandlerThread.interrupt();
+          try {
+               mRecordUpdateHandlerThread.interrupt();
+          } catch (NullPointerException e) {
+               e.printStackTrace();
+          }
           long rtimeNow = ((SystemClock.elapsedRealtime()));
           if (rtimeNow < mRecordDuration)
           {
@@ -557,13 +561,13 @@ public class FMRadio extends Activity
          if (item != null)
          {
           item.setVisible(true);
-          item.setEnabled(!recording && radioOn);
+          item.setEnabled(!recording && radioOn && !isAnalogModeEnabled());
          }
          item = menu.findItem(MENU_RECORD_STOP);
          if (item != null)
          {
           item.setVisible(true);
-          item.setEnabled(recording && radioOn);
+          item.setEnabled(recording && radioOn && !isAnalogModeEnabled());
          }
       }
 
@@ -2232,6 +2236,21 @@ public class FMRadio extends Activity
          }
       }
       return(bOn);
+   }
+
+   private boolean isAnalogModeEnabled() {
+      boolean aEnabled = false;
+      if (mService != null)
+      {
+          try
+          {
+             aEnabled = mService.isAnalogModeEnabled();
+          } catch (RemoteException e)
+          {
+             e.printStackTrace();
+          }
+      }
+      return (aEnabled);
    }
 
    private boolean isMuted() {
