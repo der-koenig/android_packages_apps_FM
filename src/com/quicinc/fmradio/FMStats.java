@@ -45,12 +45,14 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.hardware.fmradio.FmReceiver;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -59,6 +61,15 @@ import java.io.OutputStreamWriter;
 import java.util.HashMap;
 
 public class FMStats extends Activity  {
+
+    EditText txtbox1;
+    TextView tv1;
+    Button SetButton;
+    Button RunButton;
+    ProgressBar  pbar;
+    TableLayout tLayout;
+
+    private FmReceiver mReceiver;
 
     /*Data structure for band*/
     private class Band {
@@ -123,7 +134,10 @@ public class FMStats extends Activity  {
     Result mColumnHeader = new Result();
 
     boolean mTestRunning = false;
-    MyOnItemSelectedListener mSpinnerListener = new MyOnItemSelectedListener();
+    FmRfItemSelectedListener mSpinFmRfListener = new FmRfItemSelectedListener();
+    RfCfgItemSelectedListener mSpinRfCfgListener = new RfCfgItemSelectedListener();
+    CfgRfItemSelectedListener mSpinCfgRfListener = new CfgRfItemSelectedListener();
+
     int  mTestSelected = 0;
     boolean mIsSearching = false;
     private static String LOGTAG = "FMStats";
@@ -146,20 +160,34 @@ public class FMStats extends Activity  {
     private FileOutputStream mFileCursor =null;
     private String mCurrentFileName = null;
 
+    Spinner spinOptionFmRf;
+    ArrayAdapter<CharSequence> adaptCfgRf;
+    ArrayAdapter<CharSequence> adaptRfCfg;
+    ArrayAdapter<CharSequence> adaptFmRf;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.fmstats);
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this, R.array.test_summary, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(mSpinnerListener);
 
+        spinOptionFmRf = (Spinner) findViewById(R.id.spinner);
+        adaptFmRf = ArrayAdapter.createFromResource(
+            this, R.array.stats_options, android.R.layout.simple_spinner_item);
+        adaptFmRf.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinOptionFmRf.setAdapter(adaptFmRf);
+        spinOptionFmRf.setOnItemSelectedListener(mSpinFmRfListener);
 
-        Button RunButton = (Button)findViewById(R.id.Runbutton);
-        RunButton.setOnClickListener(mOnRunListener);
+        adaptCfgRf = ArrayAdapter.createFromResource(
+            this, R.array.cfg_rf, android.R.layout.simple_spinner_item);
+
+        adaptRfCfg = ArrayAdapter.createFromResource(
+            this, R.array.rf_cfg, android.R.layout.simple_spinner_item);
+
+        tLayout = (TableLayout) findViewById(R.id.maintable);
+
+        if(mReceiver == null)
+            mReceiver = new FmReceiver();
+
         long  curTime = System.currentTimeMillis();
         mCurrentFileName = "FMStats_".concat(Long.toString(curTime).concat(".txt"));
         Log.e(LOGTAG,"Filename is "+mCurrentFileName);
@@ -219,6 +247,7 @@ public class FMStats extends Activity  {
 
         unbindFromService(this);
         Log.d(LOGTAG, "onDestroy: unbindFromService completed");
+        mReceiver = null;
         mService = null;
         super.onDestroy();
     }
@@ -282,12 +311,147 @@ public class FMStats extends Activity  {
         }
     }
 
-    public class MyOnItemSelectedListener implements OnItemSelectedListener {
+    private void chooseFMRFoption(){
+        String[] szTestInformation = getResources().getStringArray(
+                        R.array.stats_options);
+        final StringBuilder szbTestHeader = new StringBuilder();
+        szbTestHeader.append("running test:").append(szTestInformation[mTestSelected]);
+        String szTestHeader = new String(szbTestHeader);
+        switch(mTestSelected){
+            case 1:
+                RunButton = (Button)findViewById(R.id.Runbutton);
+                RunButton.setVisibility(View.INVISIBLE);
+                pbar = (ProgressBar) findViewById(R.id.progressbar);
+                pbar.setVisibility(View.INVISIBLE);
+                ArrayAdapter<CharSequence> adaptCfgRf = ArrayAdapter.createFromResource(
+                    this, R.array.cfg_rf, android.R.layout.simple_spinner_item);
+                adaptCfgRf.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinOptionFmRf.setAdapter(adaptCfgRf);
+                spinOptionFmRf.setOnItemSelectedListener(mSpinCfgRfListener);
+                break;
+            case 2:
+                txtbox1 = (EditText) findViewById(R.id.txtbox1);
+                tv1 = (TextView) findViewById(R.id.label);
+                txtbox1.setVisibility(View.INVISIBLE);
+                tv1.setVisibility(View.INVISIBLE);
+                Button SetButton = (Button)findViewById(R.id.Setbutton);
+                SetButton.setVisibility(View.INVISIBLE);
+                ArrayAdapter<CharSequence> adaptRfCfg = ArrayAdapter.createFromResource(
+                    this, R.array.rf_cfg, android.R.layout.simple_spinner_item);
+                adaptRfCfg.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinOptionFmRf.setAdapter(adaptRfCfg);
+                spinOptionFmRf.setOnItemSelectedListener(mSpinRfCfgListener);
+                break;
+        }
+    }
 
+private View.OnClickListener mOnSetRmssitListener = new View.OnClickListener() {
+       public void onClick(View v) {
+          String a;
+          a =  txtbox1.getText().toString();
+          int rdel = Integer.parseInt(a);
+          Log.e(LOGTAG, "Value of RMSSI DELTA is : " + rdel);
+          mReceiver.setRmssiDel(rdel);
+          }
+       };
 
+private View.OnClickListener mOnSetSigThListener = new View.OnClickListener() {
+       public void onClick(View v) {
+          String a;
+          a =  txtbox1.getText().toString();
+          int rdel = Integer.parseInt(a);
+          Log.e(LOGTAG, "Value of Signal Th. is : " + rdel);
+          mReceiver.setSignalThreshold(rdel);
+          }
+       };
+
+public class CfgRfItemSelectedListener implements OnItemSelectedListener {
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            Log.d("Table","onItemSelected is hit with "+pos);
+            txtbox1 = (EditText) findViewById(R.id.txtbox1);
+            tv1 = (TextView) findViewById(R.id.label);
+            Button SetButton = (Button)findViewById(R.id.Setbutton);
+            tLayout.setVisibility(View.INVISIBLE);
+            switch(pos)
+            {
+                case 0:
+                    txtbox1.setText(R.string.type_rd);
+                    txtbox1.setVisibility(View.VISIBLE);
+                    tv1.setText(R.string.enter_rssi);
+                    tv1.setVisibility(View.VISIBLE);
+                    SetButton.setText(R.string.set_rmmsi_delta);
+                    SetButton.setVisibility(View.VISIBLE);
+                    SetButton.setOnClickListener(mOnSetRmssitListener);
+                    break;
+                case 1:
+                    txtbox1.setText(R.string.type_rd);
+                    txtbox1.setVisibility(View.VISIBLE);
+                    tv1.setText(R.string.enter_sigth);
+                    tv1.setVisibility(View.VISIBLE);
+                    SetButton.setText(R.string.set_sigth);
+                    SetButton.setVisibility(View.VISIBLE);
+                    SetButton.setOnClickListener(mOnSetRmssitListener);
+                    break;
+                case 2:
+                    tLayout.removeAllViewsInLayout();
+                    mNewRowIds = NEW_ROW_ID;
+                    tLayout.setVisibility(View.VISIBLE);
+                    txtbox1.setVisibility(View.INVISIBLE);
+                    tv1.setVisibility(View.INVISIBLE);
+                    SetButton.setVisibility(View.INVISIBLE);
+                    adaptRfCfg.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinOptionFmRf.setAdapter(adaptRfCfg);
+                    spinOptionFmRf.setOnItemSelectedListener(mSpinRfCfgListener);
+                    break;
+            }
+        }
+
+        public void onNothingSelected(AdapterView<?> parent) {
+            // Do Nothing
+        }
+    }
+
+    public class RfCfgItemSelectedListener implements OnItemSelectedListener {
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            Log.d("Table","onItemSelected is hit with "+pos);
+            tLayout.setVisibility(View.INVISIBLE);
+            switch(pos)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    mTestSelected = pos;
+                    tLayout.removeAllViewsInLayout();
+                    mNewRowIds = NEW_ROW_ID;
+                    tLayout.setVisibility(View.VISIBLE);
+                    RunButton = (Button)findViewById(R.id.Runbutton);
+                    RunButton.setText(R.string.test_run);
+                    RunButton.setVisibility(View.VISIBLE);
+                    RunButton.setOnClickListener(mOnRunListener);
+                    break;
+                case 4:
+                    RunButton = (Button)findViewById(R.id.Runbutton);
+                    RunButton.setVisibility(View.INVISIBLE);
+                    pbar = (ProgressBar) findViewById(R.id.progressbar);
+                    pbar.setVisibility(View.INVISIBLE);
+                    adaptCfgRf.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinOptionFmRf.setAdapter(adaptCfgRf);
+                    spinOptionFmRf.setOnItemSelectedListener(mSpinCfgRfListener);
+                    break;
+            }
+        }
+
+        public void onNothingSelected(AdapterView<?> parent) {
+            // Do Nothing
+        }
+    }
+    public class FmRfItemSelectedListener implements OnItemSelectedListener {
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
             Log.d("Table","onItemSelected is hit with "+pos);
             mTestSelected = pos;
+            tLayout.setVisibility(View.INVISIBLE);
+            chooseFMRFoption();
 
         }
 
@@ -367,7 +531,7 @@ public class FMStats extends Activity  {
 
         //get test summary
         String[] szTestInformation = getResources().getStringArray(
-                        R.array.test_summary);
+                        R.array.rf_cfg);
         final StringBuilder szbTestHeader = new StringBuilder();
         szbTestHeader.append("running test:").append(szTestInformation[mTestSelected]);
         String szTestHeader = new String(szbTestHeader);

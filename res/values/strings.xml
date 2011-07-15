@@ -18,7 +18,7 @@
     <string name="menu_speaker_off">Disable Speaker</string>
     <string name="menu_scan_start">Scan</string>
     <string name="menu_scan_stop">Stop Searching</string>
-    <string name="menu_stats">FM Stats</string>
+    <string name="menu_stats">FM RF Stats</string>
     <string name="button_text_stop">Stop</string>
     <string name="msg_seeking">Searching FM Station</string>
     <string name="msg_scanning">Scanning for all FM Stations</string>
@@ -190,11 +190,12 @@
     <string name="audio_db_playlist_name">FM recordings</string>
     <string name="test_prompt">Choose a test</string>
     <string name="test_run">Run Test</string>
-
-
-
-
-
-
+    <string name="set_rmmsi_delta">Configure RMSSI Delta</string>
+    <string name="set_sigth">Configure Signal Th</string>
+    <string name="type_rd"></string>
+    <string name="srch_params">Configure RMSSI Delta </string>
+    <string name="srch_params_1">Configure Signal Th </string>
+    <string name="enter_rssi">Enter RMSSI Delta</string>
+    <string name="enter_sigth">Enter Signal Th</string>
 
 </resources>
