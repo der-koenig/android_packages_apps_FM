@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -721,7 +721,7 @@ public class FmSharedPreferences
 
    public static void setCountry(int nCountryCode){
 
-     // Default: 87500  TO 10800 IN 100 KHZ STEPS
+      // Default: 87500  TO 10800 IN 100 KHZ STEPS
       mFMConfiguration.setRadioBand(FmReceiver.FM_USER_DEFINED_BAND);
       mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_100_KHZ);
       mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP50);
@@ -729,256 +729,278 @@ public class FmSharedPreferences
       mFMConfiguration.setLowerLimit(87500);
       mFMConfiguration.setUpperLimit(108000);
 
-     switch(nCountryCode)
-     {
-     case REGIONAL_BAND_NORTH_AMERICA:
-       {
-         //NORTH_AMERICA  87500  TO 108000  IN 200 KHZ STEPS
-         mFMConfiguration.setRadioBand(FmReceiver.FM_US_BAND);
-         mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_200_KHZ);
-         mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
-         mFMConfiguration.setRdsStd(FmReceiver.FM_RDS_STD_RBDS);
-         /* Since the step size if 200K starting at 87500, 107900
-            is the maximum
-            */
-         mFMConfiguration.setUpperLimit(107900);
-         mFrequencyBand_Stepsize = 200;
-         break;
-       }
-     case REGIONAL_BAND_EUROPE:
-       {
-          // EUROPE/Default: 87500  TO 10800 IN 100 KHZ STEPS
-          mFMConfiguration.setRadioBand(FmReceiver.FM_EU_BAND);
+      switch(nCountryCode)
+      {
+        case REGIONAL_BAND_NORTH_AMERICA:
+        {
+          /*NORTH_AMERICA : 87500 TO 108000 IN 200 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_US_BAND);
+          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_200_KHZ);
+          mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
+          mFMConfiguration.setRdsStd(FmReceiver.FM_RDS_STD_RBDS);
+          mFMConfiguration.setLowerLimit(87500);
+          mFMConfiguration.setUpperLimit(107900);
           mFrequencyBand_Stepsize = 200;
           break;
-       }
+        }
+        case REGIONAL_BAND_EUROPE:
+        {
+          /*EUROPE/Default : 87500 TO 10800 IN 100 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_EU_BAND);
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
 
-     case REGIONAL_BAND_JAPAN:
-      {// - JAPAN          76000  TO 090000  IN 100 KHZ STEPS
+        case REGIONAL_BAND_JAPAN:
+        {
+          /*JAPAN : 76000  TO 90000 IN 100 KHZ STEPS*/
+          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_100_KHZ);
+          mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
+          mFMConfiguration.setLowerLimit(76000);
+          mFMConfiguration.setUpperLimit(90000);
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_JAPAN_WIDE:
+        {
+          /*JAPAN_WB : 90000 TO 108000 IN 50 KHZ STEPS*/
+          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
+          mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
+          mFMConfiguration.setLowerLimit(90000);
+          mFMConfiguration.setUpperLimit(108000);
+          mFrequencyBand_Stepsize = 50;
+          break;
+        }
 
-         mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_100_KHZ);
-         mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
-         mFMConfiguration.setLowerLimit(76000);
-         mFMConfiguration.setUpperLimit(90000);
-         mFrequencyBand_Stepsize = 100;
-         break;
-      }
-     case REGIONAL_BAND_JAPAN_WIDE:
-      {// - JAPAN_WB       090000  TO 108000  IN 50 KHZ STEPS
-        mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
-        mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
-        mFMConfiguration.setLowerLimit(90000);
-        mFMConfiguration.setUpperLimit(108000);
-        mFrequencyBand_Stepsize = 50;
-        break;
-      }
-
-      /* Country specific */
-     case REGIONAL_BAND_AUSTRALIA:
+        /* Country specific */
+        case REGIONAL_BAND_AUSTRALIA:
+        {
+          /*AUSTRALIA : 87700 TO 108000 IN 100 KHZ STEPS*/
+          mFMConfiguration.setLowerLimit(87700);
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_AUSTRIA:
+        {
+          /*AUSTRIA : 87500 TO 108000 IN 50 KHZ STEPS*/
+          mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP50);
+          mFrequencyBand_Stepsize = 50;
+          break;
+        }
+        case REGIONAL_BAND_BELGIUM:
        {
-         // - AUSTRALIA      87700  TO 108000  IN 100 KHZ STEPS
-         mFMConfiguration.setLowerLimit(87700);
+         /*BELGIUM : 87500 TO 108000 IN 100 KHZ STEPS*/
          mFrequencyBand_Stepsize = 100;
          break;
        }
-     case REGIONAL_BAND_AUSTRIA:
-       {// - AUSTRIA        87500  TO 108000  IN 50 KHZ STEPS
-         mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP50);
-         mFrequencyBand_Stepsize = 50;
-         break;
-       }
-     case REGIONAL_BAND_BELGIUM:
-       {// - BELGIUM        87500  TO 108000  IN 100 KHZ STEPS
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_BRAZIL:
-       {// - BRAZIL         87800  TO 108000  IN 200 KHZ STEP
+       case REGIONAL_BAND_BRAZIL:
+       {
+         /*BRAZIL : 87500 TO 108000 IN 200 KHZ STEP*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_US_BAND);
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_200_KHZ);
-          mFMConfiguration.setLowerLimit(87800);
+          mFMConfiguration.setLowerLimit(87500);
+          mFMConfiguration.setUpperLimit(107900);
           mFrequencyBand_Stepsize = 200;
-         break;
-       }
-     case REGIONAL_BAND_CHINA:
-       {// - CHINA          87000  TO 108000  IN 100 KHZ STEPS
+          break;
+        }
+        case REGIONAL_BAND_CHINA:
+        {
+          /*CHINA : 87000 TO 108000 IN 100 KHZ STEPS*/
           mFMConfiguration.setLowerLimit(87000);
           mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_CZECH:
-       {// - CZECH          87500  TO 108000  IN 100 KHZ STEPS
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_DENMARK:
-       {// - DENMARK        87500  TO 108000  IN 50 KHZ STEPS
-          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
-         mFrequencyBand_Stepsize = 50;
-         break;
-       }
-     case REGIONAL_BAND_FINLAND:
-       {//- FINLAND        87500  TO 108000  IN 100 KHZ STEPS
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_FRANCE:
-       // - FRANCE         87500  TO 108000  IN 100 KHZ STEPS
-         mFrequencyBand_Stepsize = 100;
-         break;
-     case REGIONAL_BAND_GERMANY:
-       // - GERMANY        87500  TO 108000  IN 50 KHZ STEPS
-     case REGIONAL_BAND_GREECE:
-        // - GREECE         87500  TO 108000  IN 50 KHZ STEPS
-       {
+          break;
+        }
+        case REGIONAL_BAND_CZECH:
+        {
+          /*CZECH : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_DENMARK:
+        {
+          /*DENMARK : 87500 TO 108000 IN 50 KHZ STEPS*/
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
           mFrequencyBand_Stepsize = 50;
-         break;
-       }
-     case REGIONAL_BAND_HONGKONG:
-       {// - HONG KONG      87500  TO 108000  IN 100 KHZ STEPS
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_INDIA:
-       {// - INDIA          91000  TO 106400  IN 100 KHZ STEPS
+          break;
+        }
+        case REGIONAL_BAND_FINLAND:
+        {
+          /*FINLAND : 87500  TO 108000  IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_FRANCE:
+        {
+          /* FRANCE : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_GERMANY:
+          /*GERMANY : 87500 TO 108000 IN 50 KHZ STEPS*/
+        case REGIONAL_BAND_GREECE:
+          /*GREECE : 87500 TO 108000 IN 50 KHZ STEPS*/
+        {
+          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
+          mFrequencyBand_Stepsize = 50;
+          break;
+        }
+        case REGIONAL_BAND_HONGKONG:
+        {
+          /*HONG KONG : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_INDIA:
+        {
+          /*INDIA : 91000 TO 106400 IN 100 KHZ STEPS*/
           mFMConfiguration.setLowerLimit(91000);
           mFMConfiguration.setUpperLimit(106400);
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_IRELAND:
-       {// - IRELAND        87500  TO 108000  IN 50 KHZ STEPS
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_IRELAND:
+        {
+          /*IRELAND : 87500 TO 108000 IN 50 KHZ STEPS*/
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
-         mFrequencyBand_Stepsize = 50;
-         break;
-       }
-     case REGIONAL_BAND_ITALY:
-       {// - ITALY          87500  TO 108000  IN 50 KHZ STEPS
+          mFrequencyBand_Stepsize = 50;
+          break;
+        }
+        case REGIONAL_BAND_ITALY:
+        {
+          /*ITALY : 87500 TO 108000 IN 50 KHZ STEPS*/
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
-         mFrequencyBand_Stepsize = 50;
-         break;
-       }
-     case REGIONAL_BAND_KOREA:
-       {// - KOREA          87500  TO 108000  IN 200 KHZ STEPS
+          mFrequencyBand_Stepsize = 50;
+          break;
+        }
+        case REGIONAL_BAND_KOREA:
+        {
+          /*KOREA : 87500 TO 108000 IN 200 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_US_BAND);
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_200_KHZ);
-          /* Since the step size if 200K starting at 87500, 107900
-             is the maximum
-             */
           mFMConfiguration.setUpperLimit(107900);
-         mFrequencyBand_Stepsize = 200;
-         break;
-       }
-     case REGIONAL_BAND_MEXICO:
-       {// - MEXICO         88100  TO 107900  IN 200 KHZ STEPS
-         mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_200_KHZ);
-         mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
-         mFMConfiguration.setRdsStd(FmReceiver.FM_RDS_STD_RBDS);
-         mFMConfiguration.setLowerLimit(88100);
-         mFMConfiguration.setUpperLimit(107900);
-         mFrequencyBand_Stepsize = 200;
-         break;
-       }
-     case REGIONAL_BAND_NETHERLANDS:
-       {// - NETHERLANDS    87500  TO 108000  IN 100 KHZ STEPS
-
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_NEWZEALAND:
-       {// - NEW ZEALAND    88000  TO 107000  IN 100 KHZ STEPS
+          mFrequencyBand_Stepsize = 200;
+          break;
+        }
+        case REGIONAL_BAND_MEXICO:
+        {
+          /*MEXICO : 88100 TO 107900 IN 200 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_US_BAND);
+          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_200_KHZ);
+          mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
+          mFMConfiguration.setRdsStd(FmReceiver.FM_RDS_STD_RBDS);
+          mFMConfiguration.setLowerLimit(88100);
+          mFMConfiguration.setUpperLimit(107900);
+          mFrequencyBand_Stepsize = 200;
+          break;
+        }
+        case REGIONAL_BAND_NETHERLANDS:
+        {
+          /*NETHERLANDS : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_NEWZEALAND:
+        {
+          /*NEW ZEALAND : 88000 TO 107000 IN 100 KHZ STEPS*/
           mFMConfiguration.setLowerLimit(88000);
           mFMConfiguration.setUpperLimit(107000);
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_NORWAY:
-       {// - NORWAY         87500  TO 108000  IN 100 KHZ STEPS
-
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_POLAND:
-       {// - POLAND         88000  TO 108000  IN 50 KHZ STEPS
-         mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
-         mFMConfiguration.setLowerLimit(88000);
-         mFrequencyBand_Stepsize = 50;
-         break;
-       }
-     case REGIONAL_BAND_PORTUGAL:
-       {// - PORTUGAL       87500  TO 108000  IN 50 KHZ STEPS
-          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
-         mFrequencyBand_Stepsize = 50;
-         break;
-       }
-     case REGIONAL_BAND_RUSSIA:
-       {// - RUSSIA         87500  TO 108000  IN 100 KHZ STEPS
-
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_SINGAPORE:
-       {// - SINGAPORE      88000  TO 108000  IN 100 KHZ STEPS
-          mFMConfiguration.setLowerLimit(88000);
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_SLOVAKIA:
-       {// - SLOVAKIA       87500  TO 108000  IN 100 KHZ STEPS
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_SPAIN:
-       {// - SPAIN          87500  TO 108000  IN 100 KHZ STEPS
-
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_SWITZERLAND:
-       {// - SWITZERLAND    87500  TO 108000  IN 100 KHZ STEPS
-
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_SWEDEN:
-       {// - SWEDEN         87500  TO 108000  IN 100 KHZ STEPS
-
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_TAIWAN:
-       {// - TAIWAN         87500  TO 108000  IN 100 KHZ STEPS
-
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_TURKEY:
-       {// - TURKEY         87500  TO 108000  IN 100 KHZ STEPS
-
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-      case REGIONAL_BAND_UNITEDKINGDOM:
-       {// - UNITED KINGDOM 87500  TO 108000  IN 100 KHZ STEPS
-         mFrequencyBand_Stepsize = 100;
-         break;
-       }
-     case REGIONAL_BAND_UNITED_STATES:
-       {
-         // - UNITED STATES  88100  TO 107900  IN 200 KHZ STEPS
-         mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_200_KHZ);
-         mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
-         mFMConfiguration.setRdsStd(FmReceiver.FM_RDS_STD_RBDS);
-         mFMConfiguration.setLowerLimit(88100);
-         mFMConfiguration.setUpperLimit(107900);
-         mFrequencyBand_Stepsize = 200;
-         break;
-       }
-     default:
-        {
-           Log.d(LOGTAG, "Invalid: countryCode: "+nCountryCode);
-           nCountryCode=0;
+          mFrequencyBand_Stepsize = 100;
+          break;
         }
-    }
+        case REGIONAL_BAND_NORWAY:
+        {
+          /*NORWAY : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_POLAND:
+        {
+          /*POLAND : 88000 TO 108000 IN 50 KHZ STEPS*/
+          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
+          mFMConfiguration.setLowerLimit(88000);
+          mFrequencyBand_Stepsize = 50;
+          break;
+        }
+        case REGIONAL_BAND_PORTUGAL:
+        {
+          /*PORTUGAL : 87500 TO 108000 IN 50 KHZ STEPS*/
+           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
+          mFrequencyBand_Stepsize = 50;
+          break;
+        }
+        case REGIONAL_BAND_RUSSIA:
+        {
+          /*RUSSIA : 87500 TO 108000  IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_SINGAPORE:
+        {
+          /*SINGAPORE : 88000 TO 108000 IN 100 KHZ STEPS*/
+          mFMConfiguration.setLowerLimit(88000);
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_SLOVAKIA:
+        {
+          /*SLOVAKIA : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_SPAIN:
+        {
+          /*SPAIN : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_SWITZERLAND:
+        {
+          /*SWITZERLAND : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_SWEDEN:
+        {
+          /*SWEDEN : 87500 TO 108000  IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_TAIWAN:
+        {
+          /*TAIWAN : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_TURKEY:
+        {
+          /*TURKEY : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_UNITEDKINGDOM:
+        {
+          /*UNITED KINGDOM : 87500 TO 108000 IN 100 KHZ STEPS*/
+          mFrequencyBand_Stepsize = 100;
+          break;
+        }
+        case REGIONAL_BAND_UNITED_STATES:
+        {
+          /*UNITED STATES : 88100 TO 107900 IN 200 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_US_BAND);
+          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_200_KHZ);
+          mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
+          mFMConfiguration.setRdsStd(FmReceiver.FM_RDS_STD_RBDS);
+          mFMConfiguration.setLowerLimit(88100);
+          mFMConfiguration.setUpperLimit(107900);
+          mFrequencyBand_Stepsize = 200;
+          break;
+        }
+        default:
+        {
+          Log.d(LOGTAG, "Invalid: countryCode: "+nCountryCode);
+          nCountryCode=0;
+        }
+      }
     mCountry = nCountryCode;
     Log.d(LOGTAG, "=====================================================");
     Log.d(LOGTAG, "Country     :"+nCountryCode);
