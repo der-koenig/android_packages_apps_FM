@@ -10,7 +10,7 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src/com/quicinc/fmradio) \
 	src/com/quicinc/fmradio/IFMTransmitterService.aidl \
 
 
-ifneq (, $(filter HONEYCOMB HMJ19, $(BUILD_ID)))
+ifeq ($(call is-android-codename,HONEYCOMB),true)
 LOCAL_SRC_FILES +=  $(call all-java-files-under, src/com/quicinc/hc_utils)
 else
 LOCAL_SRC_FILES +=  $(call all-java-files-under, src/com/quicinc/utils)
