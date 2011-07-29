@@ -239,7 +239,8 @@ public class FMRadioService extends Service
                  @Override
                  public void onReceive(Context context, Intent intent) {
                      String action = intent.getAction();
-                     if (action.equals(Intent.ACTION_MEDIA_UNMOUNTED) ) {
+                     if ((action.equals(Intent.ACTION_MEDIA_UNMOUNTED))
+                           || (action.equals(Intent.ACTION_MEDIA_EJECT))) {
                          Log.d(LOGTAG, "ACTION_MEDIA_UNMOUNTED Intent received");
                          if (mFmRecordingOn == true) {
                              try {
@@ -255,6 +256,7 @@ public class FMRadioService extends Service
              };
              IntentFilter iFilter = new IntentFilter();
              iFilter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+             iFilter.addAction(Intent.ACTION_MEDIA_EJECT);
              iFilter.addDataScheme("file");
              registerReceiver(mSdcardUnmountReceiver, iFilter);
          }
