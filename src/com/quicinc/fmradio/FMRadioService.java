@@ -293,8 +293,7 @@ public class FMRadioService extends Service
                           mReceiver = null;
                        }
                        mHandler.post(mHeadsetPluginHandler);
-                    } else if(mA2dpDeviceState.isA2dpStateChange(action)
-                               && !isAnalogModeSupported()) {
+                    } else if(!isAnalogModeSupported() && mA2dpDeviceState.isA2dpStateChange(action) ) {
                         boolean  bA2dpConnected =
                         mA2dpDeviceState.isConnected(intent);
                        //when playback is overA2Dp and A2dp disconnected
@@ -331,7 +330,9 @@ public class FMRadioService extends Service
             };
             IntentFilter iFilter = new IntentFilter();
             iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
-            iFilter.addAction(mA2dpDeviceState.getActionSinkStateChangedString());
+            if (!isAnalogModeSupported()) {
+                  iFilter.addAction(mA2dpDeviceState.getActionSinkStateChangedString());
+            }
             iFilter.addAction("HDMI_CONNECTED");
             iFilter.addAction(Intent.ACTION_SHUTDOWN);
             iFilter.addCategory(Intent.CATEGORY_DEFAULT);
@@ -514,7 +515,7 @@ public class FMRadioService extends Service
 
 
        if ( (true == mA2dpDeviceState.isDeviceAvailable()) &&
-            (!isSpeakerEnabled())) {
+            (!isSpeakerEnabled()) && !isAnalogModeSupported()) {
            startA2dpPlayback();
            mOverA2DP=true;
        } else {
@@ -522,7 +523,7 @@ public class FMRadioService extends Service
            //reason for resending the Speaker option is we are sending
            //ACTION_FM=1 to AudioManager, the previous state of Speaker we set
            //need not be retained by the Audio Manager.
-           if(isSpeakerEnabled())
+           if(isSpeakerEnabled() && !isAnalogModeSupported())
                enableSpeaker(true);
            Intent intent = new Intent(Intent.ACTION_FM);
            intent.putExtra("state", 1);
@@ -1226,9 +1227,8 @@ public class FMRadioService extends Service
 
    private boolean setAudioPath(boolean analogMode) {
 
-        //TODO: Remove check for mReceiver!=null to enable analog mode
-        if (mReceiver == null || mReceiver != null) {
-                return false;
+        if (mReceiver == null) {
+              return false;
         }
         if (isAnalogModeEnabled() == analogMode) {
                 Log.d(LOGTAG,"Analog Path already is set to "+analogMode);
@@ -1238,13 +1238,15 @@ public class FMRadioService extends Service
                 Log.d(LOGTAG,"Analog Path is not supported ");
                 return false;
         }
+        if (SystemProperties.getBoolean("hw.fm.digitalpath",false)) {
+                return false;
+        }
+
         boolean state = mReceiver.setAnalogMode(analogMode);
         if (false == state) {
             Log.d(LOGTAG, "Error in toggling analog/digital path " + analogMode);
             return false;
         }
-        stopFM();
-        startFM();
         return true;
    }
   /*
@@ -1374,6 +1376,10 @@ public class FMRadioService extends Service
          //audioManager.setParameters("FMRadioOn=false");
          Log.d(LOGTAG, "audioManager.setFmRadioOn false done \n" );
       }
+
+      if (isAnalogModeEnabled()) {
+              SystemProperties.set("hw.fm.isAnalog","false");
+      }
       // This will disable the FM radio device
       if (mReceiver != null)
       {
@@ -1413,12 +1419,18 @@ public class FMRadioService extends Service
        if(isCallActive())
            return ;
        mSpeakerPhoneOn = speakerOn;
+       boolean analogmode = isAnalogModeSupported();
        if (false == speakerOn) {
            setAudioPath(true);
+           if (analogmode)
+                stopFM();
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
+           if (analogmode)
+                startFM();
        }
+
        //Need to turn off BT path when Speaker is set on vice versa.
-       if(true == mA2dpDeviceState.isDeviceAvailable()) {
+       if(!isAnalogModeSupported() && true == mA2dpDeviceState.isDeviceAvailable()) {
            if( ((true == mOverA2DP) && (true == speakerOn)) ||
                ((false == mOverA2DP) && (false == speakerOn)) ) {
               //disable A2DP playback for speaker option
@@ -1428,7 +1440,11 @@ public class FMRadioService extends Service
        }
        if (speakerOn) {
            setAudioPath(false);
+           if (analogmode)
+                  stopFM();
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
+           if (analogmode)
+                  startFM();
        }
 
    }
