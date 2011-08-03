@@ -1880,7 +1880,11 @@ public class FMRadio extends Activity
                     {
                        Log.e(LOGTAG, " mService.fmOn failed");
                        mCommandFailed = CMD_FMON;
-                       showDialog(DIALOG_CMD_FAILED);
+                       if( isCallActive() ) {
+                          showDialog(DIALOG_CMD_FAILED_CALL_ON);
+                       } else {
+                          showDialog(DIALOG_CMD_FAILED);
+                       }
                     }
                 } else {
                       enableRadioOnOffUI();
@@ -2117,6 +2121,11 @@ public class FMRadio extends Activity
       {
          mRadioTextTV.setVisibility(View.VISIBLE);
          mRadioTextTV.setText(getString(R.string.msg_noantenna));
+         mOnOffButton.setEnabled(false);
+      }
+      else if(isCallActive())
+      {
+         mRadioTextTV.setText("");
          mOnOffButton.setEnabled(false);
       }
       else
@@ -2726,18 +2735,6 @@ public class FMRadio extends Activity
    public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d(LOGTAG, "KEY event received"+keyCode);
        switch (keyCode) {
-           case KeyEvent.KEYCODE_HEADSETHOOK:
-               Log.d(LOGTAG, "KEYCODE_HEADSETHOOK event received");
-               if (isFmOn())
-               {
-                  disableRadio();
-               } else
-               {
-                 enableRadio();
-               }
-               setTurnOnOffButtonImage();
-               cleanupTimeoutHandler();
-               return true;
            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
            case 126: //KeyEvent.KEYCODE_MEDIA_PLAY:
            case 127: //KeyEvent.KEYCODE_MEDIA_PAUSE:

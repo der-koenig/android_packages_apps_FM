@@ -344,7 +344,7 @@ public class FMRadioService extends Service
             mHeadsetHookListener = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                       Log.d(LOGTAG, "ACTION_MEDIA_BUTTON Intent received");
+                    Log.d(LOGTAG, "ACTION_MEDIA_BUTTON Intent received");
                     String action = intent.getAction();
                     if (action.equals(Intent.ACTION_MEDIA_BUTTON)) {
                         KeyEvent event = (KeyEvent)
@@ -353,22 +353,46 @@ public class FMRadioService extends Service
                             return;
                         }
                         int keycode = event.getKeyCode();
-                        if( (KeyEvent.KEYCODE_HEADSETHOOK == keycode) &&
-                             (isFmOn())){
-                            //FM should be off when Headset hook pressed.
-                            fmOff();
-                            try
-                            {
-                                /* Notify the UI/Activity, only if the service is "bound"
-                                   by an activity and if Callbacks are registered
-                                 */
-                                if((mServiceInUse) && (mCallbacks != null) )
-                                {
-                                    mCallbacks.onDisabled();
+                        int key_action = event.getAction();
+                        if((KeyEvent.KEYCODE_HEADSETHOOK == keycode) &&
+                           (key_action == KeyEvent.ACTION_DOWN)) {
+                            if(isFmOn()){
+                                //FM should be off when Headset hook pressed.
+                                fmOff();
+                                if (isOrderedBroadcast()) {
+                                    abortBroadcast();
                                 }
-                            } catch (RemoteException e)
-                            {
-                                e.printStackTrace();
+                                try
+                                {
+                                    /* Notify the UI/Activity, only if the service is "bound"
+                                       by an activity and if Callbacks are registered
+                                     */
+                                    if((mServiceInUse) && (mCallbacks != null) )
+                                    {
+                                        mCallbacks.onDisabled();
+                                    }
+                                } catch (RemoteException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            } else if( mServiceInUse ) {
+                                fmOn();
+                                if (isOrderedBroadcast()) {
+                                    abortBroadcast();
+                                }
+                                try
+                                {
+                                    /* Notify the UI/Activity, only if the service is "bound"
+                                      by an activity and if Callbacks are registered
+                                    */
+                                    if(mCallbacks != null )
+                                    {
+                                        mCallbacks.onEnabled();
+                                    }
+                                } catch (RemoteException e)
+                                {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     }
@@ -523,8 +547,18 @@ public class FMRadioService extends Service
            //reason for resending the Speaker option is we are sending
            //ACTION_FM=1 to AudioManager, the previous state of Speaker we set
            //need not be retained by the Audio Manager.
-           if(isSpeakerEnabled() && !isAnalogModeSupported())
-               enableSpeaker(true);
+           if (isSpeakerEnabled()) {
+               if(!isAnalogModeSupported()) {
+                   enableSpeaker(true);
+               } else {
+                   mSpeakerPhoneOn = true;
+                   AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
+               }
+           }
+           if(mMuted) {
+                AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                audioManager.setStreamMute(AudioManager.STREAM_FM,true);
+           }
            Intent intent = new Intent(Intent.ACTION_FM);
            intent.putExtra("state", 1);
            getApplicationContext().sendBroadcast(intent);
@@ -795,8 +829,25 @@ public class FMRadioService extends Service
                    return;
                }
            }
-           fmOff();
+       boolean bTempSpeaker = mSpeakerPhoneOn; //need to restore SpeakerPhone
+       boolean bTempMute    = mMuted;// need to restore Mute status
+       fmOff();
+       try
+           {
+               /* Notify the UI/Activity, only if the service is "bound"
+                  by an activity and if Callbacks are registered
+               */
+               if((mServiceInUse) && (mCallbacks != null) )
+               {
+                   mCallbacks.onDisabled();
+               }
+            } catch (RemoteException e)
+            {
+                e.printStackTrace();
+            }
            mResumeAfterCall = true;
+           mSpeakerPhoneOn = bTempSpeaker;
+           mMuted = bTempMute;
        }
        else if (state == TelephonyManager.CALL_STATE_IDLE) {
           // start playing again
@@ -810,6 +861,7 @@ public class FMRadioService extends Service
                         && (mCallbacks != null))
                 {
                     if (mRadioState) {
+                        Log.d(LOGTAG, "Resuming after call:" );
                         if( true != fmOn() ) {
                             return;
                         }
