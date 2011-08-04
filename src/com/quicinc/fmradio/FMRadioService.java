@@ -111,6 +111,8 @@ public class FMRadioService extends Service
    private static boolean mRadioState = true;
    private BroadcastReceiver mScreenOnOffReceiver = null;
    final Handler mHandler = new Handler();
+   private boolean misAnalogModeSupported = false;
+   private boolean misAnalogPathEnabled = false;
 
    //PhoneStateListener instances corresponding to each
    //subscription
@@ -164,6 +166,7 @@ public class FMRadioService extends Service
       PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
       mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, this.getClass().getName());
       mWakeLock.setReferenceCounted(false);
+      misAnalogModeSupported  = SystemProperties.getBoolean("ro.fm.analogpath.supported",false);
       /* Register for Screen On/off broadcast notifications */
       mA2dpDeviceState = new A2dpDeviceStatus(getApplicationContext());
       registerScreenOnOffListener();
@@ -293,7 +296,7 @@ public class FMRadioService extends Service
                           mReceiver = null;
                        }
                        mHandler.post(mHeadsetPluginHandler);
-                    } else if(!isAnalogModeSupported() && mA2dpDeviceState.isA2dpStateChange(action) ) {
+                    } else if(!isAnalogModeEnabled() && mA2dpDeviceState.isA2dpStateChange(action) ) {
                         boolean  bA2dpConnected =
                         mA2dpDeviceState.isConnected(intent);
                        //when playback is overA2Dp and A2dp disconnected
@@ -330,9 +333,7 @@ public class FMRadioService extends Service
             };
             IntentFilter iFilter = new IntentFilter();
             iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
-            if (!isAnalogModeSupported()) {
-                  iFilter.addAction(mA2dpDeviceState.getActionSinkStateChangedString());
-            }
+            iFilter.addAction(mA2dpDeviceState.getActionSinkStateChangedString());
             iFilter.addAction("HDMI_CONNECTED");
             iFilter.addAction(Intent.ACTION_SHUTDOWN);
             iFilter.addCategory(Intent.CATEGORY_DEFAULT);
@@ -539,7 +540,7 @@ public class FMRadioService extends Service
 
 
        if ( (true == mA2dpDeviceState.isDeviceAvailable()) &&
-            (!isSpeakerEnabled()) && !isAnalogModeSupported()) {
+            (!isSpeakerEnabled()) && !isAnalogModeEnabled()) {
            startA2dpPlayback();
            mOverA2DP=true;
        } else {
@@ -1299,6 +1300,7 @@ public class FMRadioService extends Service
             Log.d(LOGTAG, "Error in toggling analog/digital path " + analogMode);
             return false;
         }
+        misAnalogPathEnabled = analogMode;
         return true;
    }
   /*
@@ -1453,11 +1455,11 @@ public class FMRadioService extends Service
 
    /* Returns true if Analog Path is enabled */
    public boolean isAnalogModeEnabled() {
-       return SystemProperties.getBoolean("hw.fm.isAnalog",false);
+         return misAnalogPathEnabled;
    }
 
    public boolean isAnalogModeSupported() {
-      return SystemProperties.getBoolean("ro.fm.analogpath.supported",false);
+        return misAnalogModeSupported;
    }
 
    public boolean isFmRecordingOn() {
@@ -1473,16 +1475,17 @@ public class FMRadioService extends Service
        mSpeakerPhoneOn = speakerOn;
        boolean analogmode = isAnalogModeSupported();
        if (false == speakerOn) {
-           setAudioPath(true);
-           if (analogmode)
+           if (analogmode) {
+                setAudioPath(true);
                 stopFM();
+           }
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
            if (analogmode)
                 startFM();
        }
 
        //Need to turn off BT path when Speaker is set on vice versa.
-       if(!isAnalogModeSupported() && true == mA2dpDeviceState.isDeviceAvailable()) {
+       if( !analogmode && true == mA2dpDeviceState.isDeviceAvailable()) {
            if( ((true == mOverA2DP) && (true == speakerOn)) ||
                ((false == mOverA2DP) && (false == speakerOn)) ) {
               //disable A2DP playback for speaker option
@@ -1491,9 +1494,10 @@ public class FMRadioService extends Service
            }
        }
        if (speakerOn) {
-           setAudioPath(false);
-           if (analogmode)
+           if (analogmode) {
+                 setAudioPath(false);
                   stopFM();
+           }
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
            if (analogmode)
                   startFM();
