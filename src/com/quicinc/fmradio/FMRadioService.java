@@ -573,6 +573,10 @@ public class FMRadioService extends Service
            mOverA2DP=false;
            stopA2dpPlayback();
        }else{
+          if(mMuted) {
+               AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+               audioManager.setStreamMute(AudioManager.STREAM_FM,false);
+          }
            Log.d(LOGTAG, "FMRadio: sending the intent");
            Intent intent = new Intent(Intent.ACTION_FM);
            intent.putExtra("state", 0);
