@@ -45,5 +45,6 @@ interface IFMRadioService
     void setHiLoInj(int inj);
     void delayedStop(long nDuration, int nType);
     void cancelDelayedStop (int nType);
+    void requestFocus();
 }
 

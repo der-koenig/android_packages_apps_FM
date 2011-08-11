@@ -335,6 +335,13 @@ public class FMRadio extends Activity
    @Override
    public void onRestart() {
       Log.d(LOGTAG, "FMRadio: onRestart");
+      try {
+         if (null != mService) {
+              mService.requestFocus();
+          }
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
       super.onRestart();
    }
 

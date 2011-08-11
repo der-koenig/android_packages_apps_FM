@@ -1282,6 +1282,10 @@ public class FMRadioService extends Service
       {
           mService.get().cancelDelayedStop(nType);
       }
+      public void requestFocus()
+      {
+          mService.get().requestFocus();
+      }
    }
 
    private final IBinder mBinder = new ServiceStub(this);
@@ -2336,6 +2340,17 @@ public class FMRadioService extends Service
    private void cancelDelayedStop(int nType) {
        int whatId = (nType == STOP_SERVICE) ? STOPSERVICE_ONSLEEP: STOPRECORD_ONTIMEOUT ;
        mDelayedStopHandler.removeMessages(whatId);
+   }
+   private void requestFocus() {
+      if( (false == mPlaybackInProgress) &&
+          (true  == mStoppedOnFocusLoss) ) {
+           // adding code for audio focus gain.
+           AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+           audioManager.requestAudioFocus(mAudioFocusListener, AudioManager.STREAM_FM,
+                  AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+           startFM();
+           mStoppedOnFocusLoss = false;
+       }
    }
    private OnAudioFocusChangeListener mAudioFocusListener = new OnAudioFocusChangeListener() {
        public void onAudioFocusChange(int focusChange) {
