@@ -91,6 +91,7 @@ public class FMRadioService extends Service
    private BroadcastReceiver mHeadsetReceiver = null;
    private BroadcastReceiver mHeadsetHookListener = null;
    private BroadcastReceiver mSdcardUnmountReceiver = null;
+   private BroadcastReceiver mMusicCommandListener = null;
    private boolean mOverA2DP = false;
 
    private IFMRadioServiceCallbacks mCallbacks;
@@ -179,6 +180,10 @@ public class FMRadioService extends Service
       if ( false == SystemProperties.getBoolean("ro.fm.mulinst.recording.support",true)) {
            mSingleRecordingInstanceSupported = true;
       }
+
+      // Register for pause commands from other apps to stop FM
+      registerMusicServiceCommandReceiver();
+
       // If the service was idle, but got killed before it stopped itself, the
       // system will relaunch it. Make sure it gets stopped again in that case.
       Message msg = mDelayedStopHandler.obtainMessage();
@@ -409,6 +414,41 @@ public class FMRadioService extends Service
                                         // consume the broadcast so our
                                         // priority to be higher
             registerReceiver(mHeadsetHookListener, iFilter);
+        }
+    }
+    public void registerMusicServiceCommandReceiver() {
+        if (mMusicCommandListener == null) {
+            mMusicCommandListener = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+                    if (action.equals("com.android.music.musicservicecommand")) {
+                        String cmd = intent.getStringExtra("command");
+                        Log.d(LOGTAG, "Music Service command : "+cmd+ " received");
+                        if(cmd.equals("pause")) {
+                            if(isFmOn()){
+                                fmOff();
+                                if (isOrderedBroadcast()) {
+                                    abortBroadcast();
+                                }
+                                try {
+                                    /* Notify the UI/Activity, only if the service is "bound"
+                                       by an activity and if Callbacks are registered
+                                     */
+                                    if((mServiceInUse) && (mCallbacks != null) ){
+                                        mCallbacks.onDisabled();
+                                    }
+                                } catch (RemoteException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            IntentFilter commandFilter = new IntentFilter();
+            commandFilter.addAction("com.android.music.musicservicecommand");
+            registerReceiver(mMusicCommandListener, commandFilter);
         }
     }
     final Runnable    mHeadsetPluginHandler = new Runnable() {
