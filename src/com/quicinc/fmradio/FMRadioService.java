@@ -176,7 +176,7 @@ public class FMRadioService extends Service
       // registering media button receiver seperately as we need to set
       // different priority for receiving media events
       registerMediaButtonReceiver();
-      if ( false == SystemProperties.getBoolean("ro.fm.multiinstance.recording.supported",true)) {
+      if ( false == SystemProperties.getBoolean("ro.fm.mulinst.recording.support",true)) {
            mSingleRecordingInstanceSupported = true;
       }
       // If the service was idle, but got killed before it stopped itself, the
