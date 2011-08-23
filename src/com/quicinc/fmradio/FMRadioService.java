@@ -541,6 +541,12 @@ public class FMRadioService extends Service
        }
        if ( true == mPlaybackInProgress ) // no need to resend event
            return;
+       if ( true == mStoppedOnFocusLoss ) {
+           AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+           audioManager.requestAudioFocus(mAudioFocusListener, AudioManager.STREAM_FM,
+                  AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+           mStoppedOnFocusLoss = false;
+       }
 
        if(mMuted) {
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
