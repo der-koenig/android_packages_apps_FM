@@ -312,7 +312,8 @@ public class FMRadioService extends Service
                        //when playback is not overA2DP and A2DP Connected
                        // In above two cases we need to Stop and Start FM which
                        // will take care of audio routing
-                       if( (true == ((bA2dpConnected)^(mOverA2DP))) &&
+                       if( (isFmOn()) &&
+                           (true == ((bA2dpConnected)^(mOverA2DP))) &&
                            (false == mStoppedOnFocusLoss) &&
                            (!isSpeakerEnabled())) {
                            stopFM();
@@ -581,15 +582,12 @@ public class FMRadioService extends Service
        }
        if ( true == mPlaybackInProgress ) // no need to resend event
            return;
-       if ( true == mStoppedOnFocusLoss ) {
-           AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-           audioManager.requestAudioFocus(mAudioFocusListener, AudioManager.STREAM_FM,
-                  AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-           mStoppedOnFocusLoss = false;
-       }
+       AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+       audioManager.requestAudioFocus(mAudioFocusListener, AudioManager.STREAM_FM,
+              AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+       mStoppedOnFocusLoss = false;
 
        if(mMuted) {
-            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             audioManager.setStreamMute(AudioManager.STREAM_FM,true);
        }
 
