@@ -415,15 +415,19 @@ public class FMRadio extends Activity
             if (null != mService) {
                 mService.cancelDelayedStop(FMRadioService.STOP_RECORD);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+          if(isRecording()) {
+              initiateRecordThread();
+          }
       }
 
    }
 
    @Override
    protected void onPause() {
+      Log.d(LOGTAG, "FMRadio: onPause");
       super.onPause();
       mRadioTextScroller.stopScroll();
       FmSharedPreferences.setTunedFrequency(mTunedStation.getFrequency());
@@ -449,6 +453,7 @@ public class FMRadio extends Activity
 
    @Override
    public void onDestroy() {
+      Log.d(LOGTAG, "FMRadio: onDestroy");
       cleanupTimeoutHandler();
       try {
         if(!mService.isFmOn()) {
