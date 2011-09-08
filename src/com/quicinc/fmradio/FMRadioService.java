@@ -222,6 +222,10 @@ public class FMRadioService extends Service
           unregisterReceiver(mSdcardUnmountReceiver);
           mSdcardUnmountReceiver = null;
       }
+      if( mMusicCommandListener != null ) {
+          unregisterReceiver(mMusicCommandListener);
+          mMusicCommandListener = null;
+      }
 
       /* Since the service is closing, disable the receiver */
       fmOff();
