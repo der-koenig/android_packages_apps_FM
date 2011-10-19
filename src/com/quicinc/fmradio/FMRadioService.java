@@ -1572,9 +1572,11 @@ public class FMRadioService extends Service
            }
        }
        if (speakerOn) {
+           mute();
            if (analogmode) {
                  setAudioPath(false);
            }
+           unMute();
            stopFM();
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
            startFM();
