@@ -35,9 +35,15 @@ import android.content.Context;
 import android.content.ComponentName;
 import android.util.Log;
 import android.os.SystemProperties;
+import java.io.FileReader;
+import java.lang.String;
 
 
 public class FMTransmitterConfigReceiver extends BroadcastReceiver {
+
+    private static FileReader socinfo_fd;
+    private static char[] socinfo = new char[20];
+    private static String build_id = "1";
 
     private static final String TAG = "FMFolderConfigReceiver";
     @Override
@@ -47,7 +53,21 @@ public class FMTransmitterConfigReceiver extends BroadcastReceiver {
         if((action != null) && action.equals("android.intent.action.BOOT_COMPLETED")) {
             Log.d(TAG, "boot complete intent received");
             boolean isFmTransmitterSupported = SystemProperties.getBoolean("ro.fm.transmitter",true);
-            if (!isFmTransmitterSupported) {
+
+            if ("msm7630_surf".equals(SystemProperties.get("ro.product.device"))) {
+                Log.d(TAG,"this is msm7630_surf");
+                try {
+                    socinfo_fd = new FileReader("/sys/devices/system/soc/soc0/build_id");
+                    socinfo_fd.read(socinfo,0,20);
+                    socinfo_fd.close();
+                } catch(Exception e) {
+                    Log.e(TAG,"Exception in FileReader");
+                }
+                Log.d(TAG, "socinfo=" +socinfo);
+                build_id = new String(socinfo,17,1);
+                Log.d(TAG, "build_id=" +build_id);
+            }
+            if ((!isFmTransmitterSupported) || (build_id.equals("0"))) {
             PackageManager pManager = context.getPackageManager();
                if (pManager != null) {
                    Log.d(TAG, "disableing the FM Transmitter");
