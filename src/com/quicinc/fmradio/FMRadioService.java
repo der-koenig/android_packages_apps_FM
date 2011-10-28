@@ -433,7 +433,7 @@ public class FMRadioService extends Service
                     if (action.equals("com.android.music.musicservicecommand")) {
                         String cmd = intent.getStringExtra("command");
                         Log.d(LOGTAG, "Music Service command : "+cmd+ " received");
-                        if(cmd.equals("pause")) {
+                        if (cmd != null && cmd.equals("pause")) {
                             if (mA2dpDisconnected) {
                                 Log.d(LOGTAG, "not to pause,this is a2dp disconnected's pause");
                                 mA2dpDisconnected = false;
@@ -665,6 +665,12 @@ public class FMRadioService extends Service
             return false;
         }
         mRecorder = new MediaRecorder();
+        if (mRecorder == null) {
+           Toast.makeText(this,"MediaRecorder failed to create an instance",
+                            Toast.LENGTH_SHORT).show();
+           return false;
+        }
+
         try {
         mRecorder.setAudioSource(MediaRecorder.AudioSource.FM_RX);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -706,6 +712,11 @@ public class FMRadioService extends Service
        }
         stopA2dpPlayback();
         mA2dp = new MediaRecorder();
+        if (mA2dp == null) {
+           Toast.makeText(this,"A2dpPlayback failed to create an instance",
+                            Toast.LENGTH_SHORT).show();
+           return false;
+        }
         try {
             mA2dp.setAudioSource(MediaRecorder.AudioSource.FM_RX_A2DP);
             mA2dp.setOutputFormat(MediaRecorder.OutputFormat.RAW_AMR);
@@ -851,8 +862,8 @@ public class FMRadioService extends Service
            if (!cursor.isAfterLast()) {
                id = cursor.getInt(0);
            }
+           cursor.close();
        }
-       cursor.close();
        return id;
    }
 
@@ -884,9 +895,15 @@ public class FMRadioService extends Service
        };
        Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
        Cursor cur = resolver.query(uri, cols, null, null, null);
-       cur.moveToFirst();
-       final int base = cur.getInt(0);
-       cur.close();
+       final int base;
+       if (cur != null) {
+            cur.moveToFirst();
+            base = cur.getInt(0);
+            cur.close();
+       }
+       else {
+            base = 0;
+       }
        ContentValues values = new ContentValues();
        values.put(MediaStore.Audio.Playlists.Members.PLAY_ORDER, Integer.valueOf(base + audioId));
        values.put(MediaStore.Audio.Playlists.Members.AUDIO_ID, audioId);
@@ -1461,11 +1478,13 @@ public class FMRadioService extends Service
                }
                Log.d(LOGTAG, "mAudioManager.setFmRadioOn done \n" );
             }
-            bStatus = mReceiver.registerRdsGroupProcessing(FmReceiver.FM_RX_RDS_GRP_RT_EBL|
+            if (mReceiver != null) {
+                bStatus = mReceiver.registerRdsGroupProcessing(FmReceiver.FM_RX_RDS_GRP_RT_EBL|
                                                            FmReceiver.FM_RX_RDS_GRP_PS_EBL|
                                                            FmReceiver.FM_RX_RDS_GRP_AF_EBL|
                                                            FmReceiver.FM_RX_RDS_GRP_PS_SIMPLE_EBL);
-            Log.d(LOGTAG, "registerRdsGroupProcessing done, Status :" +  bStatus);
+                Log.d(LOGTAG, "registerRdsGroupProcessing done, Status :" +  bStatus);
+            }
             bStatus = enableAutoAF(FmSharedPreferences.getAutoAFSwitch());
             Log.d(LOGTAG, "enableAutoAF done, Status :" +  bStatus);
 

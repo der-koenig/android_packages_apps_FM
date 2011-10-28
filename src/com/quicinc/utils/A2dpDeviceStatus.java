@@ -33,6 +33,8 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 
+import java.util.Set;
+
 
 public class A2dpDeviceStatus {
     private BluetoothA2dp mA2dp = null;
@@ -72,8 +74,9 @@ public class A2dpDeviceStatus {
     }
     public boolean isDeviceAvailable() {
         if(null == mA2dp) return false;
-        if(mA2dp.getConnectedSinks().size() != 0) {
-            return true;
+        Set<BluetoothDevice> sinks = mA2dp.getConnectedSinks();
+        if (sinks != null && sinks.size() != 0) {
+           return true;
         }
         return false;
     }

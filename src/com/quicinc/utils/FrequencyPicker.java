@@ -81,32 +81,35 @@ public class FrequencyPicker extends FrameLayout {
         inflater.inflate(R.layout.frequency_picker, this, true);
 
         mMHzPicker = (NumberPicker) findViewById(R.id.mhz);
-        mMHzPicker.setSpeed(100);
-
-        mMHzPicker.setOnChangeListener(new OnChangedListener() {
-            public void onChanged(NumberPicker picker, int oldVal, int newVal) {
-                mMhz = newVal;
-                mFrequency = (mMhz*1000) + (getFrequencyKHz(mKhz, mMin, mStep));
-                validateFrequencyRange();
-                if (mOnFrequencyChangedListener != null) {
-                        mOnFrequencyChangedListener.onFrequencyChanged(FrequencyPicker.this, mFrequency);
-                }
-            }
-        });
+        if (mMHzPicker != null) {
+           mMHzPicker.setSpeed(100);
+           mMHzPicker.setOnChangeListener(new OnChangedListener() {
+              public void onChanged(NumberPicker picker, int oldVal, int newVal) {
+                 mMhz = newVal;
+                 mFrequency = (mMhz*1000) + (getFrequencyKHz(mKhz, mMin, mStep));
+                 validateFrequencyRange();
+                 if (mOnFrequencyChangedListener != null) {
+                    mOnFrequencyChangedListener.onFrequencyChanged(FrequencyPicker.this, mFrequency);
+                 }
+              }
+           });
+        }
         mKHzPicker = (NumberPicker) findViewById(R.id.khz);
-        mKHzPicker.setSpeed(100);
-        mKHzPicker.setOnChangeListener(new OnChangedListener() {
-            public void onChanged(NumberPicker picker, int oldVal, int newVal) {
-                mKhz = newVal;
-                mFrequency = (mMhz*1000) + (getFrequencyKHz(mKhz, mMin, mStep));
+        if (mKHzPicker != null) {
+           mKHzPicker.setSpeed(100);
+           mKHzPicker.setOnChangeListener(new OnChangedListener() {
+              public void onChanged(NumberPicker picker, int oldVal, int newVal) {
+                 mKhz = newVal;
+                 mFrequency = (mMhz*1000) + (getFrequencyKHz(mKhz, mMin, mStep));
 
-                validateFrequencyRange();
+                 validateFrequencyRange();
 
-                if (mOnFrequencyChangedListener != null) {
-                        mOnFrequencyChangedListener.onFrequencyChanged(FrequencyPicker.this, mFrequency);
-                }
-            }
-        });
+                 if (mOnFrequencyChangedListener != null) {
+                    mOnFrequencyChangedListener.onFrequencyChanged(FrequencyPicker.this, mFrequency);
+                 }
+              }
+           });
+        }
 
         updateSpinnerRange();
 
@@ -118,8 +121,12 @@ public class FrequencyPicker extends FrameLayout {
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        mMHzPicker.setEnabled(enabled);
-        mKHzPicker.setEnabled(enabled);
+        if (mMHzPicker != null) {
+           mMHzPicker.setEnabled(enabled);
+        }
+        if (mKHzPicker != null) {
+           mKHzPicker.setEnabled(enabled);
+        }
     }
 
 
@@ -360,8 +367,12 @@ public class FrequencyPicker extends FrameLayout {
         String[] khzStrings = getKHzStrings(mMin, mStep);
         int khzNumSteps = getKHzCount(mStep);
 
-        mMHzPicker.setRange(mMin/1000, mMax/1000);
-        mKHzPicker.setRange(1, khzNumSteps, khzStrings);
+        if (mMHzPicker != null) {
+           mMHzPicker.setRange(mMin/1000, mMax/1000);
+        }
+        if (mKHzPicker != null) {
+           mKHzPicker.setRange(1, khzNumSteps, khzStrings);
+        }
     }
 
     private void updateSpinners() {

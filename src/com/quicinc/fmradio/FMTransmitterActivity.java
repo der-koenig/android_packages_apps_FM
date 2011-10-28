@@ -147,13 +147,19 @@ public class FMTransmitterActivity extends Activity {
                 mAnimation = AnimationUtils.loadAnimation(this, R.anim.preset_select);
 
                 mOnOffButton = (ImageButton) findViewById(R.id.btn_onoff);
-                mOnOffButton.setOnClickListener(mTurnOnOffClickListener);
+                if (mOnOffButton != null) {
+                   mOnOffButton.setOnClickListener(mTurnOnOffClickListener);
+                }
 
                 mForwardButton = (ImageView) findViewById(R.id.btn_forward);
-                mForwardButton.setOnClickListener(mForwardClickListener);
+                if (mForwardButton != null) {
+                   mForwardButton.setOnClickListener(mForwardClickListener);
+                }
 
                 mBackButton = (ImageView) findViewById(R.id.btn_back);
-                mBackButton.setOnClickListener(mBackClickListener);
+                if (mBackButton != null) {
+                   mBackButton.setOnClickListener(mBackClickListener);
+                }
 
                 /* Preset Buttons */
                 mPresetButtons[0] = (Button) findViewById(R.id.presets_button_1);
@@ -163,10 +169,12 @@ public class FMTransmitterActivity extends Activity {
                 mPresetButtons[4] = (Button) findViewById(R.id.presets_button_5);
                 mPresetButtons[5] = (Button) findViewById(R.id.presets_button_6);
                 for (int nButton = 0; nButton < MAX_PRESETS; nButton++) {
-                        mPresetButtons[nButton]
-                                        .setOnClickListener(mPresetButtonClickListener);
-                        mPresetButtons[nButton]
-                                        .setOnLongClickListener(mPresetButtonOnLongClickListener);
+                    if (mPresetButtons[nButton] != null) {
+                       mPresetButtons[nButton]
+                               .setOnClickListener(mPresetButtonClickListener);
+                       mPresetButtons[nButton]
+                                .setOnLongClickListener(mPresetButtonOnLongClickListener);
+                    }
                 }
 
                 mTransmitStaticMsgTV = (TextView) findViewById(R.id.transmit_msg_tv);
@@ -174,7 +182,9 @@ public class FMTransmitterActivity extends Activity {
                 if(null != mPSData ) {
                     str = mPSData.concat("\n").concat(str);
                 }
-                mTransmitStaticMsgTV.setText(str);
+                if (mTransmitStaticMsgTV != null) {
+                   mTransmitStaticMsgTV.setText(str);
+                }
 
                 mTuneStationFrequencyTV = (TextView) findViewById(R.id.prog_frequency_tv);
                 if (mTuneStationFrequencyTV != null) {
@@ -537,11 +547,12 @@ public class FMTransmitterActivity extends Activity {
 
                 if (bSearchActive) {
                         mProgressDialog = new ProgressDialog(FMTransmitterActivity.this);
-                        mProgressDialog.setTitle(titleStr);
-                        mProgressDialog.setMessage(msgStr);
-                        mProgressDialog.setIcon(R.drawable.ic_launcher_fm_tx);
-                        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                        mProgressDialog.setButton(DialogInterface.BUTTON_POSITIVE,
+                        if (mProgressDialog != null) {
+                           mProgressDialog.setTitle(titleStr);
+                           mProgressDialog.setMessage(msgStr);
+                           mProgressDialog.setIcon(R.drawable.ic_launcher_fm_tx);
+                           mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                           mProgressDialog.setButton(DialogInterface.BUTTON_POSITIVE,
                                         getText(R.string.button_text_stop),
                                         new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog,
@@ -549,12 +560,13 @@ public class FMTransmitterActivity extends Activity {
                                                         cancelSearch();
                                                 }
                                         });
-                        mProgressDialog
+                           mProgressDialog
                                         .setOnCancelListener(new DialogInterface.OnCancelListener() {
                                                 public void onCancel(DialogInterface dialog) {
                                                         cancelSearch();
                                                 }
                                         });
+                        }
 
                         Message msg = new Message();
                         msg.what = TIMEOUT_PROGRESS_DLG;
@@ -760,52 +772,88 @@ public class FMTransmitterActivity extends Activity {
 
         private void enableRadioOnOffUI(boolean bEnable) {
                 if (bEnable) {
-                        mTuneStationFrequencyTV
+                        if (mTuneStationFrequencyTV != null) {
+                           mTuneStationFrequencyTV
                                         .setOnLongClickListener(mFrequencyViewClickListener);
-                        mRadioTextScroller.startScroll();
+                        }
+                        if (mRadioTextScroller != null) {
+                           mRadioTextScroller.startScroll();
+                        }
                 } else {
-                        mTuneStationFrequencyTV.setOnLongClickListener(null);
-                        mRadioTextScroller.stopScroll();
+                        if (mTuneStationFrequencyTV != null) {
+                           mTuneStationFrequencyTV.setOnLongClickListener(null);
+                        }
+                        if (mRadioTextScroller != null) {
+                           mRadioTextScroller.stopScroll();
+                        }
                 }
 
-                mForwardButton.setVisibility(((bEnable == true) ? View.VISIBLE
+                if (mForwardButton != null) {
+                   mForwardButton.setVisibility(((bEnable == true) ? View.VISIBLE
                                 : View.INVISIBLE));
-                mBackButton.setVisibility(((bEnable == true) ? View.VISIBLE
+                }
+                if (mBackButton != null) {
+                   mBackButton.setVisibility(((bEnable == true) ? View.VISIBLE
                                 : View.INVISIBLE));
-                mTransmitStaticMsgTV.setVisibility(((bEnable == true) ? View.VISIBLE
+                }
+                if (mTransmitStaticMsgTV != null) {
+                   mTransmitStaticMsgTV.setVisibility(((bEnable == true) ? View.VISIBLE
                                 : View.INVISIBLE));
-                mTuneStationFrequencyTV.setVisibility(((bEnable == true) ? View.VISIBLE
+                }
+                if (mTuneStationFrequencyTV != null) {
+                   mTuneStationFrequencyTV.setVisibility(((bEnable == true) ? View.VISIBLE
                                 : View.INVISIBLE));
-                mRadioTextTV.setVisibility(((bEnable == true) ? View.VISIBLE
+                }
+                if (mRadioTextTV != null) {
+                   mRadioTextTV.setVisibility(((bEnable == true) ? View.VISIBLE
                                 : View.INVISIBLE));
+                }
 
                 try {
                     if( null != mService) {
                         if ( mService.isHeadsetPlugged()) {
                             Log.d(LOGTAG,"headset plugged in");
-                            mRadioTextTV.setVisibility(View.VISIBLE);
-                            mRadioTextTV.setText(getString(R.string.msg_headsetpluggedin));
-                            mOnOffButton.setEnabled(false);
+                            if (mRadioTextTV != null) {
+                               mRadioTextTV.setVisibility(View.VISIBLE);
+                               mRadioTextTV.setText(getString(R.string.msg_headsetpluggedin));
+                            }
+                            if (mOnOffButton != null) {
+                               mOnOffButton.setEnabled(false);
+                            }
                         } else if (mService.isCallActive()) {
                             Log.d(LOGTAG,"call active");
-                            mRadioTextTV.setVisibility(View.VISIBLE);
-                            mRadioTextTV.setText(getString(R.string.msg_callactive));
-                            mOnOffButton.setEnabled(false);
+                            if (mRadioTextTV != null) {
+                               mRadioTextTV.setVisibility(View.VISIBLE);
+                               mRadioTextTV.setText(getString(R.string.msg_callactive));
+                            }
+                            if (mOnOffButton != null) {
+                               mOnOffButton.setEnabled(false);
+                            }
                         } else {
-                            mRadioTextTV.setText("");
-                            mOnOffButton.setEnabled(true);
+                            if (mRadioTextTV != null) {
+                               mRadioTextTV.setText("");
+                            }
+                            if (mOnOffButton != null) {
+                               mOnOffButton.setEnabled(true);
+                            }
                         }
                     } else {
                         Log.d(LOGTAG,"Service null");
-                        mRadioTextTV.setText("");
-                        mOnOffButton.setEnabled(true);
+                        if (mRadioTextTV != null) {
+                           mRadioTextTV.setText("");
+                        }
+                        if (mRadioTextTV != null) {
+                           mOnOffButton.setEnabled(true);
+                        }
                     }
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
 
                 for (int nButton = 0; nButton < MAX_PRESETS; nButton++) {
+                     if (mPresetButtons[nButton] != null) {
                         mPresetButtons[nButton].setEnabled(bEnable);
+                     }
                 }
         }
 
