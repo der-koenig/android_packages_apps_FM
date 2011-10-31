@@ -54,7 +54,7 @@ public class FMTransmitterConfigReceiver extends BroadcastReceiver {
             Log.d(TAG, "boot complete intent received");
             boolean isFmTransmitterSupported = SystemProperties.getBoolean("ro.fm.transmitter",true);
 
-            if ("msm7630_surf".equals(SystemProperties.get("ro.product.device"))) {
+            if ("msm7630_surf".equals(SystemProperties.get("ro.board.platform"))) {
                 Log.d(TAG,"this is msm7630_surf");
                 try {
                     socinfo_fd = new FileReader("/sys/devices/system/soc/soc0/build_id");
