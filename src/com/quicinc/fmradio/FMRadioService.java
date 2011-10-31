@@ -114,7 +114,7 @@ public class FMRadioService extends Service
    final Handler mHandler = new Handler();
    private boolean misAnalogModeSupported = false;
    private boolean misAnalogPathEnabled = false;
-
+   private boolean mA2dpDisconnected = false;
    //PhoneStateListener instances corresponding to each
    //subscription
    private PhoneStateListener[] mPhoneStateListener;
@@ -312,6 +312,8 @@ public class FMRadioService extends Service
                     } else if(!isAnalogModeEnabled() && mA2dpDeviceState.isA2dpStateChange(action) ) {
                         boolean  bA2dpConnected =
                         mA2dpDeviceState.isConnected(intent);
+                        if (!bA2dpConnected)
+                            mA2dpDisconnected = true;
                        //when playback is overA2Dp and A2dp disconnected
                        //when playback is not overA2DP and A2DP Connected
                        // In above two cases we need to Stop and Start FM which
@@ -427,10 +429,16 @@ public class FMRadioService extends Service
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     String action = intent.getAction();
+
                     if (action.equals("com.android.music.musicservicecommand")) {
                         String cmd = intent.getStringExtra("command");
                         Log.d(LOGTAG, "Music Service command : "+cmd+ " received");
                         if(cmd.equals("pause")) {
+                            if (mA2dpDisconnected) {
+                                Log.d(LOGTAG, "not to pause,this is a2dp disconnected's pause");
+                                mA2dpDisconnected = false;
+                                return;
+                            }
                             if(isFmOn()){
                                 fmOff();
                                 if (isOrderedBroadcast()) {
