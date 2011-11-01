@@ -455,12 +455,14 @@ public class FMRadio extends Activity
    public void onDestroy() {
       Log.d(LOGTAG, "FMRadio: onDestroy");
       cleanupTimeoutHandler();
-      try {
-        if(!mService.isFmOn()) {
-              endSleepTimer();
+      if (mService != null) {
+          try {
+               if(!mService.isFmOn()) {
+                  endSleepTimer();
+               }
+          } catch (RemoteException e) {
+               e.printStackTrace();
           }
-      } catch (RemoteException e) {
-        e.printStackTrace();
       }
       unbindFromService(this);
       mService = null;
