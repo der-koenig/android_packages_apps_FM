@@ -1599,11 +1599,15 @@ public class FMRadioService extends Service
            }
        }
        if (speakerOn) {
-           mute();
            if (analogmode) {
-                 setAudioPath(false);
+                 if (mMuted) {
+                     setAudioPath(false);
+                 } else {
+                     mute();
+                     setAudioPath(false);
+                     unMute();
+                 }
            }
-           unMute();
            stopFM();
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
            startFM();
