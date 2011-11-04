@@ -226,7 +226,9 @@ public class Settings extends PreferenceActivity implements
                         FmSharedPreferences.setCountry(index);
                         bStatus = FMRadio.fmConfigure();
                         FMTransmitterActivity.fmConfigure();
-                        curList.clear();
+                        if (curList != null) {
+                           curList.clear();
+                        }
                 } else {
                         if (mRxMode) {
                                 if (key.equals(AUTO_AF)) {
@@ -359,15 +361,19 @@ public class Settings extends PreferenceActivity implements
         @Override
         protected void onResume() {
                 super.onResume();
-                getPreferenceScreen().getSharedPreferences()
-                                .registerOnSharedPreferenceChangeListener(this);
+                SharedPreferences mSharedPreferences = getPreferenceScreen().getSharedPreferences();
+                if (mSharedPreferences != null) {
+                   mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
+                }
         }
 
         @Override
         protected void onPause() {
                 super.onPause();
-                getPreferenceScreen().getSharedPreferences()
-                                .unregisterOnSharedPreferenceChangeListener(this);
+                SharedPreferences mSharedPreferences = getPreferenceScreen().getSharedPreferences();
+                if (mSharedPreferences != null) {
+                   mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+                }
         }
 
 }

@@ -175,8 +175,10 @@ public class FMStats extends Activity  {
         adaptFmRf = ArrayAdapter.createFromResource(
             this, R.array.stats_options, android.R.layout.simple_spinner_item);
         adaptFmRf.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinOptionFmRf.setAdapter(adaptFmRf);
-        spinOptionFmRf.setOnItemSelectedListener(mSpinFmRfListener);
+        if (spinOptionFmRf != null) {
+           spinOptionFmRf.setAdapter(adaptFmRf);
+           spinOptionFmRf.setOnItemSelectedListener(mSpinFmRfListener);
+        }
 
         adaptCfgRf = ArrayAdapter.createFromResource(
             this, R.array.cfg_rf, android.R.layout.simple_spinner_item);
@@ -288,7 +290,9 @@ public class FMStats extends Activity  {
    private void clearPreviousTestResults()
    {
        TableLayout tl = (TableLayout) findViewById(R.id.maintable);
-       tl.removeAllViewsInLayout();
+       if (tl != null) {
+          tl.removeAllViewsInLayout();
+       }
        mNewRowIds = NEW_ROW_ID;
    }
 
@@ -302,13 +306,21 @@ public class FMStats extends Activity  {
         state*/
         if( state )
         {
-            RunButton.setText(R.string.test_run);
-            pbar.setVisibility(View.INVISIBLE);
+            if (RunButton != null) {
+               RunButton.setText(R.string.test_run);
+            }
+            if (pbar != null) {
+               pbar.setVisibility(View.INVISIBLE);
+            }
         }
         else
         {
-            RunButton.setText("Stop Test");
-            pbar.setVisibility(View.VISIBLE);
+            if (RunButton != null) {
+               RunButton.setText("Stop Test");
+            }
+            if (pbar != null) {
+               pbar.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -321,9 +333,13 @@ public class FMStats extends Activity  {
         switch(mTestSelected){
             case 1:
                 RunButton = (Button)findViewById(R.id.Runbutton);
-                RunButton.setVisibility(View.INVISIBLE);
+                if (RunButton != null) {
+                   RunButton.setVisibility(View.INVISIBLE);
+                }
                 pbar = (ProgressBar) findViewById(R.id.progressbar);
-                pbar.setVisibility(View.INVISIBLE);
+                if (pbar != null) {
+                   pbar.setVisibility(View.INVISIBLE);
+                }
                 ArrayAdapter<CharSequence> adaptCfgRf = ArrayAdapter.createFromResource(
                     this, R.array.cfg_rf, android.R.layout.simple_spinner_item);
                 adaptCfgRf.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -333,10 +349,16 @@ public class FMStats extends Activity  {
             case 2:
                 txtbox1 = (EditText) findViewById(R.id.txtbox1);
                 tv1 = (TextView) findViewById(R.id.label);
-                txtbox1.setVisibility(View.INVISIBLE);
-                tv1.setVisibility(View.INVISIBLE);
+                if (txtbox1 != null) {
+                   txtbox1.setVisibility(View.INVISIBLE);
+                }
+                if (tv1 != null) {
+                   tv1.setVisibility(View.INVISIBLE);
+                }
                 Button SetButton = (Button)findViewById(R.id.Setbutton);
-                SetButton.setVisibility(View.INVISIBLE);
+                if (SetButton != null) {
+                   SetButton.setVisibility(View.INVISIBLE);
+                }
                 ArrayAdapter<CharSequence> adaptRfCfg = ArrayAdapter.createFromResource(
                     this, R.array.rf_cfg, android.R.layout.simple_spinner_item);
                 adaptRfCfg.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -376,30 +398,48 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
             switch(pos)
             {
                 case 0:
-                    txtbox1.setText(R.string.type_rd);
-                    txtbox1.setVisibility(View.VISIBLE);
-                    tv1.setText(R.string.enter_rssi);
-                    tv1.setVisibility(View.VISIBLE);
-                    SetButton.setText(R.string.set_rmmsi_delta);
-                    SetButton.setVisibility(View.VISIBLE);
-                    SetButton.setOnClickListener(mOnSetRmssitListener);
+                    if (txtbox1 != null) {
+                       txtbox1.setText(R.string.type_rd);
+                       txtbox1.setVisibility(View.VISIBLE);
+                    }
+                    if (tv1 != null) {
+                       tv1.setText(R.string.enter_rssi);
+                       tv1.setVisibility(View.VISIBLE);
+                    }
+                    if (SetButton != null) {
+                       SetButton.setText(R.string.set_rmmsi_delta);
+                       SetButton.setVisibility(View.VISIBLE);
+                       SetButton.setOnClickListener(mOnSetRmssitListener);
+                    }
                     break;
                 case 1:
-                    txtbox1.setText(R.string.type_rd);
-                    txtbox1.setVisibility(View.VISIBLE);
-                    tv1.setText(R.string.enter_sigth);
-                    tv1.setVisibility(View.VISIBLE);
-                    SetButton.setText(R.string.set_sigth);
-                    SetButton.setVisibility(View.VISIBLE);
-                    SetButton.setOnClickListener(mOnSetRmssitListener);
+                    if (txtbox1 != null) {
+                       txtbox1.setText(R.string.type_rd);
+                       txtbox1.setVisibility(View.VISIBLE);
+                    }
+                    if (tv1 != null) {
+                       tv1.setText(R.string.enter_sigth);
+                       tv1.setVisibility(View.VISIBLE);
+                    }
+                    if (SetButton != null) {
+                       SetButton.setText(R.string.set_sigth);
+                       SetButton.setVisibility(View.VISIBLE);
+                       SetButton.setOnClickListener(mOnSetRmssitListener);
+                    }
                     break;
                 case 2:
                     tLayout.removeAllViewsInLayout();
                     mNewRowIds = NEW_ROW_ID;
                     tLayout.setVisibility(View.VISIBLE);
-                    txtbox1.setVisibility(View.INVISIBLE);
-                    tv1.setVisibility(View.INVISIBLE);
-                    SetButton.setVisibility(View.INVISIBLE);
+                    if (txtbox1 != null) {
+                       txtbox1.setVisibility(View.INVISIBLE);
+                    }
+                    if (tv1 != null) {
+                       tv1.setVisibility(View.INVISIBLE);
+                    }
+                    if (SetButton != null) {
+                       SetButton.setVisibility(View.INVISIBLE);
+                    }
                     adaptRfCfg.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinOptionFmRf.setAdapter(adaptRfCfg);
                     spinOptionFmRf.setOnItemSelectedListener(mSpinRfCfgListener);
@@ -427,15 +467,21 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
                     mNewRowIds = NEW_ROW_ID;
                     tLayout.setVisibility(View.VISIBLE);
                     RunButton = (Button)findViewById(R.id.Runbutton);
-                    RunButton.setText(R.string.test_run);
-                    RunButton.setVisibility(View.VISIBLE);
-                    RunButton.setOnClickListener(mOnRunListener);
+                    if (RunButton != null) {
+                       RunButton.setText(R.string.test_run);
+                       RunButton.setVisibility(View.VISIBLE);
+                       RunButton.setOnClickListener(mOnRunListener);
+                    }
                     break;
                 case 4:
                     RunButton = (Button)findViewById(R.id.Runbutton);
-                    RunButton.setVisibility(View.INVISIBLE);
+                    if (RunButton != null) {
+                       RunButton.setVisibility(View.INVISIBLE);
+                    }
                     pbar = (ProgressBar) findViewById(R.id.progressbar);
-                    pbar.setVisibility(View.INVISIBLE);
+                    if (pbar != null) {
+                       pbar.setVisibility(View.INVISIBLE);
+                    }
                     adaptCfgRf.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinOptionFmRf.setAdapter(adaptCfgRf);
                     spinOptionFmRf.setOnItemSelectedListener(mSpinCfgRfListener);
@@ -464,6 +510,9 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
     private void createResult(Result aRes) {
         // Get the TableLayout
         TableLayout tl = (TableLayout) findViewById(R.id.maintable);
+        if (tl == null) {
+           return;
+        }
 
          /* Create a new row to be added. */
         mNewRowIds++;

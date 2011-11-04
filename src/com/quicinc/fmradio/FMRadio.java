@@ -257,26 +257,44 @@ public class FMRadio extends Activity
                                                 R.anim.preset_select);
 
       mMuteButton = (ImageButton) findViewById(R.id.btn_silent);
-      mMuteButton.setOnClickListener(mMuteModeClickListener);
+      if (mMuteButton != null)
+      {
+         mMuteButton.setOnClickListener(mMuteModeClickListener);
+      }
 
       mOnOffButton = (ImageButton) findViewById(R.id.btn_onoff);
-      mOnOffButton.setOnClickListener(mTurnOnOffClickListener);
+      if (mOnOffButton != null)
+      {
+         mOnOffButton.setOnClickListener(mTurnOnOffClickListener);
+      }
 
       mForwardButton = (ImageView) findViewById(R.id.btn_forward);
-      mForwardButton.setOnClickListener(mForwardClickListener);
-      mForwardButton.setOnLongClickListener(mForwardLongClickListener);
+      if (mForwardButton != null)
+      {
+         mForwardButton.setOnClickListener(mForwardClickListener);
+         mForwardButton.setOnLongClickListener(mForwardLongClickListener);
+      }
 
       mBackButton = (ImageView) findViewById(R.id.btn_back);
-      mBackButton.setOnClickListener(mBackClickListener);
-      mBackButton.setOnLongClickListener(mBackLongClickListener);
+      if (mBackButton != null)
+      {
+         mBackButton.setOnClickListener(mBackClickListener);
+         mBackButton.setOnLongClickListener(mBackLongClickListener);
+      }
 
       mPresetPageButton = (ImageButton) findViewById(R.id.btn_preset_page);
-      mPresetPageButton.setOnClickListener(mPresetsPageClickListener);
+      if (mPresetPageButton != null)
+      {
+         mPresetPageButton.setOnClickListener(mPresetsPageClickListener);
+      }
 
       mPresetListButton = (Button) findViewById(R.id.btn_presets_list);
-      mPresetListButton.setOnClickListener(mPresetListClickListener);
-      mPresetListButton
-      .setOnLongClickListener(mPresetListButtonOnLongClickListener);
+      if (mPresetListButton != null)
+      {
+         mPresetListButton.setOnClickListener(mPresetListClickListener);
+         mPresetListButton
+          .setOnLongClickListener(mPresetListButtonOnLongClickListener);
+      }
 
       /* 6 Preset Buttons */
       mPresetButtons[0] = (Button) findViewById(R.id.presets_button_1);
@@ -286,10 +304,13 @@ public class FMRadio extends Activity
       mPresetButtons[4] = (Button) findViewById(R.id.presets_button_5);
       for (int nButton = 0; nButton < MAX_PRESETS_PER_PAGE; nButton++)
       {
-         mPresetButtons[nButton]
-         .setOnClickListener(mPresetButtonClickListener);
-         mPresetButtons[nButton]
-         .setOnLongClickListener(mPresetButtonOnLongClickListener);
+         if (mPresetButtons[nButton] != null)
+         {
+            mPresetButtons[nButton]
+            .setOnClickListener(mPresetButtonClickListener);
+            mPresetButtons[nButton]
+            .setOnLongClickListener(mPresetButtonOnLongClickListener);
+         }
       }
 
       mTuneStationFrequencyTV = (TextView) findViewById(R.id.prog_frequency_tv);
@@ -308,9 +329,12 @@ public class FMRadio extends Activity
       mRecordingMsgTV = (TextView) findViewById(R.id.record_msg_tv);
       /* Disable displaying RSSI */
       mRSSI = (ImageView) findViewById(R.id.signal_level);
-      mRSSI.setVisibility(View.INVISIBLE);
+      if (mRSSI != null)
+      {
+         mRSSI.setVisibility(View.INVISIBLE);
+      }
 
-      if ( (mRadioTextScroller == null) && (mRadioTextTV != null))
+      if ((mRadioTextScroller == null) && (mRadioTextTV != null))
       {
          mRadioTextScroller = new ScrollerText(mRadioTextTV);
       }
@@ -322,13 +346,13 @@ public class FMRadio extends Activity
          showDialog(DIALOG_CMD_FAILED_HDMI_ON);
       }
       else {
-          if (false == bindToService(this, osc))
-          {
-             Log.d(LOGTAG, "onCreate: Failed to Start Service");
-          } else
-          {
-             Log.d(LOGTAG, "onCreate: Start Service completed successfully");
-          }
+         if (false == bindToService(this, osc))
+         {
+            Log.d(LOGTAG, "onCreate: Failed to Start Service");
+         } else
+         {
+            Log.d(LOGTAG, "onCreate: Start Service completed successfully");
+         }
       }
    }
 
@@ -338,7 +362,7 @@ public class FMRadio extends Activity
       try {
          if (null != mService) {
               mService.requestFocus();
-          }
+         }
       } catch (Exception e) {
          e.printStackTrace();
       }
@@ -927,7 +951,7 @@ public class FMRadio extends Activity
       {
       case DIALOG_PRESET_LIST_RENAME: {
             EditText et = (EditText) dialog.findViewById(R.id.list_edit);
-            if (et != null)
+            if (et != null && curList != null)
             {
                et.setText(curList.getName());
             }
@@ -935,16 +959,22 @@ public class FMRadio extends Activity
          }
       case DIALOG_PRESET_LIST_DELETE: {
             AlertDialog alertDlg = ((AlertDialog) dialog);
-            alertDlg.setTitle(curList.getName());
-            alertDlg.setMessage(getString(R.string.presetlist_delete_name, curList.getName()));
+            if (alertDlg != null && curList != null)
+            {
+               alertDlg.setTitle(curList.getName());
+               alertDlg.setMessage(getString(R.string.presetlist_delete_name, curList.getName()));
+            }
             break;
          }
 
       case DIALOG_PRESET_LIST_AUTO_SET: {
             AlertDialog alertDlg = ((AlertDialog) dialog);
-            alertDlg.setTitle(curList.getName());
-            ((AlertDialog) dialog)
-            .setMessage(getString(R.string.presetlist_autoselect_name, curList.getName()));
+            if (alertDlg != null && curList != null)
+            {
+               alertDlg.setTitle(curList.getName());
+               ((AlertDialog) dialog)
+               .setMessage(getString(R.string.presetlist_autoselect_name, curList.getName()));
+            }
             break;
          }
       case DIALOG_SELECT_PRESET_LIST: {
@@ -958,18 +988,24 @@ public class FMRadio extends Activity
          }
       case DIALOG_PRESETS_LIST: {
             AlertDialog alertDlg = ((AlertDialog) dialog);
-            alertDlg.setTitle(curList.getName());
+            if(alertDlg != null && curList != null)
+            {
+                alertDlg.setTitle(curList.getName());
+            }
             break;
          }
       case DIALOG_PICK_FREQUENCY:
          {
-            ((FrequencyPickerDialog) dialog).UpdateFrequency(mTunedStation.getFrequency());
+            if (dialog != null && mTunedStation != null)
+            {
+               ((FrequencyPickerDialog) dialog).UpdateFrequency(mTunedStation.getFrequency());
+            }
             break;
          }
       case DIALOG_PRESET_RENAME:
          {
             EditText et = (EditText) dialog.findViewById(R.id.list_edit);
-            if ( (et != null) && (mPresetButtonStation != null))
+            if ((et != null) && (mPresetButtonStation != null))
             {
                et.setText(mPresetButtonStation.getName());
             }
@@ -977,7 +1013,7 @@ public class FMRadio extends Activity
          }
       case DIALOG_PRESET_OPTIONS: {
          AlertDialog alertDlg = ((AlertDialog) dialog);
-         if( (alertDlg != null) && (mPresetButtonStation != null))
+         if ((alertDlg != null) && (mPresetButtonStation != null))
          {
             alertDlg.setTitle(mPresetButtonStation.getName());
          }
@@ -1275,24 +1311,26 @@ public class FMRadio extends Activity
 
       if(bSearchActive) {
          mProgressDialog = new ProgressDialog(FMRadio.this);
-         mProgressDialog.setTitle(titleStr);
-         mProgressDialog.setMessage(msgStr);
-         mProgressDialog.setIcon(R.drawable.ic_launcher_fmradio);
-         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-         mProgressDialog.setButton(DialogInterface.BUTTON_POSITIVE,
+         if (mProgressDialog != null) {
+            mProgressDialog.setTitle(titleStr);
+            mProgressDialog.setMessage(msgStr);
+            mProgressDialog.setIcon(R.drawable.ic_launcher_fmradio);
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setButton(DialogInterface.BUTTON_POSITIVE,
                                    getText(R.string.button_text_stop),
-             new DialogInterface.OnClickListener() {
-             public void onClick(DialogInterface dialog, int whichButton) {
-                cancelSearch();
-             }
-         }
-         );
-         mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            public void onCancel(DialogInterface dialog) {
-               cancelSearch();
+               new DialogInterface.OnClickListener() {
+               public void onClick(DialogInterface dialog, int whichButton) {
+                  cancelSearch();
+               }
             }
+            );
+            mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                public void onCancel(DialogInterface dialog) {
+                   cancelSearch();
+                }
+            }
+            );
          }
-         );
 
          Message msg = new Message();
          msg.what = TIMEOUT_PROGRESS_DLG;
@@ -1349,7 +1387,7 @@ public class FMRadio extends Activity
       PresetList curList = FmSharedPreferences.getStationList(currentList);
 
       dlgBuilder.setIcon(R.drawable.alert_dialog_icon);
-      dlgBuilder.setTitle("\"" + curList.getName() + "\"");
+      dlgBuilder.setTitle("\"" + ((curList == null)?"":curList.getName()) + "\"");
       dlgBuilder.setItems(items, new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int item) {
               switch(item)
@@ -1367,14 +1405,16 @@ public class FMRadio extends Activity
                        FmSharedPreferences.getCurrentListIndex();
                     PresetList curList =
                        FmSharedPreferences.getStationList(currentList);
-                    if(curList.getStationCount() > 0)
+                    if (curList != null && curList.getStationCount() > 0)
                     {
                        /* Show a autoselect- deletes presets warning */
                        showDialog(DIALOG_PRESET_LIST_AUTO_SET);
                     }
                     else
                     {
-                       curList.clear();
+                       if (curList != null) {
+                          curList.clear();
+                       }
                        /* Since the presets will be changed,
                         * reset the page number
                         */
@@ -1479,7 +1519,10 @@ public class FMRadio extends Activity
 
                                          EditText mTV = (EditText) textEntryView
                                          .findViewById(R.id.list_edit);
-                                         CharSequence newName = mTV.getEditableText();
+                                         CharSequence newName = null;
+                                         if (mTV != null) {
+                                            newName = mTV.getEditableText();
+                                         }
                                          String nName = String.valueOf(newName);
                                          mPresetButtonStation.setName(nName);
                                          mPresetButtonStation=null;
@@ -1533,8 +1576,9 @@ public class FMRadio extends Activity
       PresetList curList = FmSharedPreferences.getStationList(currentList);
       AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
       dlgBuilder.setIcon(R.drawable.alert_dialog_icon).setTitle(
-                                                               curList.getName());
-      dlgBuilder.setMessage(getString(R.string.presetlist_delete_name, curList.getName()));
+                                       (curList == null)?"":curList.getName());
+      dlgBuilder.setMessage(getString(R.string.presetlist_delete_name,
+                                       (curList == null)?"":curList.getName()));
       dlgBuilder.setPositiveButton(R.string.alert_dialog_ok,
                                    new DialogInterface.OnClickListener() {
                                       public void onClick(DialogInterface dialog, int whichButton) {
@@ -1565,7 +1609,7 @@ public class FMRadio extends Activity
       dlgBuilder.setIcon(R.drawable.alert_dialog_icon)
                 .setTitle(R.string.presetlist_autoselect_title);
       dlgBuilder.setMessage(getString(R.string.presetlist_autoselect_name,
-                                      curList.getName()));
+                                      (curList == null)?"":curList.getName()));
 
       dlgBuilder.setPositiveButton(R.string.alert_dialog_ok,
                                    new DialogInterface.OnClickListener() {
@@ -2092,74 +2136,122 @@ public class FMRadio extends Activity
 
    private void enableRadioOnOffUI(boolean bEnable) {
 
-      mMuteButton.setEnabled(bEnable);
-      setMuteModeButtonImage(false);
+      if (mMuteButton != null) {
+         mMuteButton.setEnabled(bEnable);
+         setMuteModeButtonImage(false);
+      }
       if (bEnable)
       {
-         mTuneStationFrequencyTV.setOnLongClickListener(mFrequencyViewClickListener);
-         mRadioTextScroller.startScroll();
-         if (!isSleepTimerActive())
+         if (mTuneStationFrequencyTV != null) {
+            mTuneStationFrequencyTV.setOnLongClickListener(mFrequencyViewClickListener);
+         }
+         if (mRadioTextScroller != null) {
+            mRadioTextScroller.startScroll();
+         }
+         if (mSleepMsgTV != null && !isSleepTimerActive())
          {
             mSleepMsgTV.setText("");
          }
-         if (!isRecording())
+         if (mRecordingMsgTV != null && !isRecording())
          {
             mRecordingMsgTV.setText("");
          }
       } else
       {
-         mTuneStationFrequencyTV.setOnLongClickListener(null);
-         mRadioTextScroller.stopScroll();
+         if (mTuneStationFrequencyTV != null) {
+            mTuneStationFrequencyTV.setOnLongClickListener(null);
+         }
+         if (mRadioTextScroller != null) {
+            mRadioTextScroller.stopScroll();
+         }
       }
 
-      mForwardButton.setVisibility(((bEnable == true) ? View.VISIBLE
+      if (mForwardButton != null) {
+         mForwardButton.setVisibility(((bEnable == true) ? View.VISIBLE
                                     : View.INVISIBLE));
-      mBackButton.setVisibility(((bEnable == true) ? View.VISIBLE
+      }
+      if (mBackButton != null) {
+         mBackButton.setVisibility(((bEnable == true) ? View.VISIBLE
                                  : View.INVISIBLE));
-      mTuneStationFrequencyTV.setVisibility(((bEnable == true) ? View.VISIBLE
+      }
+      if (mTuneStationFrequencyTV != null) {
+         mTuneStationFrequencyTV.setVisibility(((bEnable == true) ? View.VISIBLE
                                              : View.INVISIBLE));
-      mStationCallSignTV.setVisibility(((bEnable == true) ? View.VISIBLE
-                                        : View.INVISIBLE));
-      mProgramTypeTV.setVisibility(((bEnable == true) ? View.VISIBLE
-                                    : View.INVISIBLE));
-      mSleepMsgTV.setVisibility(((bEnable == true) ? View.VISIBLE
-                                 : View.INVISIBLE));
-      mRecordingMsgTV.setVisibility(((bEnable == true) ? View.VISIBLE
-                                     : View.INVISIBLE));
-      mRadioTextTV.setVisibility(((bEnable == true) ? View.VISIBLE
-                                  : View.INVISIBLE));
-      mProgramServiceTV.setVisibility(((bEnable == true) ? View.VISIBLE
-                                  : View.INVISIBLE));
-
-      if(!isAntennaAvailable())
-      {
-         mRadioTextTV.setVisibility(View.VISIBLE);
-         mRadioTextTV.setText(getString(R.string.msg_noantenna));
-         mOnOffButton.setEnabled(false);
       }
-      else if(isCallActive())
+      if (mStationCallSignTV != null) {
+         mStationCallSignTV.setVisibility(((bEnable == true) ? View.VISIBLE
+                                        : View.INVISIBLE));
+      }
+      if (mProgramTypeTV != null) {
+         mProgramTypeTV.setVisibility(((bEnable == true) ? View.VISIBLE
+                                    : View.INVISIBLE));
+      }
+      if (mSleepMsgTV != null) {
+         mSleepMsgTV.setVisibility(((bEnable == true) ? View.VISIBLE
+                                 : View.INVISIBLE));
+      }
+      if (mRecordingMsgTV != null) {
+         mRecordingMsgTV.setVisibility(((bEnable == true) ? View.VISIBLE
+                                     : View.INVISIBLE));
+      }
+      if (mRadioTextTV != null) {
+         mRadioTextTV.setVisibility(((bEnable == true) ? View.VISIBLE
+                                  : View.INVISIBLE));
+      }
+      if (mProgramServiceTV != null) {
+         mProgramServiceTV.setVisibility(((bEnable == true) ? View.VISIBLE
+                                  : View.INVISIBLE));
+      }
+
+      if (!isAntennaAvailable())
       {
-         mRadioTextTV.setText("");
-         mOnOffButton.setEnabled(false);
+         if (mRadioTextTV != null) {
+            mRadioTextTV.setVisibility(View.VISIBLE);
+            mRadioTextTV.setText(getString(R.string.msg_noantenna));
+         }
+         if (mOnOffButton != null) {
+            mOnOffButton.setEnabled(false);
+         }
+      }
+      else if (isCallActive())
+      {
+         if (mRadioTextTV != null) {
+            mRadioTextTV.setText("");
+         }
+         if (mOnOffButton != null) {
+            mOnOffButton.setEnabled(false);
+         }
       }
       else
       {
-         mRadioTextTV.setText("");
-         mOnOffButton.setEnabled(true);
+         if (mRadioTextTV != null) {
+            mRadioTextTV.setText("");
+         }
+         if (mOnOffButton != null) {
+            mOnOffButton.setEnabled(true);
+         }
       }
 
       /* Disable displaying RSSI */
       //mRSSI.setVisibility(((bEnable == true) ? View.VISIBLE
       //                : View.INVISIBLE));
-      mStereoTV.setVisibility(((bEnable == true) ? View.VISIBLE
+      if (mStereoTV != null) {
+         mStereoTV.setVisibility(((bEnable == true) ? View.VISIBLE
                                : View.INVISIBLE));
+      }
       for (int nButton = 0; nButton < MAX_PRESETS_PER_PAGE; nButton++)
       {
-         mPresetButtons[nButton].setEnabled(bEnable);
+         if (mPresetButtons[nButton] != null) {
+            mPresetButtons[nButton].setEnabled(bEnable);
+         }
       }
-      mPresetListButton.setEnabled(bEnable);
-      mPresetPageButton.setEnabled(bEnable &&
+      if (mPresetListButton != null) {
+         mPresetListButton.setEnabled(bEnable);
+      }
+      if (mPresetPageButton != null) {
+         mPresetPageButton.setEnabled(bEnable &&
                                    (FmSharedPreferences.getListStationCount() >= MAX_PRESETS_PER_PAGE));
+      }
    }
 
    private void updateSearchProgress() {
@@ -2837,7 +2929,9 @@ public class FMRadio extends Activity
                   int currentList = FmSharedPreferences.getCurrentListIndex();
                   PresetList curList =
                        FmSharedPreferences.getStationList(currentList);
-                  curList.clear();
+                  if (curList != null) {
+                     curList.clear();
+                  }
                   mPresetPageNumber = 0;
 
                   for( int station=0;
