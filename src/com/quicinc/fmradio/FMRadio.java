@@ -1964,6 +1964,7 @@ public class FMRadio extends Activity
                        Log.e(LOGTAG, " mService.fmOn failed");
                        mCommandFailed = CMD_FMON;
                        if( isCallActive() ) {
+                          enableRadioOnOffUI();
                           showDialog(DIALOG_CMD_FAILED_CALL_ON);
                        } else {
                           showDialog(DIALOG_CMD_FAILED);
