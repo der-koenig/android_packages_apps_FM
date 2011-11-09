@@ -37,6 +37,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnKeyListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
@@ -888,28 +889,46 @@ public class FMRadio extends Activity
 
    @Override
    protected Dialog onCreateDialog(int id) {
+      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
+      dlgBuilder.setOnKeyListener(new OnKeyListener() {
+         public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+             Log.d(LOGTAG, "OnKeyListener event received"+keyCode);
+             switch (keyCode) {
+                 case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                 case 126: //KeyEvent.KEYCODE_MEDIA_PLAY:
+                 case 127: //KeyEvent.KEYCODE_MEDIA_PAUSE:
+                 case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                 case KeyEvent.KEYCODE_MEDIA_NEXT:
+                 case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                 case KeyEvent.KEYCODE_MEDIA_REWIND:
+                 case KeyEvent.KEYCODE_MEDIA_STOP:
+                     return true;
+             }
+             return false;
+         }
+      });
       switch (id)
       {
       case DIALOG_SELECT_PRESET_LIST: {
-            return createSelectPresetListDlg(id);
+            return createSelectPresetListDlg(id, dlgBuilder);
          }
       case DIALOG_PRESETS_LIST: {
-            return createPresetListEditDlg(id);
+            return createPresetListEditDlg(id, dlgBuilder);
          }
       case DIALOG_PRESET_LIST_RENAME: {
-            return createPresetListRenameDlg(id);
+            return createPresetListRenameDlg(id, dlgBuilder);
          }
       case DIALOG_PRESET_LIST_DELETE: {
-            return createPresetListDeleteDlg(id);
+            return createPresetListDeleteDlg(id, dlgBuilder);
          }
       case DIALOG_PRESET_LIST_AUTO_SET: {
-            return createPresetListAutoSelectWarnDlg(id);
+            return createPresetListAutoSelectWarnDlg(id, dlgBuilder);
          }
       case DIALOG_SEARCH: {
-            return createSearchDlg(id);
+            return createSearchDlg(id, dlgBuilder);
          }
       case DIALOG_SLEEP: {
-            return createSleepDlg(id);
+            return createSleepDlg(id, dlgBuilder);
          }
       case DIALOG_PICK_FREQUENCY: {
             FmConfig fmConfig = FmSharedPreferences.getFMConfiguration();
@@ -919,16 +938,16 @@ public class FMRadio extends Activity
          return createProgressDialog(id);
         }
       case DIALOG_PRESET_OPTIONS: {
-         return createPresetOptionsDlg(id);
+         return createPresetOptionsDlg(id, dlgBuilder);
        }
       case DIALOG_PRESET_RENAME: {
-         return createPresetRenameDlg(id);
+         return createPresetRenameDlg(id, dlgBuilder);
        }
       case DIALOG_CMD_TIMEOUT:{
-         return createCmdTimeoutDlg(id);
+         return createCmdTimeoutDlg(id, dlgBuilder);
       }
       case DIALOG_CMD_FAILED:{
-         return createCmdFailedDlg(id);
+         return createCmdFailedDlg(id, dlgBuilder);
       }
       case DIALOG_CMD_FAILED_HDMI_ON:{
          return createCmdFailedDlgHdmiOn(id);
@@ -1106,9 +1125,8 @@ public class FMRadio extends Activity
         return bCallActive;
     }
 
-   private Dialog createSearchDlg(int id) {
+   private Dialog createSearchDlg(int id, AlertDialog.Builder dlgBuilder) {
       String[] items;
-      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
       dlgBuilder.setIcon(R.drawable.ic_btn_search);
       dlgBuilder.setTitle(getString(R.string.search_dialog_title));
       /* Pick RBDS or RDS */
@@ -1157,10 +1175,9 @@ public class FMRadio extends Activity
       return dlgBuilder.create();
    }
 
-   private Dialog createPresetOptionsDlg(int id) {
+   private Dialog createPresetOptionsDlg(int id, AlertDialog.Builder dlgBuilder) {
       if(mPresetButtonStation != null)
       {
-         AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
          dlgBuilder.setTitle(mPresetButtonStation.getName());
          ArrayList<String> arrayList = new ArrayList<String>();
          //PRESETS_OPTIONS_TUNE=0
@@ -1255,8 +1272,7 @@ public class FMRadio extends Activity
       return null;
    }
 
-   private Dialog createSleepDlg(int id) {
-      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
+   private Dialog createSleepDlg(int id, AlertDialog.Builder dlgBuilder) {
       dlgBuilder.setTitle(R.string.dialog_sleep_title);
       String[] items = getResources().getStringArray(R.array.sleep_duration_values);
 
@@ -1330,6 +1346,24 @@ public class FMRadio extends Activity
                 }
             }
             );
+            mProgressDialog.setOnKeyListener(new OnKeyListener() {
+                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                    Log.d(LOGTAG, "OnKeyListener event received in ProgressDialog"+keyCode);
+                    switch (keyCode) {
+                        case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                        case 126: //KeyEvent.KEYCODE_MEDIA_PLAY:
+                        case 127: //KeyEvent.KEYCODE_MEDIA_PAUSE:
+                        case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                        case KeyEvent.KEYCODE_MEDIA_NEXT:
+                        case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                        case KeyEvent.KEYCODE_MEDIA_REWIND:
+                        case KeyEvent.KEYCODE_MEDIA_STOP:
+                            return true;
+                    }
+                    return false;
+                }
+            }
+            );
          }
 
          Message msg = new Message();
@@ -1378,10 +1412,8 @@ public class FMRadio extends Activity
    }
 
 
-   private Dialog createPresetListEditDlg(int id) {
+   private Dialog createPresetListEditDlg(int id, AlertDialog.Builder dlgBuilder) {
       String[] items = getResources().getStringArray(R.array.presetlist_edit_category);
-      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
-
 
       int currentList = FmSharedPreferences.getCurrentListIndex();
       PresetList curList = FmSharedPreferences.getStationList(currentList);
@@ -1440,8 +1472,7 @@ public class FMRadio extends Activity
       return dlgBuilder.create();
    }
 
-   private Dialog createSelectPresetListDlg(int id) {
-      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
+   private Dialog createSelectPresetListDlg(int id, AlertDialog.Builder dlgBuilder) {
       LayoutInflater factory = LayoutInflater.from(this);
       final View listView = factory.inflate(R.layout.alert_dialog_list, null);
       ListView lv = (ListView) listView.findViewById(R.id.list);
@@ -1501,7 +1532,7 @@ public class FMRadio extends Activity
       return dlgBuilder.create();
    }
 
-   private Dialog createPresetRenameDlg(int id) {
+   private Dialog createPresetRenameDlg(int id, AlertDialog.Builder dlgBuilder) {
       if(mPresetButtonStation == null)
       {
          return null;
@@ -1509,7 +1540,6 @@ public class FMRadio extends Activity
       LayoutInflater factory = LayoutInflater.from(this);
       final View textEntryView = factory.inflate(
                                                 R.layout.alert_dialog_text_entry, null);
-      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
       dlgBuilder.setTitle(R.string.dialog_presetlist_rename_title);
       dlgBuilder.setView(textEntryView);
       dlgBuilder.setPositiveButton(R.string.alert_dialog_ok,
@@ -1540,11 +1570,10 @@ public class FMRadio extends Activity
       return(dlgBuilder.create());
    }
 
-   private Dialog createPresetListRenameDlg(int id) {
+   private Dialog createPresetListRenameDlg(int id, AlertDialog.Builder dlgBuilder) {
       LayoutInflater factory = LayoutInflater.from(this);
       final View textEntryView = factory.inflate(
                                                 R.layout.alert_dialog_text_entry, null);
-      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
       dlgBuilder.setTitle(R.string.dialog_presetlist_rename_title);
       dlgBuilder.setView(textEntryView);
       dlgBuilder.setPositiveButton(R.string.alert_dialog_ok,
@@ -1571,10 +1600,9 @@ public class FMRadio extends Activity
       return(dlgBuilder.create());
    }
 
-   private Dialog createPresetListDeleteDlg(int id) {
+   private Dialog createPresetListDeleteDlg(int id, AlertDialog.Builder dlgBuilder) {
       int currentList = FmSharedPreferences.getCurrentListIndex();
       PresetList curList = FmSharedPreferences.getStationList(currentList);
-      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
       dlgBuilder.setIcon(R.drawable.alert_dialog_icon).setTitle(
                                        (curList == null)?"":curList.getName());
       dlgBuilder.setMessage(getString(R.string.presetlist_delete_name,
@@ -1602,10 +1630,9 @@ public class FMRadio extends Activity
       return(dlgBuilder.create());
    }
 
-   private Dialog createPresetListAutoSelectWarnDlg(int id) {
+   private Dialog createPresetListAutoSelectWarnDlg(int id, AlertDialog.Builder dlgBuilder) {
       int currentList = FmSharedPreferences.getCurrentListIndex();
       PresetList curList = FmSharedPreferences.getStationList(currentList);
-      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
       dlgBuilder.setIcon(R.drawable.alert_dialog_icon)
                 .setTitle(R.string.presetlist_autoselect_title);
       dlgBuilder.setMessage(getString(R.string.presetlist_autoselect_name,
@@ -1637,10 +1664,9 @@ public class FMRadio extends Activity
    }
 
 
-   private Dialog createCmdTimeoutDlg(int id) {
+   private Dialog createCmdTimeoutDlg(int id, AlertDialog.Builder dlgBuilder) {
       if(mCommandActive > 0)
       {
-         AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
          dlgBuilder.setIcon(R.drawable.alert_dialog_icon)
                    .setTitle(R.string.fm_command_timeout_title);
          dlgBuilder.setMessage(R.string.fm_tune_timeout_msg);
@@ -1662,8 +1688,7 @@ public class FMRadio extends Activity
       }
    }
 
-   private Dialog createCmdFailedDlg(int id) {
-      AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
+   private Dialog createCmdFailedDlg(int id, AlertDialog.Builder dlgBuilder) {
       dlgBuilder.setIcon(R.drawable.alert_dialog_icon)
                 .setTitle(R.string.fm_command_failed_title);
       dlgBuilder.setMessage(R.string.fm_cmd_failed_msg);
