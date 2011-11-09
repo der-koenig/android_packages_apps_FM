@@ -1583,7 +1583,10 @@ public class FMRadio extends Activity
 
                                          EditText mTV = (EditText) textEntryView
                                          .findViewById(R.id.list_edit);
-                                         CharSequence newName = mTV.getEditableText();
+                                         CharSequence newName = null;
+                                         if (mTV != null) {
+                                            newName = mTV.getEditableText();
+                                         }
                                          String nName = String.valueOf(newName);
                                          FmSharedPreferences.renamePresetList(nName, curList);
                                          setupPresetLayout();

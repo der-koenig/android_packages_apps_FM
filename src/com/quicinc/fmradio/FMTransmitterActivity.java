@@ -842,7 +842,7 @@ public class FMTransmitterActivity extends Activity {
                         if (mRadioTextTV != null) {
                            mRadioTextTV.setText("");
                         }
-                        if (mRadioTextTV != null) {
+                        if (mOnOffButton != null) {
                            mOnOffButton.setEnabled(true);
                         }
                     }
