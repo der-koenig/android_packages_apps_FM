@@ -599,10 +599,6 @@ public class FMRadioService extends Service
               AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
        mStoppedOnFocusLoss = false;
 
-       if(mMuted) {
-            audioManager.setStreamMute(AudioManager.STREAM_FM,true);
-       }
-
        if ((true == mA2dpDeviceState.isDeviceAvailable()) &&
            (!isSpeakerEnabled()) && !isAnalogModeEnabled() &&
            (true == startA2dpPlayback())) {
@@ -625,10 +621,6 @@ public class FMRadioService extends Service
 
    private void stopFM(){
        Log.d(LOGTAG, "In stopFM");
-       if(mMuted) {
-            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            audioManager.setStreamMute(AudioManager.STREAM_FM,false);
-       }
        if (mOverA2DP==true){
            mOverA2DP=false;
            stopA2dpPlayback();
