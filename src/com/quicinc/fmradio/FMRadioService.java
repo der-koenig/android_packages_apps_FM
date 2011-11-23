@@ -2166,7 +2166,7 @@ public class FMRadioService extends Service
 
       public void FmRxEvDisableReceiver()
       {
-         Log.d(LOGTAG, "FmRxEvEnableReceiver");
+         Log.d(LOGTAG, "FmRxEvDisableReceiver");
       }
       public void FmRxEvConfigReceiver()
       {
@@ -2253,9 +2253,15 @@ public class FMRadioService extends Service
             e.printStackTrace();
          }
       }
-      public void FmRxEvServiceAvailable()
+      public void FmRxEvServiceAvailable(boolean signal)
       {
          Log.d(LOGTAG, "FmRxEvServiceAvailable");
+         if(signal) {
+             Log.d(LOGTAG, "FmRxEvServiceAvailable: Tuned frequency is above signal threshold level");
+         }
+         else {
+             Log.d(LOGTAG, "FmRxEvServiceAvailable: Tuned frequency is below signal threshold level");
+         }
       }
       public void FmRxEvGetSignalThreshold()
       {
@@ -2317,7 +2323,7 @@ public class FMRadioService extends Service
 
       public void FmRxEvSearchCancelled()
       {
-         Log.d(LOGTAG, "FmRxEvSearchCancelled");
+         Log.d(LOGTAG, "FmRxEvSearchCancelled: Cancelled the on-going search operation.");
       }
       public void FmRxEvRdsGroupData()
       {
