@@ -1,4 +1,3 @@
-ifneq ($(call is-android-codename,ICECREAM_SANDWICH),true)
 ifeq ($(BOARD_HAVE_QCOM_FM),true)
 
 LOCAL_PATH:= $(call my-dir)
@@ -11,7 +10,7 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src/com/quicinc/fmradio) \
 	src/com/quicinc/fmradio/IFMTransmitterService.aidl \
 
 
-ifeq ($(call is-android-codename,HONEYCOMB),true)
+ifeq ($(call is-android-codename-in-list,ICECREAM_SANDWICH HONEYCOMB),true)
 LOCAL_SRC_FILES +=  $(call all-java-files-under, src/com/quicinc/hc_utils)
 else
 LOCAL_SRC_FILES +=  $(call all-java-files-under, src/com/quicinc/utils)
@@ -21,5 +20,4 @@ LOCAL_CERTIFICATE := platform
 
 include $(BUILD_PACKAGE)
 
-endif
 endif
