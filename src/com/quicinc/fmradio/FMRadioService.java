@@ -154,7 +154,6 @@ public class FMRadioService extends Service
 
       mPrefs = new FmSharedPreferences(this);
       mCallbacks = null;
-      /* TO DO: Uncomment DSDS change when the support is available
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
       //Track call state and data activity on each subscription
@@ -165,7 +164,6 @@ public class FMRadioService extends Service
           tmgr.listen(mPhoneStateListener[i], PhoneStateListener.LISTEN_CALL_STATE |
                                        PhoneStateListener.LISTEN_DATA_ACTIVITY);
       }
-      */
 
       PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
       mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, this.getClass().getName());
@@ -232,14 +230,12 @@ public class FMRadioService extends Service
       /* Since the service is closing, disable the receiver */
       fmOff();
 
-      /* TO DO: Uncomment DSDS change when the support is available
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
       //Un-Track call state and data activity on each subscription
       for (int i=0; i < mNosOfSubscriptions; i++) {
           tmgr.listen(mPhoneStateListener[i], 0);
       }
-      */
 
       Log.d(LOGTAG, "onDestroy: unbindFromService completed");
 
@@ -905,12 +901,10 @@ public class FMRadioService extends Service
        values.put(MediaStore.Audio.Playlists.Members.AUDIO_ID, audioId);
        resolver.insert(uri, values);
    }
-   /* TO DO: Uncomment DSDS change when the support is available
    private void fmActionOnCallState( int state ) {
    //if Call Status is non IDLE we need to Mute FM as well stop recording if
    //any. Similarly once call is ended FM should be unmuted.
        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-
        if((TelephonyManager.CALL_STATE_OFFHOOK == state)||
           (TelephonyManager.CALL_STATE_RINGING == state)) {
            if (state == TelephonyManager.CALL_STATE_RINGING) {
@@ -924,8 +918,9 @@ public class FMRadioService extends Service
        fmOff();
        try
            {
-               // Notify the UI/Activity, only if the service is "bound"
-               // by an activity and if Callbacks are registered
+               /* Notify the UI/Activity, only if the service is "bound"
+                  by an activity and if Callbacks are registered
+               */
                if((mServiceInUse) && (mCallbacks != null) )
                {
                    mCallbacks.onDisabled();
@@ -967,10 +962,7 @@ public class FMRadioService extends Service
           }
        }//idle
    }
-   */
-
     /* Handle Phone Call + FM Concurrency */
-    /* TO DO: Uncomment DSDS change when the support is available
     private PhoneStateListener getPhoneStateListener(int subscription) {
         PhoneStateListener phoneStateListener = new PhoneStateListener(subscription) {
             @Override
@@ -1008,7 +1000,6 @@ public class FMRadioService extends Service
         };
         return phoneStateListener;
     }
-    */
 
    private Handler mDelayedStopHandler = new Handler() {
       @Override
@@ -1414,11 +1405,9 @@ public class FMRadioService extends Service
    */
    private boolean fmOn() {
       boolean bStatus=false;
-      /* TO DO: Uncomment DSDS change when the support is available
       if ( TelephonyManager.CALL_STATE_IDLE != getCallState() ) {
          return bStatus;
       }
-      */
 
       if(mReceiver == null)
       {
@@ -1466,7 +1455,6 @@ public class FMRadioService extends Service
             {
                Log.d(LOGTAG, "mAudioManager.setFmRadioOn = true \n" );
                //audioManager.setParameters("FMRadioOn="+mAudioDevice);
-               /* TO DO: Uncomment DSDS change when the support is available
                int state =  getCallState();
                if ( TelephonyManager.CALL_STATE_IDLE != state )
                {
@@ -1477,8 +1465,7 @@ public class FMRadioService extends Service
                                         TelephonyManager.CALL_STATE_OFFHOOK) ?
                                         TelephonyManager.CALL_STATE_OFFHOOK:
                                         TelephonyManager.CALL_STATE_RINGING));
-               }
-               else */ {
+               } else {
                    startFM(); // enable FM Audio only when Call is IDLE
                }
                Log.d(LOGTAG, "mAudioManager.setFmRadioOn done \n" );
@@ -2154,11 +2141,9 @@ public class FMRadioService extends Service
    {
        //Non-zero: Call state is RINGING or OFFHOOK on the available subscriptions
        //zero: Call state is IDLE on all the available subscriptions
-       /* TO DO: Uncomment DSDS change when the support is available
-       if(0 != getCallState()) return true; */
+       if(0 != getCallState()) return true;
        return false;
    }
-   /* TO DO: Uncomment DSDS change when the support is available
    public int getCallState()
    {
        int callState = 0;
@@ -2171,7 +2156,6 @@ public class FMRadioService extends Service
        }
        return callState;
    }
-   */
 
    /* Receiver callbacks back from the FM Stack */
    FmRxEvCallbacksAdaptor fmCallbacks = new FmRxEvCallbacksAdaptor()

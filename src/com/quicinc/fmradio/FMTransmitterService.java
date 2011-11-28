@@ -123,7 +123,6 @@ public class FMTransmitterService extends Service
       // If the service was idle, but got killed before it stopped itself, the
       // system will relaunch it. Make sure it gets stopped again in that case.
 
-      /* TO DO: Uncomment DSDS change when the support is available
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
       //Track call state on each subscription
@@ -133,7 +132,7 @@ public class FMTransmitterService extends Service
           mPhoneStateListener[i] = getPhoneStateListener(i);
           tmgr.listen(mPhoneStateListener[i], PhoneStateListener.LISTEN_CALL_STATE);
       }
-      */
+
       //register for A2DP utility interface
       mA2dpDeviceState = new A2dpDeviceStatus(getApplicationContext());
       Message msg = mDelayedStopHandler.obtainMessage();
@@ -164,14 +163,13 @@ public class FMTransmitterService extends Service
       /* Since the service is closing, disable the receiver */
       fmOff();
 
-      /* TO DO: Uncomment DSDS change when the support is available
       TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
       //Un-Track call state on each subscription
       for (int i=0; i < mNosOfSubscriptions; i++) {
           tmgr.listen(mPhoneStateListener[i], 0);
       }
-      */
+
       mWakeLock.release();
       super.onDestroy();
    }
@@ -284,7 +282,6 @@ public class FMTransmitterService extends Service
    }
 
    /* Handle Phone Call + FM Concurrency */
-    /* TO DO: Uncomment DSDS change when the support is available
     private PhoneStateListener getPhoneStateListener(int subscription) {
         PhoneStateListener phoneStateListener = new PhoneStateListener(subscription) {
             @Override
@@ -299,8 +296,7 @@ public class FMTransmitterService extends Service
         };
         return phoneStateListener;
     }
-    */
-   /* TO DO: Uncomment DSDS change when the support is available
+
    private void fmActionOnCallState( int state ) {
        //if Call Status is non IDLE we need to Mute FM as well stop recording if
        //any. Similarly once call is ended FM should be unmuted.
@@ -329,7 +325,7 @@ public class FMTransmitterService extends Service
               }
            }//idle
        }
-       */
+
    private Handler mDelayedStopHandler = new Handler() {
       @Override
       public void handleMessage(Message msg) {
@@ -1068,7 +1064,6 @@ public class FMTransmitterService extends Service
    public boolean isCallActive() {
        int callState = 0;
        int currSubCallState = 0;
-   /* TO DO: Uncomment DSDS change when the support is available
        TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
        for (int i=0; i < mNosOfSubscriptions; i++) {
            Log.d(LOGTAG, "Subscription: " + i + "Call state" +
@@ -1081,7 +1076,6 @@ public class FMTransmitterService extends Service
        //on individual subscriptions and hence accordingly handled.
        if( TelephonyManager.CALL_STATE_IDLE != callState )
            return true;
-   */
        return false;
    }
    public String getPSData(){
