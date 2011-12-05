@@ -746,7 +746,6 @@ public class FmSharedPreferences
         case REGIONAL_BAND_EUROPE:
         {
           /*EUROPE/Default : 87500 TO 10800 IN 100 KHZ STEPS*/
-          mFMConfiguration.setRadioBand(FmReceiver.FM_EU_BAND);
           mFrequencyBand_Stepsize = 100;
           break;
         }
@@ -754,6 +753,7 @@ public class FmSharedPreferences
         case REGIONAL_BAND_JAPAN:
         {
           /*JAPAN : 76000  TO 90000 IN 100 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_JAPAN_STANDARD_BAND);
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_100_KHZ);
           mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
           mFMConfiguration.setLowerLimit(76000);
@@ -764,6 +764,7 @@ public class FmSharedPreferences
         case REGIONAL_BAND_JAPAN_WIDE:
         {
           /*JAPAN_WB : 90000 TO 108000 IN 50 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_JAPAN_WIDE_BAND);
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
           mFMConfiguration.setEmphasis(FmReceiver.FM_DE_EMP75);
           mFMConfiguration.setLowerLimit(90000);
@@ -819,6 +820,7 @@ public class FmSharedPreferences
         case REGIONAL_BAND_DENMARK:
         {
           /*DENMARK : 87500 TO 108000 IN 50 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_EU_BAND);
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
           mFrequencyBand_Stepsize = 50;
           break;
@@ -840,6 +842,7 @@ public class FmSharedPreferences
         case REGIONAL_BAND_GREECE:
           /*GREECE : 87500 TO 108000 IN 50 KHZ STEPS*/
         {
+          mFMConfiguration.setRadioBand(FmReceiver.FM_EU_BAND);
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
           mFrequencyBand_Stepsize = 50;
           break;
@@ -861,6 +864,7 @@ public class FmSharedPreferences
         case REGIONAL_BAND_IRELAND:
         {
           /*IRELAND : 87500 TO 108000 IN 50 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_EU_BAND);
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
           mFrequencyBand_Stepsize = 50;
           break;
@@ -868,6 +872,7 @@ public class FmSharedPreferences
         case REGIONAL_BAND_ITALY:
         {
           /*ITALY : 87500 TO 108000 IN 50 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_EU_BAND);
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
           mFrequencyBand_Stepsize = 50;
           break;
@@ -916,6 +921,7 @@ public class FmSharedPreferences
         case REGIONAL_BAND_POLAND:
         {
           /*POLAND : 88000 TO 108000 IN 50 KHZ STEPS*/
+          mFMConfiguration.setRadioBand(FmReceiver.FM_EU_BAND);
           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
           mFMConfiguration.setLowerLimit(88000);
           mFrequencyBand_Stepsize = 50;
@@ -924,7 +930,8 @@ public class FmSharedPreferences
         case REGIONAL_BAND_PORTUGAL:
         {
           /*PORTUGAL : 87500 TO 108000 IN 50 KHZ STEPS*/
-           mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
+          mFMConfiguration.setRadioBand(FmReceiver.FM_EU_BAND);
+          mFMConfiguration.setChSpacing(FmReceiver.FM_CHSPACE_50_KHZ);
           mFrequencyBand_Stepsize = 50;
           break;
         }
