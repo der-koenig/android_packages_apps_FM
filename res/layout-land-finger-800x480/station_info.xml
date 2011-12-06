@@ -60,7 +60,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
                 android:layout_alignBaseline="@id/signal_level"
-                android:textSize="24sp"
+                android:textSize="16sp"
                 android:singleLine="true"
                 android:textStyle="bold"
                 android:text="@string/prog_service_string"
@@ -73,7 +73,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignBaseline="@id/signal_level"
-                android:textSize="24sp"
+                android:textSize="16sp"
                 android:text="@string/default_audio"/>
         </RelativeLayout>
 
@@ -93,7 +93,7 @@
                   android:layout_gravity="center"
                   android:layout_alignParentTop="true"
                   android:layout_alignParentLeft="true"
-                  android:textSize="80sp"
+                  android:textSize="50sp"
                   android:text="@string/frequency_string" />
 
             <RelativeLayout android:id="@+id/second_row"
@@ -109,7 +109,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentTop="true"
-                    android:textSize="24sp"
+                    android:textSize="16sp"
                     android:paddingRight="5px"
                     android:paddingBottom="2px"
                     android:paddingLeft="5px"
@@ -121,7 +121,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentBottom="true"
-                    android:textSize="24sp"
+                    android:textSize="16sp"
                     android:paddingTop="5px"
                     android:paddingRight="5px"
                     android:paddingLeft="5px"
@@ -134,7 +134,7 @@
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"
           android:textAppearance="?android:attr/textAppearanceMedium"
-          android:textSize="24sp"
+          android:textSize="16sp"
           android:singleLine="true"
           android:textStyle="bold"
           android:paddingTop="20px"

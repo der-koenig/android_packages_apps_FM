@@ -70,7 +70,7 @@
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="85sp"
+                android:textSize="60sp"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="20px"
                 android:layout_marginBottom="20px"
@@ -146,8 +146,8 @@
             android:textSize="24sp"
             android:singleLine="true"
             android:layout_marginLeft="10dip"
-            android:layout_width="110dip"
-            android:layout_height="85dip"
+            android:layout_width="130px"
+            android:layout_height="75px"
             />
     
     <Button android:id="@+id/presets_button_2"
@@ -157,8 +157,8 @@
             android:singleLine="true"
             android:layout_marginLeft="50dip"
             android:layout_marginRight="50dip"
-            android:layout_width="110dip"
-             android:layout_height="85dip"
+            android:layout_width="130px"
+             android:layout_height="75px"
             />
     
     <Button android:id="@+id/presets_button_3"
@@ -167,8 +167,8 @@
             android:textSize="24sp"
             android:singleLine="true"
             android:layout_marginRight="10dip"
-            android:layout_width="110dip"
-            android:layout_height="85dip"/>
+            android:layout_width="130px"
+            android:layout_height="75px"/>
     </LinearLayout>
 
     <!--  Lower Presets -->
@@ -185,8 +185,8 @@
             android:textSize="24sp"
             android:singleLine="true"
             android:layout_marginLeft="10dip"
-            android:layout_width="110dip"
-            android:layout_height="85dip"/>
+            android:layout_width="130px"
+            android:layout_height="75px"/>
     
     <Button android:id="@+id/presets_button_5"
             android:text="@string/default_blank"
@@ -195,8 +195,8 @@
             android:singleLine="true"
             android:layout_marginLeft="50dip"
             android:layout_marginRight="50dip"
-            android:layout_width="110dip"
-            android:layout_height="85dip"/>
+            android:layout_width="130px"
+            android:layout_height="75px"/>
     
     <Button android:id="@+id/presets_button_6"
             android:text="@string/default_blank"
@@ -204,8 +204,8 @@
             android:textSize="24sp"
             android:singleLine="true"
             android:layout_marginRight="10dip"
-            android:layout_width="110dip"
-            android:layout_height="85dip"/>
+            android:layout_width="130px"
+            android:layout_height="75px"/>
         </LinearLayout>
   </LinearLayout>
 
@@ -226,8 +226,8 @@
       android:src="@drawable/ic_btn_onoff"
       android:layout_marginLeft="25dip"
       android:layout_marginRight="25dip"
-      android:layout_width="200dip"
-      android:layout_height="85dip" />
+      android:layout_width="110dip"
+      android:layout_height="65dip" />
   </LinearLayout>
 
     <View
