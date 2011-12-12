@@ -59,6 +59,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
+import android.os.SystemProperties;
+
 
 public class FMStats extends Activity  {
 
@@ -630,7 +632,14 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
             case SEARCH_TEST:
                 try {
                     Log.d(LOGTAG, "start scanning\n");
-                    mIsSearching = mService.scan(0);
+                    if("smd".equals(SystemProperties.get("ro.qualcomm.bt.hci_transport"))) {
+                         Log.d(LOGTAG,"Scanning with 0 scan time");
+                         if (mReceiver != null)
+                              mIsSearching = mReceiver.searchStations(FmReceiver.FM_RX_SRCH_MODE_SCAN,
+                                             0, FmReceiver.FM_RX_SEARCHDIR_UP);
+                    } else {
+                        mIsSearching = mService.scan(0);
+                    }
                 } catch (RemoteException e) {
 
                     e.printStackTrace();
