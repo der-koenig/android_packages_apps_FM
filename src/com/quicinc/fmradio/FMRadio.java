@@ -830,7 +830,7 @@ public class FMRadio extends Activity
 
    private static long mRecordDuration = 0;
    private static long mRecordStartTime = 0;
-   private boolean mRecordUntilStopped =false;
+   private static boolean mRecordUntilStopped =false;
    private Thread mRecordUpdateHandlerThread = null;
 
    private void initiateRecordDurationTimer(long mins ) {
