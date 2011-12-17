@@ -294,11 +294,17 @@ public class FMRadioService extends Service
                           mReceiver = null;
                        }
                        mHandler.post(mHeadsetPluginHandler);
-                    } else if(!isAnalogModeEnabled() && mA2dpDeviceState.isA2dpStateChange(action) ) {
+                    } else if(mA2dpDeviceState.isA2dpStateChange(action) ) {
                         boolean  bA2dpConnected =
                         mA2dpDeviceState.isConnected(intent);
-                        if (!bA2dpConnected)
+                        if (!bA2dpConnected) {
+                            Log.d(LOGTAG, "A2DP device is dis-connected!");
                             mA2dpDisconnected = true;
+                        }
+                        if (isAnalogModeEnabled()) {
+                            Log.d(LOGTAG, "FM Audio Path is Analog Mode: FM Over BT not allowed");
+                            return ;
+                        }
                        //when playback is overA2Dp and A2dp disconnected
                        //when playback is not overA2DP and A2DP Connected
                        // In above two cases we need to Stop and Start FM which
@@ -432,7 +438,7 @@ public class FMRadioService extends Service
                                 try {
                                     /* Notify the UI/Activity, only if the service is "bound"
                                        by an activity and if Callbacks are registered
-                                     */
+                                    */
                                     if((mServiceInUse) && (mCallbacks != null) ){
                                         mCallbacks.onDisabled();
                                     }
