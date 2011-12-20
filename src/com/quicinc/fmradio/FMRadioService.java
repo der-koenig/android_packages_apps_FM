@@ -1024,6 +1024,10 @@ public class FMRadioService extends Service
                       //intentional fall through.
                   case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                       Log.v(LOGTAG, "AudioFocus: received AUDIOFOCUS_LOSS_TRANSIENT");
+                      if (mSpeakerPhoneOn) {
+                          mSpeakerPhoneOn = false;
+                          AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
+                      }
                       if(true == isFmRecordingOn())
                           stopRecording();
                       if(true == mPlaybackInProgress)
