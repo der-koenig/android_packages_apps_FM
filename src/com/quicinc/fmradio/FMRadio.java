@@ -361,8 +361,10 @@ public class FMRadio extends Activity
    public void onRestart() {
       Log.d(LOGTAG, "FMRadio: onRestart");
       try {
-         if (null != mService) {
+         if (null != mService && isFmOn()) {
               mService.requestFocus();
+         } else {
+              enableRadio();
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -1948,19 +1950,12 @@ public class FMRadio extends Activity
           {
              try
              {
-                if( false == mService.isFmOn()) {
+                if( false == mService.isFmOn() && isAntennaAvailable()) {
                     bStatus = mService.fmOn();
                     if(bStatus)
                     {
-                       if(isAntennaAvailable())
-                       {
                           tuneRadio(FmSharedPreferences.getTunedFrequency());
                           enableRadioOnOffUI();
-                       }
-                       else
-                       {
-                          disableRadio();
-                       }
                     }
                     else
                     {
@@ -3018,7 +3013,7 @@ public class FMRadio extends Activity
    final Runnable mUpdateRadioText = new Runnable() {
       public void run() {
          String str = "";
-         if(mService != null)
+         if(mService != null && isFmOn())
          {
             try
             {
