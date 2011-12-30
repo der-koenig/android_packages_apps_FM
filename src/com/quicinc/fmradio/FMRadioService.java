@@ -1558,10 +1558,10 @@ public class FMRadioService extends Service
        mSpeakerPhoneOn = speakerOn;
        boolean analogmode = isAnalogModeSupported();
        if (false == speakerOn) {
+           stopFM();
            if (analogmode) {
                 setAudioPath(true);
            }
-           stopFM();
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
            startFM();
        }
@@ -1576,6 +1576,7 @@ public class FMRadioService extends Service
            }
        }
        if (speakerOn) {
+           stopFM();
            if (analogmode) {
                  if (mMuted) {
                      setAudioPath(false);
@@ -1585,7 +1586,6 @@ public class FMRadioService extends Service
                      unMute();
                  }
            }
-           stopFM();
            AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_SPEAKER);
            startFM();
        }
