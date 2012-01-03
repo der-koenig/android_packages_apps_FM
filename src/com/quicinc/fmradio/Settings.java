@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -361,18 +361,26 @@ public class Settings extends PreferenceActivity implements
         @Override
         protected void onResume() {
                 super.onResume();
-                SharedPreferences mSharedPreferences = getPreferenceScreen().getSharedPreferences();
-                if (mSharedPreferences != null) {
-                   mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
+                PreferenceScreen preferenceScreen = getPreferenceScreen();
+                SharedPreferences sharedPreferences = null;
+                if (preferenceScreen != null) {
+                   sharedPreferences = preferenceScreen.getSharedPreferences();
+                }
+                if (sharedPreferences != null) {
+                   sharedPreferences.registerOnSharedPreferenceChangeListener(this);
                 }
         }
 
         @Override
         protected void onPause() {
                 super.onPause();
-                SharedPreferences mSharedPreferences = getPreferenceScreen().getSharedPreferences();
-                if (mSharedPreferences != null) {
-                   mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+                PreferenceScreen preferenceScreen = getPreferenceScreen();
+                SharedPreferences sharedPreferences = null;
+                if (preferenceScreen != null) {
+                   sharedPreferences = preferenceScreen.getSharedPreferences();
+                }
+                if (sharedPreferences != null) {
+                   sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
                 }
         }
 

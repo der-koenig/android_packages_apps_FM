@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007 The Android Open Source Project
- * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,32 +82,36 @@ public class FrequencyPicker extends FrameLayout {
         inflater.inflate(R.layout.frequency_picker, this, true);
 
         mMHzPicker = (NumberPicker) findViewById(R.id.mhz);
-        mMHzPicker.setOnLongPressUpdateInterval(100);
+        if (mMHzPicker != null) {
+           mMHzPicker.setOnLongPressUpdateInterval(100);
 
-        mMHzPicker.setOnValueChangedListener(new OnValueChangeListener() {
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                mMhz = newVal;
-                mFrequency = (mMhz*1000) + (getFrequencyKHz(mKhz, mMin, mStep));
-                validateFrequencyRange();
-                if (mOnFrequencyChangedListener != null) {
+           mMHzPicker.setOnValueChangedListener(new OnValueChangeListener() {
+              public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                  mMhz = newVal;
+                  mFrequency = (mMhz*1000) + (getFrequencyKHz(mKhz, mMin, mStep));
+                  validateFrequencyRange();
+                  if (mOnFrequencyChangedListener != null) {
                         mOnFrequencyChangedListener.onFrequencyChanged(FrequencyPicker.this, mFrequency);
-                }
-            }
-        });
+                  }
+              }
+           });
+        }
         mKHzPicker = (NumberPicker) findViewById(R.id.khz);
-        mKHzPicker.setOnLongPressUpdateInterval(100);
-        mKHzPicker.setOnValueChangedListener(new OnValueChangeListener() {
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                mKhz = newVal;
-                mFrequency = (mMhz*1000) + (getFrequencyKHz(mKhz, mMin, mStep));
+        if (mKHzPicker != null) {
+           mKHzPicker.setOnLongPressUpdateInterval(100);
+           mKHzPicker.setOnValueChangedListener(new OnValueChangeListener() {
+              public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                  mKhz = newVal;
+                  mFrequency = (mMhz*1000) + (getFrequencyKHz(mKhz, mMin, mStep));
 
-                validateFrequencyRange();
+                  validateFrequencyRange();
 
-                if (mOnFrequencyChangedListener != null) {
+                  if (mOnFrequencyChangedListener != null) {
                         mOnFrequencyChangedListener.onFrequencyChanged(FrequencyPicker.this, mFrequency);
-                }
-            }
-        });
+                  }
+              }
+           });
+        }
 
         updateSpinnerRange();
 
