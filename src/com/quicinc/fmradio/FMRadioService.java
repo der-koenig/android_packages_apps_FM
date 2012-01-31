@@ -1401,6 +1401,7 @@ public class FMRadioService extends Service
    */
    private boolean fmOn() {
       boolean bStatus=false;
+      mWakeLock.acquire(10*1000);
       if ( TelephonyManager.CALL_STATE_IDLE != getCallState() ) {
          return bStatus;
       }
