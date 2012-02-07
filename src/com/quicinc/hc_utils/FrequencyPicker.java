@@ -365,11 +365,15 @@ public class FrequencyPicker extends FrameLayout {
         String[] khzStrings = getKHzStrings(mMin, mStep);
         int khzNumSteps = getKHzCount(mStep);
 
-        mMHzPicker.setMinValue(mMin/1000);
-        mMHzPicker.setMaxValue(mMax/1000);
-        mKHzPicker.setMinValue(1);
-        mKHzPicker.setMaxValue(khzNumSteps);
-        mKHzPicker.setDisplayedValues(khzStrings);
+        if (mMHzPicker != null) {
+           mMHzPicker.setMinValue(mMin/1000);
+           mMHzPicker.setMaxValue(mMax/1000);
+        }
+        if (mKHzPicker != null) {
+           mKHzPicker.setMinValue(1);
+           mKHzPicker.setMaxValue(khzNumSteps);
+           mKHzPicker.setDisplayedValues(khzStrings);
+        }
     }
 
     private void updateSpinners() {
