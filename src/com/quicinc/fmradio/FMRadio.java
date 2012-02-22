@@ -3424,6 +3424,14 @@ public class FMRadio extends Activity
             if(isRecording()) {
                 initiateRecordThread();
             }
+            else if((mRecordDuration > 0) &&
+                      (mRecordUpdateHandlerThread != null)) {
+                mRecordUpdateHandlerThread.interrupt();
+                if(mRecordingMsgTV != null) {
+                    mRecordingMsgTV.setVisibility(View.INVISIBLE);
+                }
+                mRecordDuration = 0;
+            }
             return;
          } else
          {
