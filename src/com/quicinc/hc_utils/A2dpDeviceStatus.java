@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ public class A2dpDeviceStatus {
         boolean isConnected = false;
         int state = intent.getIntExtra(BluetoothA2dp.EXTRA_STATE,
                                 BluetoothA2dp.STATE_DISCONNECTED);
-        if(state == BluetoothA2dp.STATE_CONNECTED ) {
+        if((state == BluetoothA2dp.STATE_CONNECTED) || (state == BluetoothProfile.STATE_CONNECTED)) {
             isConnected = true;
         }
         return isConnected;

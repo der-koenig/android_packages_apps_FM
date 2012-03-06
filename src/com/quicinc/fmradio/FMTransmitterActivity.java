@@ -720,8 +720,8 @@ public class FMTransmitterActivity extends Activity {
                                     // enableRadioOnOffUI will update UI
                                 }
                                 else if(!isFmOn() ) {
-                                    mService.fmOn();
-                                    tuneRadio(mTunedFrequency);
+                                    if (mService.fmOn())
+                                       tuneRadio(mTunedFrequency);
                                 }
 
                                 enableRadioOnOffUI();

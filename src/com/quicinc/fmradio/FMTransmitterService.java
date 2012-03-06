@@ -496,8 +496,9 @@ public class FMTransmitterService extends Service
 
              boolean bFmRxEnabled = false;
 
-
-             bStatus = mTransmitter.enable(config);
+             if (!mA2dpDeviceState.isDeviceAvailable()) {
+                 bStatus = mTransmitter.enable(config);
+             }
              if( false == bStatus ) {
                 Log.e(LOGTAG,"FM Enable failed");
                 return bStatus;
@@ -1048,15 +1049,16 @@ public class FMTransmitterService extends Service
                       mHeadsetPlugged = (intent.getIntExtra("state", 0) == 1);
                       mHandler.post(mChangeFMTxState);
 
-                   } else if ((mA2dpDeviceState.isA2dpPlayStateChange(action))||
-                               (mA2dpDeviceState.isA2dpStateChange(action))) {
-                       if( mA2dpDeviceState.isPlaying(intent) ){
+                   } else if (mA2dpDeviceState.isA2dpStateChange(action)) {
+                       if (mA2dpDeviceState.isConnected(intent)){
+                           Log.d(LOGTAG, " A2DP connected");
                            mHeadsetPlugged = true;
                            if( mFMOn == true)
                            {
                                mHandler.post(mChangeFMTxState);
                            }
                        } else if( !mA2dpDeviceState.isConnected(intent)) {
+                           Log.d(LOGTAG, "A2DP disconnected");
                            mHeadsetPlugged = false;
                            if( mFMOn == false) // when FM Tx App open, DISC BT
                            {
@@ -1129,6 +1131,8 @@ public class FMTransmitterService extends Service
        }
    };
    public boolean isHeadsetPlugged() {
+       if (mA2dpDeviceState.isDeviceAvailable())
+          mHeadsetPlugged = true;
        return mHeadsetPlugged;
    }
    public boolean isCallActive() {
