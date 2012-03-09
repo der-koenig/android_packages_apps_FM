@@ -2426,6 +2426,8 @@ public class FMRadio extends Activity
       mProgramTypeTV.setText(mTunedStation.getPtyString());
       mRadioTextTV.setText("");
       mRadioTextScroller.mOriginalString = "";
+      mRadioTextScroller.mStringlength = 0;
+      mRadioTextScroller.mIteration = 0;
       mProgramServiceTV.setText("");
       mStereoTV.setText("");
       setupPresetLayout();
@@ -3293,7 +3295,8 @@ public class FMRadio extends Activity
                   sendEmptyMessageDelayed(SCROLLER_MSG_TICK, SCROLLER_UPDATE_DELAY_MS);
                }
                //String szStr1 = mOriginalString.substring(0, mTick);
-               szStr2 = mOriginalString.substring(mIteration);
+               if ((mOriginalString !=null) && (mOriginalString.length() >= mIteration))
+                  szStr2 = mOriginalString.substring(mIteration);
             }
             //textView.setText(szStr2+"     "+szStr1);
             textView.setText(szStr2);
