@@ -573,28 +573,26 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
         tl.addView(tr2,new TableLayout.LayoutParams(
              LayoutParams.FILL_PARENT,
              LayoutParams.WRAP_CONTENT));
-        if(null != mFileCursor )
+        if(null != mFileCursor)
         {
-             try {
-             StringBuilder tempStr = new StringBuilder();
-             tempStr.append(String.format("%10s", aRes.getFreq()));
-             tempStr.append(String.format("%10s",aRes.getRSSI()));
-             tempStr.append(String.format("%10s",aRes.getIoC()));
-             tempStr.append(String.format("%10s",aRes.getIntDet()));
-             if("smd".equals(SystemProperties.get("ro.qualcomm.bt.hci_transport")))
-             {
-                  tempStr.append(aRes.getSINR());
-                  tempStr.append('\n');
-             } else
-             {
-                  tempStr.append(aRes.getMpxDcc());
-                  tempStr.append('\n');
-             }
-             String testStr = new String(tempStr);
-             mFileCursor.write(testStr.getBytes());
-	} catch ( IOException ioe) {
-
-                ioe.printStackTrace();
+           try {
+                 StringBuilder tempStr = new StringBuilder();
+                 tempStr.append(String.format("%10s", aRes.getFreq()));
+                 tempStr.append(String.format("%10s", aRes.getRSSI()));
+                 tempStr.append(String.format("%10s", aRes.getIoC()));
+                 tempStr.append(String.format("%10s", aRes.getIntDet()));
+                 if("smd".equals(SystemProperties.get("ro.qualcomm.bt.hci_transport")))
+                 {
+                    tempStr.append(String.format("%10s", aRes.getSINR()));
+                 } else
+                 {
+                    tempStr.append(String.format("%10s", aRes.getMpxDcc()));
+                 }
+                 tempStr.append("\r\n");
+                 String testStr = new String(tempStr);
+                 mFileCursor.write(testStr.getBytes());
+           } catch(IOException ioe) {
+                 ioe.printStackTrace();
            }
         }
     }
@@ -608,12 +606,12 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
                         R.array.rf_cfg);
         final StringBuilder szbTestHeader = new StringBuilder();
         szbTestHeader.append("running test:").append(szTestInformation[mTestSelected]);
+        szbTestHeader.append("\r\n");
         String szTestHeader = new String(szbTestHeader);
         if(null != mFileCursor )
         {
             try {
                 mFileCursor.write(szTestHeader.getBytes());
-                mFileCursor.write('\n');
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
