@@ -111,7 +111,6 @@ public class FMRadioService extends Service
    private boolean mFmRecordingOn = false;
    private boolean mSpeakerPhoneOn = false;
    private int mCallStatus = 0;
-   private static boolean mRadioState = true;
    private BroadcastReceiver mScreenOnOffReceiver = null;
    final Handler mHandler = new Handler();
    private boolean misAnalogModeSupported = false;
@@ -479,31 +478,18 @@ public class FMRadioService extends Service
                  (the service is "bound" by an activity
                   and if Callbacks are registered)
                  */
-                if ( (!isFmOn())
-                        && (mServiceInUse)
+                if ((!isFmOn()) && (mServiceInUse)
                         && (mCallbacks != null))
                 {
-                    if (mRadioState) {
-                        if( true != fmOn() ) {
-                            return;
-                        }
-                        try
-                        {
-                            mCallbacks.onEnabled();
-                        } catch (RemoteException e)
-                        {
-                            e.printStackTrace();
-                        }
+                    if( true != fmOn() ) {
+                        return;
                     }
-                    else {
-                        try
-                        {
-                            mCallbacks.onDisabled();
-                        } catch (RemoteException e)
-                        {
-                            e.printStackTrace();
-                        }
-
+                    try
+                    {
+                        mCallbacks.onEnabled();
+                    } catch (RemoteException e)
+                    {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -1012,26 +998,22 @@ public class FMRadioService extends Service
           {
              // resume playback only if FM Radio was playing
              // when the call was answered
-              if ( (isAntennaAvailable())
-                        && (!isFmOn())
-                        && (mServiceInUse)
-                        && (mCallbacks != null))
-                {
-                    if (mRadioState) {
-                        Log.d(LOGTAG, "Resuming after call:" );
-                        if( true != fmOn() ) {
-                            return;
-                        }
-                        mResumeAfterCall = false;
-                        try
-                        {
-                            mCallbacks.onEnabled();
-                        } catch (RemoteException e)
-                        {
-                            e.printStackTrace();
-                        }
-                    }
-                 }
+              if ((isAntennaAvailable()) && (!isFmOn())
+                   && (mServiceInUse) && (mCallbacks != null))
+              {
+                   Log.d(LOGTAG, "Resuming after call:" );
+                   if( true != fmOn() ) {
+                       return;
+                   }
+                   mResumeAfterCall = false;
+                   try
+                   {
+                       mCallbacks.onEnabled();
+                   } catch (RemoteException e)
+                   {
+                       e.printStackTrace();
+                   }
+              }
           }
        }//idle
    }
@@ -1268,19 +1250,16 @@ public class FMRadioService extends Service
 
       public boolean fmOn() throws RemoteException
       {
-         mRadioState=true;
          return(mService.get().fmOn());
       }
 
       public boolean fmOff() throws RemoteException
       {
-         mRadioState=false;
          return(mService.get().fmOff());
       }
 
       public boolean fmRadioReset() throws RemoteException
       {
-         mRadioState=false;
          return true;
       }
 
