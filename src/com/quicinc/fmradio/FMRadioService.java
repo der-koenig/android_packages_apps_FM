@@ -372,48 +372,87 @@ public class FMRadioService extends Service
             mFmMediaButtonListener = new BroadcastReceiver() {
                  public void onReceive(Context context, Intent intent) {
                      Log.d(LOGTAG, "FMMediaButtonIntentReceiver.FM_MEDIA_BUTTON");
+                     Log.d(LOGTAG, "KeyEvent = " +intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT));
                      String action = intent.getAction();
                      if (action.equals(FMMediaButtonIntentReceiver.FM_MEDIA_BUTTON)) {
-                            if(isFmOn()){
-                                //FM should be off when Headset hook pressed.
-                                fmOff();
-                                if (isOrderedBroadcast()) {
-                                    abortBroadcast();
-                                }
-                                try
-                                {
-                                    /* Notify the UI/Activity, only if the service is "bound"
-                                       by an activity and if Callbacks are registered
-                                     */
-                                    if((mServiceInUse) && (mCallbacks != null) )
-                                    {
-                                        mCallbacks.onDisabled();
-                                    }
-                                } catch (RemoteException e)
-                                {
-                                    e.printStackTrace();
-                                }
-                            } else if( mServiceInUse ) {
-                                fmOn();
-                                if (isOrderedBroadcast()) {
-                                    abortBroadcast();
-                                }
-                                try
-                                {
-                                    /* Notify the UI/Activity, only if the service is "bound"
-                                      by an activity and if Callbacks are registered
-                                    */
-                                    if(mCallbacks != null )
-                                    {
-                                        mCallbacks.onEnabled();
-                                    }
-                                } catch (RemoteException e)
-                                {
-                                    e.printStackTrace();
-                                }
-                            }
-                     }
-                 }
+                         KeyEvent event = (KeyEvent)
+                                     intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                         int keycode = event.getKeyCode();
+                         switch (keycode) {
+                             case KeyEvent.KEYCODE_HEADSETHOOK :
+                                 if (isFmOn()){
+                                     //FM should be off when Headset hook pressed.
+                                     fmOff();
+                                     if (isOrderedBroadcast()) {
+                                        abortBroadcast();
+                                     }
+                                     try {
+                                         /* Notify the UI/Activity, only if the service is "bound"
+                                            by an activity and if Callbacks are registered
+                                          */
+                                         if ((mServiceInUse) && (mCallbacks != null) ) {
+                                            mCallbacks.onDisabled();
+                                         }
+                                     } catch (RemoteException e) {
+                                         e.printStackTrace();
+                                     }
+                                 } else if( mServiceInUse ) {
+                                     fmOn();
+                                     if (isOrderedBroadcast()) {
+                                        abortBroadcast();
+                                     }
+                                     try {
+                                         /* Notify the UI/Activity, only if the service is "bound"
+                                            by an activity and if Callbacks are registered
+                                          */
+                                         if (mCallbacks != null ) {
+                                             mCallbacks.onEnabled();
+                                         }
+                                     } catch (RemoteException e) {
+                                         e.printStackTrace();
+                                     }
+                                 }
+                                 break;
+                             case KeyEvent.KEYCODE_MEDIA_PAUSE :
+                                 if (isFmOn()){
+                                     //FM should be off when Headset hook pressed.
+                                     fmOff();
+                                     if (isOrderedBroadcast()) {
+                                        abortBroadcast();
+                                     }
+                                     try {
+                                         /* Notify the UI/Activity, only if the service is "bound"
+                                            by an activity and if Callbacks are registered
+                                          */
+                                         if ((mServiceInUse) && (mCallbacks != null) ) {
+                                            mCallbacks.onDisabled();
+                                         }
+                                     } catch (RemoteException e) {
+                                         e.printStackTrace();
+                                     }
+                                 }
+                                 break;
+                             case KeyEvent.KEYCODE_MEDIA_PLAY:
+                                 if (mServiceInUse ) {
+                                     fmOn();
+                                     if (isOrderedBroadcast()) {
+                                         abortBroadcast();
+                                     }
+                                     try {
+                                          /* Notify the UI/Activity, only if the service is "bound"
+                                             by an activity and if Callbacks are registered
+                                           */
+                                          if (mCallbacks != null ) {
+                                               mCallbacks.onEnabled();
+                                          }
+                                     } catch (RemoteException e) {
+                                          e.printStackTrace();
+                                     }
+                                 }
+                                 break;
+                         } // end of switch
+                     } // end of FMMediaButtonIntentReceiver.FM_MEDIA_BUTTON
+                 } // end of onReceive
             };
             IntentFilter iFilter = new IntentFilter();
             iFilter.addAction(FMMediaButtonIntentReceiver.FM_MEDIA_BUTTON);
