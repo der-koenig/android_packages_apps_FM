@@ -1085,48 +1085,45 @@ public class FMTransmitterService extends Service
    }
    final Runnable    mChangeFMTxState = new Runnable() {
        public void run() {
+           boolean bStatus = false;
+
            Log.d(LOGTAG, "Enter change FM Tx State");
            /* Update the UI based on the state change of the headset/antenna*/
-           if((isFmOn())&& ((mResumeAfterCall) ||(mHeadsetPlugged)) )
-           {
-               /* Disable FM and let the UI know */
-               fmOff();
-               try
-               {
-                   /* Notify the UI/Activity, only if the service is "bound"
-                      by an activity and if Callbacks are registered
-                    */
-                   if((mServiceInUse) && (mCallbacks != null) )
-                   {
-                       mCallbacks.onDisabled();
-                   }
-               } catch (RemoteException e)
-               {
-                   e.printStackTrace();
-               }
-           }
-           else if((!isFmOn()) && ((mResumeAfterCall) ||(!mHeadsetPlugged)))
-           {
-              /* headset plugged out/ call ended
-                 So turn on FM if:
-                 - FM is not already ON.
-                 - If the FM UI/Activity is in the foreground
-                   (the service is "bound" by an activity
-                    and if Callbacks are registered)
-              */
-               if ( (!isFmOn())
-                       && (mServiceInUse)
-                       && (mCallbacks != null))
-               {
-                   fmOn();
-                   try
-                   {
-                       mCallbacks.onEnabled(true);
-                   } catch (RemoteException e)
-                   {
-                       e.printStackTrace();
-                   }
-               }
+           if(mHeadsetPlugged) {
+              bStatus =  cancelSearch();
+              if(bStatus == false)
+                 Log.e(LOGTAG, "Error in cancelling the search");
+              if(isFmOn()) {
+                 bStatus = fmOff();
+                 if(mServiceInUse && (mCallbacks != null) && (bStatus == true)) {
+                    try {
+                        mCallbacks.onDisabled();
+                    } catch(RemoteException e) {
+                        e.printStackTrace();
+                    }
+                 } else if(bStatus == false) {
+                    Log.e(LOGTAG, "Error in turning off the FM TX ");
+                 }
+              } else if(mReceiver != null) {
+                 bStatus = mReceiver.disable();
+                 if(bStatus == true)
+                    mReceiver = null;
+                 else
+                    Log.e(LOGTAG, "Error in disabling the FM RX");
+              }
+           }else {
+              if(!isFmOn()) {
+                 bStatus = fmOn();
+                 if(mServiceInUse && (mCallbacks != null) && (bStatus == true)) {
+                    try {
+                        mCallbacks.onEnabled(true);
+                    } catch(RemoteException e) {
+                        e.printStackTrace();
+                    }
+                 } else if(bStatus == false) {
+                    Log.e(LOGTAG, "Error in enabling the FM TX");
+                 }
+              }
            }
        }
    };

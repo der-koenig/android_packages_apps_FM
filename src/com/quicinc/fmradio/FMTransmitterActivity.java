@@ -1035,30 +1035,31 @@ public class FMTransmitterActivity extends Activity {
 
                         /* Now get the list */
                         if (mService != null) {
-                                try {
-               if(mSearchingResultStatus)
-               {
-                  int[] searchList = mService.getSearchList();
-                  if (searchList != null) {
-                     for (int station = 0; (station < searchList.length)
-                           && (station < MAX_PRESETS); station++) {
-                        Log.d(LOGTAG, "mSearchListComplete: [" + station
-                              + "] = " + searchList[station]);
-                        mPresetFrequencies[station] = searchList[station];
-                     }
-                  }
-               }
-               /* Restart FM into Transmit mode */
-               mService.fmRestart();
-               /* Tune to last tuned frequency */
-               tuneRadio(mTunedFrequency);
-                                } catch (RemoteException e) {
-                                        e.printStackTrace();
-                                }
-                        }
-                        updateSearchProgress();
-                        resetFMStationInfoUI();
-                        setupPresetLayout();
+                          try {
+                               if(mSearchingResultStatus) {
+                                  int[] searchList = mService.getSearchList();
+                                  if (searchList != null) {
+                                     for (int station = 0; (station < searchList.length)
+                                          && (station < MAX_PRESETS); station++) {
+                                          Log.d(LOGTAG, "mSearchListComplete: [" + station
+                                          + "] = " + searchList[station]);
+                                         mPresetFrequencies[station] = searchList[station];
+                                     }
+                                  }
+                               }
+                             /* Restart FM into Transmit mode */
+                               if(!mService.isHeadsetPlugged()) {
+                                 mService.fmRestart();
+                                 /* Tune to last tuned frequency */
+                                 tuneRadio(mTunedFrequency);
+                                 updateSearchProgress();
+                                 resetFMStationInfoUI();
+                                 setupPresetLayout();
+                               }
+                          } catch (RemoteException e) {
+                               e.printStackTrace();
+                          }
+                       }
                 }
         };
 
