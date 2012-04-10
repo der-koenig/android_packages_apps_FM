@@ -576,13 +576,6 @@ public class FMRadio extends Activity
       else {
           item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_off);
       }
-      if (item != null)
-      {
-          item.setCheckable(true);
-          item.setChecked(false);
-          item.setVisible(radioOn);
-      }
-
 
       return true;
    }
@@ -656,11 +649,6 @@ public class FMRadio extends Activity
                   item = menu.add(0, MENU_SPEAKER, 0, R.string.menu_speaker_off);
               }
           }
-         if (item != null)
-         {
-           item.setCheckable(true);
-           item.setChecked(false);
-         }
       } else
       {
          menu.removeItem(MENU_SPEAKER);
