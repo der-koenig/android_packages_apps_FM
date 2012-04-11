@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
- * Copyright (c) 2009, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -132,7 +132,7 @@
                 android:layout_height="75px" />
 
             <ImageButton android:id="@+id/btn_preset_page"
-                android:src="@drawable/ic_btn_forward"
+                android:src="@drawable/preset_page_button"
                 android:layout_marginRight="10dip"
                 android:layout_width="140px"
                 android:layout_height="75px"/>
