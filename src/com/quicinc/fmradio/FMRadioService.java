@@ -247,18 +247,27 @@ public class FMRadioService extends Service
                      if ((action.equals(Intent.ACTION_MEDIA_UNMOUNTED))
                            || (action.equals(Intent.ACTION_MEDIA_EJECT))) {
                          Log.d(LOGTAG, "ACTION_MEDIA_UNMOUNTED Intent received");
+                         if(isFmOn() && (true == mOverA2DP) &&
+                            (false == mStoppedOnFocusLoss) &&
+                            (!isSpeakerEnabled())) {
+                            stopFM();
+                            startFM();
+                         }
                          if (mFmRecordingOn == true) {
                              try {
-                                  if ((mServiceInUse) && (mCallbacks != null) ) {
-                                       mCallbacks.onRecordingStopped();
-                                  }
-                                  else
-                                  {
-                                       stopRecording();
-                                  }
-                             } catch (RemoteException e) {
+                                  stopRecording();
+                             } catch (Exception e) {
                                   e.printStackTrace();
                              }
+                         }
+                     }else if((action.equals(Intent.ACTION_MEDIA_MOUNTED))){
+                         boolean  bA2dpConnected =
+                                        mA2dpDeviceState.isConnected(intent);
+                         if(isFmOn() && bA2dpConnected &&
+                            (false == mStoppedOnFocusLoss) &&
+                            (!isSpeakerEnabled())) {
+                             stopFM();
+                             startFM();
                          }
                      }
                  }
@@ -266,6 +275,7 @@ public class FMRadioService extends Service
              IntentFilter iFilter = new IntentFilter();
              iFilter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
              iFilter.addAction(Intent.ACTION_MEDIA_EJECT);
+             iFilter.addAction(Intent.ACTION_MEDIA_MOUNTED);
              iFilter.addDataScheme("file");
              registerReceiver(mSdcardUnmountReceiver, iFilter);
          }
@@ -579,7 +589,7 @@ public class FMRadioService extends Service
 
        if ((true == mA2dpDeviceState.isDeviceAvailable()) &&
            (!isSpeakerEnabled()) && !isAnalogModeEnabled() &&
-           (true == startA2dpPlayback())) {
+           isExternalStorageAvailable() && (true == startA2dpPlayback())) {
             mOverA2DP=true;
        } else {
            Log.d(LOGTAG, "FMRadio: sending the intent");
@@ -694,7 +704,8 @@ public class FMRadioService extends Service
                                Toast.LENGTH_SHORT).show();
                 return false;
        }
-        stopA2dpPlayback();
+        if(mOverA2DP)
+           stopA2dpPlayback();
         mA2dp = new MediaRecorder();
         if (mA2dp == null) {
            Toast.makeText(this,"A2dpPlayback failed to create an instance",
@@ -1721,6 +1732,16 @@ public class FMRadioService extends Service
 
    public boolean isSpeakerEnabled() {
       return mSpeakerPhoneOn;
+   }
+   public boolean isExternalStorageAvailable() {
+     boolean mStorageAvail = false;
+     String state = Environment.getExternalStorageState();
+
+     if(Environment.MEDIA_MOUNTED.equals(state)){
+         Log.d(LOGTAG, "device available");
+         mStorageAvail = true;
+     }
+     return mStorageAvail;
    }
    public void enableSpeaker(boolean speakerOn) {
        if(isCallActive())
