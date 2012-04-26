@@ -160,6 +160,7 @@ public class FMStats extends Activity  {
     private static final int NEW_ROW_ID = 300;
     private int mStopIds = STOP_ROW_ID;
     private int mNewRowIds = NEW_ROW_ID;
+    private static final int SCAN_DWELL_PERIOD = 1;
 
     private static final int CUR_FREQ_TEST =0;
     private static final int CUR_MULTI_TEST = 1;
@@ -656,7 +657,7 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
                          Log.d(LOGTAG,"Scanning with 0 scan time");
                          if (mReceiver != null)
                               mIsSearching = mReceiver.searchStations(FmReceiver.FM_RX_SRCH_MODE_SCAN,
-                                             0, FmReceiver.FM_RX_SEARCHDIR_UP);
+                                             SCAN_DWELL_PERIOD, FmReceiver.FM_RX_SEARCHDIR_UP);
                     } else {
                         mIsSearching = mService.scan(0);
                     }
@@ -818,61 +819,46 @@ public class CfgRfItemSelectedListener implements OnItemSelectedListener {
         int nMpxDcc = 0;
         byte nSINR = 0;
         if(null != mService) {
-        try {
+           try {
+               nRssi = (byte)mService.getRssi();
+               result.setRSSI(Byte.toString(nRssi));
+           } catch (RemoteException e) {
+               e.printStackTrace();
+           }
 
-              nRssi = (byte)mService.getRssi();
+           try {
+               nIoC = mService.getIoC();
+               result.setIoC(Integer.toString(nIoC));
+           } catch (RemoteException e) {
+               e.printStackTrace();
+           }
 
-        } catch (RemoteException e)
-        {
-            e.printStackTrace();
+           if("smd".equals(SystemProperties.get("ro.qualcomm.bt.hci_transport"))) {
+              try {
+                  nSINR = (byte)mService.getSINR();
+                  result.setSINR(Integer.toString(nSINR));
+              } catch (RemoteException e) {
+                  e.printStackTrace();
+              }
+           } else {
+              try {
+                  nMpxDcc = mService.getMpxDcc();
+                  result.setMpxDcc(Integer.toString(nMpxDcc));
+              } catch (RemoteException e) {
+                  e.printStackTrace();
+              }
+           }
+
+           try {
+               nIntDet = mService.getIntDet();
+               result.setIntDet(Integer.toString(nIntDet));
+           } catch (RemoteException e) {
+               e.printStackTrace();
+           }
         }
-
-        try {
-            nIoC = mService.getIoC();
-
-        } catch (RemoteException e)
-        {
-            e.printStackTrace();
-        }
-
-        try {
-            nMpxDcc = mService.getMpxDcc();
-        } catch (RemoteException e)
-        {
-            e.printStackTrace();
-        }
-
-        try {
-            nIntDet = mService.getIntDet();
-
-        } catch (RemoteException e)
-        {
-            e.printStackTrace();
-        }
-
-        try {
-            nSINR = (byte)mService.getSINR();
-
-        } catch (RemoteException e)
-        {
-            e.printStackTrace();
-        }
-
-        }
-
-        result.setRSSI(Byte.toString(nRssi));
-        result.setIoC(Integer.toString(nIoC));
-        if("smd".equals(SystemProperties.get("ro.qualcomm.bt.hci_transport")))
-        {
-             result.setSINR(Integer.toString(nSINR));
-        } else
-        {
-             result.setMpxDcc(Integer.toString(nMpxDcc));
-        }
-        result.setIntDet(Integer.toString(nIntDet));
 
         return result;
-    }
+   }
 
 
     private Handler mUIUpdateHandlerHandler = new Handler() {
