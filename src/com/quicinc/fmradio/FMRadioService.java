@@ -102,8 +102,8 @@ public class FMRadioService extends Service
    private WakeLock mWakeLock;
    private int mServiceStartId = -1;
    private boolean mServiceInUse = false;
-   private boolean mMuted = false;
-   private boolean mResumeAfterCall = false;
+   private static boolean mMuted = false;
+   private static boolean mResumeAfterCall = false;
    private static String mAudioDevice="headset";
    MediaRecorder mRecorder = null;
    MediaRecorder mA2dp = null;
@@ -196,6 +196,10 @@ public class FMRadioService extends Service
       mDelayedStopHandler.removeCallbacksAndMessages(null);
       //release the audio focus listener
       AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+      if (isMuted()) {
+          mMuted = false;
+          audioManager.setStreamMute(AudioManager.STREAM_FM,false);
+      }
       audioManager.abandonAudioFocus(mAudioFocusListener);
       /* Remove the Screen On/off listener */
       if (mScreenOnOffReceiver != null) {
@@ -601,7 +605,7 @@ public class FMRadioService extends Service
          // an in-progress call ends, so don't stop the service now.
          return true;
       }
-      stopSelf(mServiceStartId);
+      gotoIdleState();
       return true;
    }
 
@@ -614,6 +618,7 @@ public class FMRadioService extends Service
            mResumeAfterCall = true;
            return;
        }
+       mResumeAfterCall = false;
        if ( true == mPlaybackInProgress ) // no need to resend event
            return;
        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
