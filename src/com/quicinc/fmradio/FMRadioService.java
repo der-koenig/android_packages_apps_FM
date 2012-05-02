@@ -481,6 +481,9 @@ public class FMRadioService extends Service
                                 return;
                             }
                             if(isFmOn()){
+                                if((mReceiver != null) && mReceiver.disable()) {
+                                   mReceiver = null;
+                                }
                                 fmOff();
                                 if (isOrderedBroadcast()) {
                                     abortBroadcast();
