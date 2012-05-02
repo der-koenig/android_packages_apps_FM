@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 **
-** Copyright 2007, The Android Open Source Project
+** Copyright 2007, 2012, The Android Open Source Project
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 
 <com.quicinc.utils.FrequencyPicker xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/frequencyPicker"
-    android:padding="5dip"
+    android:padding="5dp"
     android:layout_gravity="center_horizontal"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"/>
