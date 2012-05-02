@@ -56,10 +56,14 @@ public void onReceive(Context context, Intent intent) {
            }
            int keycode = event.getKeyCode();
            int key_action = event.getAction();
-           if ((KeyEvent.KEYCODE_HEADSETHOOK == keycode) &&
-                       (key_action == KeyEvent.ACTION_DOWN)) {
+           if (((KeyEvent.KEYCODE_HEADSETHOOK == keycode) &&
+               (key_action == KeyEvent.ACTION_DOWN)) ||
+               (KeyEvent.KEYCODE_MEDIA_PAUSE == keycode) ||
+               (KeyEvent.KEYCODE_MEDIA_PLAY == keycode)) {
+
                Log.d(TAG, "ACTION_MEDIA_BUTTON intent received for ACTION_DOWN");
                Intent i = new Intent(FM_MEDIA_BUTTON);
+               i.putExtra(Intent.EXTRA_KEY_EVENT, event);
                context.sendBroadcast(i);
            }
        }
