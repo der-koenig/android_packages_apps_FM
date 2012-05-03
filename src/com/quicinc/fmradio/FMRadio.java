@@ -49,6 +49,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.SystemProperties;
@@ -377,6 +378,7 @@ public class FMRadio extends Activity
 
    @Override
    public void onStop() {
+      PowerManager pm =(PowerManager) getSystemService(Context.POWER_SERVICE);
       Log.d(LOGTAG, "FMRadio: onStop");
       if(isSleepTimerActive() ) {
           mSleepUpdateHandlerThread.interrupt();
@@ -412,7 +414,10 @@ public class FMRadio extends Activity
             }
           }
       }
-      mIsHomeKeyPressed = true;
+      if (pm.isScreenOn()) {
+         Log.d(LOGTAG, "Device is in Active mode");
+         mIsHomeKeyPressed = true;
+      }
       super.onStop();
    }
 
