@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
- * Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009, 2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,16 +30,16 @@
 
      <View
         android:layout_width="fill_parent"
-        android:layout_height="1px"
+        android:layout_height="1dip"
         android:background="#ffffffff" />
 
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2px"
-        android:layout_marginLeft="5px"
-        android:layout_marginRight="5px"
-        android:layout_marginBottom="2px"
+        android:layout_marginTop="2dip"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:layout_marginBottom="2dip"
         android:orientation="vertical"
         android:gravity="bottom"
         >
@@ -54,7 +54,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_alignParentLeft="true"
-                    android:textSize="14sp"
+                    android:textSize="14dip"
                     android:textStyle="bold"
                     android:text="@string/default_record"
                     />
@@ -67,8 +67,8 @@
                     android:layout_centerHorizontal="true"
                     android:layout_marginLeft="10dip"
                     android:layout_marginRight="10dip"
-                    android:layout_width="140px"
-                    android:layout_height="45px" />
+                    android:layout_width="140dip"
+                    android:layout_height="45dip" />
 
                 <TextView android:id="@+id/sleep_msg_tv"
                     android:textAppearance="?android:attr/textAppearanceMedium"
@@ -77,7 +77,7 @@
                     android:layout_alignParentRight="true"
                     android:layout_alignBaseline="@+id/btn_presets_list"
                     android:layout_gravity="center_vertical"
-                    android:textSize="14sp"
+                    android:textSize="14dip"
                     android:textStyle="bold"
                     android:text="@string/default_sleep"
                     />
@@ -93,36 +93,36 @@
             android:gravity="center_horizontal">
 
             <Button android:id="@+id/presets_button_1"
-            android:text="@string/default_station"
-            android:layout_width="80px"
-            android:layout_height="50px" />
+                android:text="@string/default_station"
+                android:layout_width="80dip"
+                android:layout_height="50dip" />
 
             <Button android:id="@+id/presets_button_2"
-            android:text="@string/default_station"
-            android:layout_width="80px"
-            android:layout_height="50px" />
+                android:text="@string/default_station"
+                android:layout_width="80dp"
+                android:layout_height="50dp" />
 
             <Button android:id="@+id/presets_button_3"
-            android:text="@string/default_station"
-            android:layout_width="80px"
-            android:layout_height="50px"
-            android:visibility="visible" />
+                android:text="@string/default_station"
+                android:layout_width="80dip"
+                android:layout_height="50dip"
+                android:visibility="visible" />
 
             <Button android:id="@+id/presets_button_4"
                 android:text="@string/default_blank"
-            android:layout_width="80px"
-            android:layout_height="50px"  />
+                android:layout_width="80dip"
+                android:layout_height="50dip"  />
 
             <Button android:id="@+id/presets_button_5"
                 android:text="@string/default_blank"
-            android:layout_width="80px"
-            android:layout_height="50px"  />
+                android:layout_width="80dip"
+                android:layout_height="50dip"  />
 
             <ImageButton android:id="@+id/btn_preset_page"
-                android:src="@drawable/preset_page_button"
-                android:layout_marginRight="2dip"
-            android:layout_width="80px"
-            android:layout_height="50px"
+                android:src="@drawable/ic_btn_forward"
+                android:layout_marginRight="2dp"
+                android:layout_width="80dip"
+                android:layout_height="50dip"
                 android:visibility="visible" />
         </LinearLayout>
 </merge>

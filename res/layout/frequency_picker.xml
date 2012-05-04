@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 **
-** Copyright 2007, The Android Open Source Project
+** Copyright 2007, 2012, The Android Open Source Project
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -23,21 +23,21 @@
     android:layout_height="wrap_content">
     <!-- MHz -->
     <android.widget.NumberPicker
-        android:id="@+id/mhz" 
-        android:layout_width="80dip" 
+        android:id="@+id/mhz"
+        android:layout_width="80dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="1dip" 
-        android:layout_marginRight="1dip" 
-        android:focusable="true" 
+        android:layout_marginLeft="1dp"
+        android:layout_marginRight="1dp"
+        android:focusable="true"
         android:focusableInTouchMode="true" />
 
     <!-- KHz -->
     <android.widget.NumberPicker
         android:id="@+id/khz"
-        android:layout_width="80dip"
+        android:layout_width="80dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="1dip"
-        android:layout_marginRight="1dip"
+        android:layout_marginLeft="1dp"
+        android:layout_marginRight="1dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
         />

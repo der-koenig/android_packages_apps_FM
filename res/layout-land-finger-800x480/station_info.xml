@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
- * Copyright (c) 2009, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009, 2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,30 +28,26 @@
 -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <LinearLayout android:id="@+id/stationinfo_layout"
+    <RelativeLayout android:id="@+id/stationinfo_layout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-    android:layout_marginTop="5px"
-      android:layout_marginLeft="5px"
-    android:layout_marginRight="5px"
-        android:orientation="vertical"
-       android:gravity="fill_vertical"
-        >
+        android:layout_marginTop="5dip"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip">
 
         <RelativeLayout android:id="@+id/top_most"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_marginLeft="5px"
-         android:layout_marginRight="5px"
-         >
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dip"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="5dip">
 
             <ImageView android:id="@+id/signal_level"
-                    android:src="@drawable/ic_signal_2"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_alignParentTop="true"
-              android:layout_alignParentLeft="true"
-            />
+                android:src="@drawable/ic_signal_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"/>
 
             <TextView android:id="@+id/prog_service_tv"
                 android:textAppearance="?android:attr/textAppearanceMedium"
@@ -60,11 +56,10 @@
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
                 android:layout_alignBaseline="@id/signal_level"
-                android:textSize="16sp"
+                android:textSize="16dip"
                 android:singleLine="true"
                 android:textStyle="bold"
-                android:text="@string/prog_service_string"
-                />
+                android:text="@string/prog_service_string"/>
 
             <TextView android:id="@+id/stereo_text_tv"
                 android:textAppearance="?android:attr/textAppearanceMedium"
@@ -73,76 +68,98 @@
                 android:layout_alignParentTop="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignBaseline="@id/signal_level"
-                android:textSize="16sp"
+                android:textSize="16dip"
                 android:text="@string/default_audio"/>
+
         </RelativeLayout>
 
+        <RelativeLayout android:id="@+id/station_id_row"
+            android:layout_below="@id/top_most"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
 
-        <LinearLayout android:id="@+id/station_frequency_row"
+            <TextView android:id="@+id/call_sign_tv"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentTop="true"
+                android:textSize="16dip"
+                android:paddingRight="5dip"
+                android:paddingBottom="2dip"
+                android:paddingLeft="5dip"
+                android:text="@string/station_id_string" />
+
+        </RelativeLayout>
+
+        <RelativeLayout android:id="@+id/frequency_layout"
+             android:layout_width="fill_parent"
+             android:layout_below="@id/station_id_row"
+             android:layout_height="wrap_content">
+
+             <ImageView
+                 android:id="@+id/btn_back"
+                 android:clickable="true"
+                 android:focusable="true"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_alignParentLeft="true"
+                 android:visibility="visible"
+                 android:src="@drawable/btn_arrow_left"/>
+
+             <TextView android:id="@+id/prog_frequency_tv"
+                 android:textAppearance="?android:attr/textAppearanceLarge"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_centerInParent="true"
+                 android:textSize="50dip"
+                 android:text="@string/frequency_string" />
+
+             <ImageView
+                 android:id="@+id/btn_forward"
+                 android:clickable="true"
+                 android:focusable="true"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:paddingLeft="2dip"
+                 android:paddingRight="10dip"
+                 android:layout_alignParentRight="true"
+                 android:visibility="visible"
+                 android:src="@drawable/btn_arrow_right"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout android:id="@+id/pty_string_row"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingTop="30px"
-            android:paddingBottom="30px"
-            android:gravity="fill_vertical|center">
+            android:layout_below="@id/frequency_layout">
 
-            <TextView android:id="@+id/prog_frequency_tv"
-                  android:textAppearance="?android:attr/textAppearanceLarge"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:layout_gravity="center"
-                  android:layout_alignParentTop="true"
-                  android:layout_alignParentLeft="true"
-                  android:textSize="50sp"
-                  android:text="@string/frequency_string" />
+            <TextView android:id="@+id/pty_tv"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textSize="16dip"
+                android:text="@string/pty_string" />
 
-            <RelativeLayout android:id="@+id/second_row"
-              android:layout_width="wrap_content"
-              android:layout_height="fill_parent"
-              android:orientation="vertical"
-              android:layout_toRightOf="@id/prog_frequency_tv"
-              >
+        </RelativeLayout>
 
-                <TextView android:id="@+id/call_sign_tv"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:textSize="16sp"
-                    android:paddingRight="5px"
-                    android:paddingBottom="2px"
-                    android:paddingLeft="5px"
-                    android:text="@string/station_id_string" />
+        <RelativeLayout android:id="@+id/radio_text_row"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/pty_string_row">
 
-                <TextView android:id="@+id/pty_tv"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentBottom="true"
-                    android:textSize="16sp"
-                    android:paddingTop="5px"
-                    android:paddingRight="5px"
-                    android:paddingLeft="5px"
-                    android:text="@string/pty_string" />
-            </RelativeLayout>
-        </LinearLayout>
+            <!-- Station Radio Text information display -->
+            <TextView android:id="@+id/radio_text_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textSize="16dp"
+                android:singleLine="true"
+                android:textStyle="bold"
+                android:layout_centerInParent="true"
+                android:text="@string/radio_text_string"/>
 
-        <!-- Station Radio Text information display -->
-        <TextView android:id="@+id/radio_text_tv"
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          android:textAppearance="?android:attr/textAppearanceMedium"
-          android:textSize="16sp"
-          android:singleLine="true"
-          android:textStyle="bold"
-          android:paddingTop="20px"
-          android:paddingBottom="20px"
-          android:paddingLeft="5px"
-          android:paddingRight="5px"
-          android:gravity="center_horizontal"
-          android:text="@string/radio_text_string"
-           />
-    </LinearLayout>
+        </RelativeLayout>
+    </RelativeLayout>
 </merge>
