@@ -242,6 +242,8 @@ public class FMRadio extends Activity
    /* Command that failed (Sycnhronous or Asynchronous) */
    private static int mCommandFailed = 0;
 
+   private LoadedDataAndState SavedDataAndState = null;
+
    /** Called when the activity is first created. */
    @Override
    public void onCreate(Bundle savedInstanceState) {
@@ -255,6 +257,7 @@ public class FMRadio extends Activity
             + " - Width  : "+ getWindowManager().getDefaultDisplay().getWidth());
 
       setContentView(R.layout.fmradio);
+      SavedDataAndState = (LoadedDataAndState)getLastNonConfigurationInstance();
       mAnimation = AnimationUtils.loadAnimation(this,
                                                 R.anim.preset_select);
 
@@ -479,6 +482,25 @@ public class FMRadio extends Activity
       mHandler.post(mOnStereo);
       updateStationInfoToUI();
       enableRadioOnOffUI();
+   }
+   private class LoadedDataAndState {
+      public LoadedDataAndState(){};
+      public boolean onOrOff;
+   }
+   @Override
+   public Object onRetainNonConfigurationInstance() {
+      final LoadedDataAndState data = new LoadedDataAndState();
+      if(mService != null) {
+         try {
+              data.onOrOff = mService.isFmOn();
+         } catch(RemoteException e) {
+              data.onOrOff = false;
+              e.printStackTrace();
+         }
+      } else {
+         data.onOrOff = false;
+      }
+      return data;
    }
 
    @Override
@@ -3404,8 +3426,13 @@ public class FMRadio extends Activity
             try
             {
                mService.registerCallbacks(mServiceCallbacks);
-
-               enableRadio();
+               if(SavedDataAndState == null) {
+                  enableRadio();
+               } else if(SavedDataAndState.onOrOff){
+                  enableRadioOnOffUI(true);
+               } else {
+                  enableRadioOnOffUI(false);
+               }
             } catch (RemoteException e)
             {
                e.printStackTrace();
