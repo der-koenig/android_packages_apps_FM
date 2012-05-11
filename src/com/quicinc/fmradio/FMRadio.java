@@ -3011,6 +3011,7 @@ public class FMRadio extends Activity
    final Runnable mRadioDisabled = new Runnable() {
       public void run() {
          /* Update UI to FM Off State */
+         cleanupTimeoutHandler();
          endSleepTimer();
          stopRecording();
          cancelSearch();

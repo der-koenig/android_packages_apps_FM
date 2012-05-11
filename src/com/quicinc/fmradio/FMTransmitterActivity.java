@@ -90,8 +90,8 @@ public class FMTransmitterActivity extends Activity {
         private static final int DIALOG_PRESET_OPTIONS = 3;
         private static final int DIALOG_PROGRESS_PROGRESS = 5;
         private static final int DIALOG_CMD_FAILED_HDMI_ON = 14;
-   /* Activity Return ResultIdentifiers */
-   private static final int ACTIVITY_RESULT_SETTINGS = 1;
+        /* Activity Return ResultIdentifiers */
+        private static final int ACTIVITY_RESULT_SETTINGS = 1;
 
         private static final int MAX_PRESETS = 6;
         private static IFMTransmitterService mService = null;
@@ -115,7 +115,7 @@ public class FMTransmitterActivity extends Activity {
 
         /* Current Status Indicators */
         private static boolean mIsSearching = false;
-   private static boolean mSearchingResultStatus = false;
+        private static boolean mSearchingResultStatus = false;
 
 
         private boolean mInternalAntennaAvailable = false;
@@ -130,6 +130,9 @@ public class FMTransmitterActivity extends Activity {
 
         /* Radio Vars */
         final Handler mHandler = new Handler();
+        private final Handler enableRadioHandler = new Handler();
+        private final Handler disableRadioHandler = new Handler();
+
         /* Search Progress Dialog */
         private ProgressDialog mProgressDialog = null;
 
@@ -689,9 +692,13 @@ public class FMTransmitterActivity extends Activity {
                 public void onClick(View v) {
 
                         if (isFmOn()) {
-                                disableRadio();
+                                enableRadioHandler.removeCallbacks(enableRadioTask);
+                                disableRadioHandler.removeCallbacks(disableRadioTask);
+                                disableRadioHandler.postDelayed(disableRadioTask, 0);
                         } else {
-                                enableRadio();
+                                enableRadioHandler.removeCallbacks(enableRadioTask);
+                                disableRadioHandler.removeCallbacks(disableRadioTask);
+                                enableRadioHandler.postDelayed(enableRadioTask, 0);
                         }
                         setTurnOnOffButtonImage();
                 }
@@ -706,38 +713,59 @@ public class FMTransmitterActivity extends Activity {
                 }
         }
 
-        private void enableRadio() {
-                mIsSearching = false;
-                if (mService != null) {
-                        try {
-                                if( mService.isCallActive()) {
-                                    //call already active
-                                    //the enableRadioOnOffUI API will
-                                    //update UI
-                                }
-                                else if(mService.isHeadsetPlugged()) {
-                                    // headset plugged usecase
-                                    // enableRadioOnOffUI will update UI
-                                }
-                                else if(!isFmOn() ) {
-                                    if (mService.fmOn())
-                                       tuneRadio(mTunedFrequency);
-                                }
-
-                                enableRadioOnOffUI();
-                        } catch (RemoteException e) {
-                                e.printStackTrace();
-                        }
+        private void enableRadioOnOffButton() {
+                if(mOnOffButton != null) {
+                   mOnOffButton.setEnabled(true);
+                   mOnOffButton.setClickable(true);
                 }
         }
 
+        private void disableRadioOnOffButton() {
+                if(mOnOffButton != null) {
+                   mOnOffButton.setEnabled(false);
+                   mOnOffButton.setClickable(false);
+                }
+        }
+        private Runnable enableRadioTask = new Runnable() {
+                public void run() {
+                     enableRadio();
+                }
+        };
+
+        private Runnable disableRadioTask = new Runnable() {
+                public void run() {
+                     disableRadio();
+                }
+        };
+
+        private void enableRadio() {
+                mIsSearching = false;
+                disableRadioOnOffButton();
+                if (mService != null) {
+                        try {
+                                if(!(mService.isCallActive() ||
+                                    mService.isHeadsetPlugged()) &&
+                                    !mService.fmOn()) {
+                                    enableRadioOnOffButton();
+                                }
+                        } catch (RemoteException e) {
+                                enableRadioOnOffButton();
+                                e.printStackTrace();
+                        }
+                }
+
+        }
+
         private void disableRadio() {
+                enableRadioOnOffUI(false);
                 cancelSearch();
                 if (mService != null) {
                         try {
-                                mService.fmOff();
-                                enableRadioOnOffUI();
+                               if(!mService.fmOff()) {
+                                  enableRadioOnOffButton();
+                               }
                         } catch (RemoteException e) {
+                                enableRadioOnOffButton();
                                 e.printStackTrace();
                         }
                 }
@@ -1047,14 +1075,19 @@ public class FMTransmitterActivity extends Activity {
                                      }
                                   }
                                }
-                             /* Restart FM into Transmit mode */
+                               /* Restart FM into Transmit mode */
                                if(!mService.isHeadsetPlugged()) {
-                                 mService.fmRestart();
-                                 /* Tune to last tuned frequency */
-                                 tuneRadio(mTunedFrequency);
-                                 updateSearchProgress();
-                                 resetFMStationInfoUI();
-                                 setupPresetLayout();
+                                  mService.fmRestart();
+                                  /* Tune to last tuned frequency */
+                                  tuneRadio(mTunedFrequency);
+                                  updateSearchProgress();
+                                  resetFMStationInfoUI();
+                                  setupPresetLayout();
+                               } else {
+                                  updateSearchProgress();
+                                  enableRadioHandler.removeCallbacks(enableRadioTask);
+                                  disableRadioHandler.removeCallbacks(disableRadioTask);
+                                  disableRadioHandler.postDelayed(disableRadioTask, 0);
                                }
                           } catch (RemoteException e) {
                                e.printStackTrace();
@@ -1304,16 +1337,12 @@ public class FMTransmitterActivity extends Activity {
                         if (mService != null) {
                                 try {
                                         mService.registerCallbacks(mServiceCallbacks);
-                                        if( false == mService.isHeadsetPlugged()) {
+                                        if(false == mService.isHeadsetPlugged()) {
                                             Log.e(LOGTAG, "return for isHeadsetPlugged is false");
-                                            enableRadio();
-                                            if(false == readInternalAntennaAvailable()) {
-                                                Log.e(LOGTAG, "disable radio is being called");
-                                                disableRadio();
-                                            }
-                                        }
-                                        else
-                                        {
+                                            enableRadioHandler.removeCallbacks(enableRadioTask);
+                                            disableRadioHandler.removeCallbacks(disableRadioTask);
+                                            enableRadioHandler.postDelayed(enableRadioTask, 0);
+                                        } else {
                                             enableRadioOnOffUI(false);
                                         }
                                 } catch (RemoteException e) {
@@ -1388,6 +1417,7 @@ public class FMTransmitterActivity extends Activity {
         };
         final Runnable mRadioStateUpdated = new Runnable() {
             public void run() {
+                enableRadioOnOffButton();
                /* Update UI to FM On State */
                 if(isFmOn()) {
                     enableRadioOnOffUI(true);
@@ -1398,7 +1428,8 @@ public class FMTransmitterActivity extends Activity {
                     /* Save the existing frequency */
                     FmSharedPreferences.setTunedFrequency(mTunedFrequency);
                     SavePreferences();
-                    disableRadio();
+                    removeDialog(DIALOG_PRESET_LIST_AUTO_SET);
+                    enableRadioOnOffUI(false);
                 }
 
              }

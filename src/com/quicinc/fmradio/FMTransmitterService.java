@@ -463,18 +463,16 @@ public class FMTransmitterService extends Service
     */
    private boolean fmOn() {
       boolean bStatus=false;
+
       Log.d(LOGTAG, "fmOn");
       mWakeLock.acquire(10*1000);
-      try {
-      mTransmitter = new FmTransmitter(FMRADIO_DEVICE_FD_STRING, transmitCallbacks);
-      }
-      catch (InstantiationException e){
-             throw new RuntimeException("FmTx service not available!");
-      }
-
-      if (mTransmitter == null)
-      {
-         throw new RuntimeException("FmTransmitter service not available!");
+      if (mTransmitter == null) {
+          try {
+               mTransmitter = new FmTransmitter(FMRADIO_DEVICE_FD_STRING, transmitCallbacks);
+               Log.d(LOGTAG, "new transmitter created");
+          } catch (InstantiationException e) {
+               throw new RuntimeException("FmTx service not available!");
+          }
       }
       if (mTransmitter != null)
       {
@@ -482,6 +480,13 @@ public class FMTransmitterService extends Service
          {
             /* FM Is already on,*/
             bStatus = true;
+            try {
+                 if(mCallbacks != null) {
+                    mCallbacks.onEnabled(true);
+                 }
+            } catch(RemoteException e) {
+                 e.printStackTrace();
+            }
             Log.d(LOGTAG, "mTransmitter is enabled");
          }
          else
@@ -859,7 +864,7 @@ public class FMTransmitterService extends Service
    public boolean setLowPowerMode(boolean bLowPower)
    {
       boolean bCommandSent=false;
-      if (mReceiver != null)
+      if (mTransmitter != null)
       {
          Log.d(LOGTAG, "setLowPowerMode: " + bLowPower);
          if(bLowPower)
@@ -895,19 +900,17 @@ public class FMTransmitterService extends Service
 
 
    private FmTransmitterCallbacksAdaptor transmitCallbacks = new  FmTransmitterCallbacksAdaptor() {
-      public void onRDSGroupsAvailable() {
+      public void FmTxEvRDSGroupsAvailable() {
          // Do nothing
-
       }
 
-      public void onRDSGroupsComplete() {
+      public void FmTxEvRDSGroupsComplete() {
          // Do nothing
-
       }
-      public void onContRDSGroupsComplete() {
+      public void FmTxEvContRDSGroupsComplete() {
       }
 
-      public void onTuneStatusChange(int freq) {
+      public void FmTxEvTuneStatusChange(int freq) {
 
         Log.d(LOGTAG, "onTuneStatusChange\n");
         if (mCallbacks != null)
@@ -954,26 +957,41 @@ public class FMTransmitterService extends Service
 
       }
 
-      public void onRadioDisabled()
-      {
+      public void FmTxEvRadioDisabled() {
          Log.d(LOGTAG, "onRadioDisabled");
-
+         mFMOn = false;
+         if((mServiceInUse) && (mCallbacks != null) ) {
+            try {
+                  mCallbacks.onDisabled();
+            } catch(RemoteException e) {
+                  e.printStackTrace();
+            }
+         }
+      }
+      public void FmTxEvRadioEnabled() {
+         mFMOn = true;
+         if((mServiceInUse) && (mCallbacks != null) ) {
+            try {
+                  mCallbacks.onEnabled(true);
+            } catch(RemoteException e) {
+                  e.printStackTrace();
+            }
+         }
+      }
+      public void FmTxEvRadioReset() {
          if(isFmOn()) {
-             // Received Radio Disable event unexpectedly
-             Log.d(LOGTAG, "FM is ON, reset FM");
-             fmRadioReset();
-             try
-             {
+            // Received Radio Disable event unexpectedly
+            Log.d(LOGTAG, "FM is ON, reset FM");
+            fmRadioReset();
+            try {
                 /* Notify the UI/Activity, only if the service is "bound"
                    by an activity and if Callbacks are registered
                 */
-                if((mServiceInUse) && (mCallbacks != null) )
-                {
+                if((mServiceInUse) && (mCallbacks != null)) {
                     mCallbacks.onRadioReset();
                 }
              }
-             catch (RemoteException e)
-             {
+             catch (RemoteException e) {
                 e.printStackTrace();
              }
          }
@@ -1025,9 +1043,10 @@ public class FMTransmitterService extends Service
          Log.d(LOGTAG, "FmRxEvSearchListComplete");
          try
          {
-            if (mCallbacks != null)
-            {
-               mCallbacks.onSearchListComplete(true);
+            if (mCallbacks != null) {
+                mCallbacks.onSearchListComplete(true);
+            } else if(mReceiver != null) {
+                mReceiver.disable();
             }
          } catch (RemoteException e)
          {
@@ -1111,6 +1130,7 @@ public class FMTransmitterService extends Service
               if(bStatus == false)
                  Log.e(LOGTAG, "Error in cancelling the search");
               if(isFmOn()) {
+                 Log.d(LOGTAG, "disable called from headset handler");
                  bStatus = fmOff();
                  if(mServiceInUse && (mCallbacks != null) && (bStatus == true)) {
                     try {
