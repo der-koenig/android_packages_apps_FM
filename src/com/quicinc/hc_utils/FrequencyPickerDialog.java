@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007 The Android Open Source Project
- *
+ * Copyright (c) 2012, Code Aurora Forum. All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -152,5 +152,32 @@ OnFrequencyChangedListener {
         int MHz = frequency/1000;
         int KHz = (frequency%1000)/100;
             setTitle("FM - "+MHz+"."+KHz);
+    }
+    public void updateSteps(int steps)
+    {
+        mChannelSpacing = 200;
+        if(FmReceiver.FM_CHSPACE_200_KHZ == steps)
+        {
+                mChannelSpacing = 200;
+        }
+        else if(FmReceiver.FM_CHSPACE_100_KHZ == steps)
+        {
+                mChannelSpacing = 100;
+        }
+        else if(FmReceiver.FM_CHSPACE_50_KHZ == steps)
+        {
+                mChannelSpacing = 50;
+        }
+        mFrequencyPicker.updateSteps(mChannelSpacing);
+    }
+    public void updateMinFreq(int freq)
+    {
+       mMinFrequency = freq;
+       mFrequencyPicker.updateMinFreq(mMinFrequency);
+    }
+    public void updateMaxFreq(int freq)
+    {
+       mMaxFrequency = freq;
+       mFrequencyPicker.updateMaxFreq(mMaxFrequency);
     }
 }

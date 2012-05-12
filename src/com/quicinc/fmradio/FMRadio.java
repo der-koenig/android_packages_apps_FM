@@ -1041,7 +1041,11 @@ public class FMRadio extends Activity
          {
             if (dialog != null && mTunedStation != null)
             {
-               ((FrequencyPickerDialog) dialog).UpdateFrequency(mTunedStation.getFrequency());
+               FmConfig fmConfig = FmSharedPreferences.getFMConfiguration();
+              ((FrequencyPickerDialog) dialog).updateSteps(fmConfig.getChSpacing());
+              ((FrequencyPickerDialog) dialog).updateMinFreq(fmConfig.getLowerLimit());
+              ((FrequencyPickerDialog) dialog).updateMaxFreq(fmConfig.getUpperLimit());
+              ((FrequencyPickerDialog) dialog).UpdateFrequency(mTunedStation.getFrequency());
             }
             break;
          }

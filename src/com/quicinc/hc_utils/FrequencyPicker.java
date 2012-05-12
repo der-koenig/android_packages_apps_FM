@@ -22,7 +22,7 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-//import android.util.Log;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
@@ -342,7 +342,18 @@ public class FrequencyPicker extends FrameLayout {
         //Log.d("FMRadio", "FP: getOdd200KHzStrings");
             return khzStrings;
     }
-
+    public void updateSteps(int steps)
+    {
+       mStep = steps;
+    }
+    public void updateMinFreq(int freq)
+    {
+       mMin = freq;
+    }
+    public void updateMaxFreq(int freq)
+    {
+       mMax = freq;
+    }
     /**
      * Initialize the state.
      * @param year The initial year.
@@ -370,6 +381,7 @@ public class FrequencyPicker extends FrameLayout {
            mMHzPicker.setMaxValue(mMax/1000);
         }
         if (mKHzPicker != null) {
+           mKHzPicker.setDisplayedValues(get50KHzStrings());
            mKHzPicker.setMinValue(1);
            mKHzPicker.setMaxValue(khzNumSteps);
            mKHzPicker.setDisplayedValues(khzStrings);
@@ -378,7 +390,7 @@ public class FrequencyPicker extends FrameLayout {
 
     private void updateSpinners() {
         int khzNumSteps = getKHzCount(mStep);
-            updateSpinnerRange();
+        updateSpinnerRange();
         mMhz = (int)(mFrequency/1000);
             mKhz = getCurrentKHz(mFrequency, mMin, mStep) ;
         if((mMin/1000 <=mMhz) && (mMax/1000 >=mMhz))
