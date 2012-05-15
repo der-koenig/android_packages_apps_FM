@@ -101,6 +101,8 @@ public class FMTransmitterService extends Service
    // interval after which we stop the service when idle
    private static final int IDLE_DELAY = 60000;
 
+   private static String RText = " ";
+
    public FMTransmitterService() {
    }
 
@@ -195,15 +197,14 @@ public class FMTransmitterService extends Service
                  //Set if PI and PTY
                  //as desired
                  if( mTransmitter != null ){
-                     String szRTStr = intent.getStringExtra("album") +":" + intent.getStringExtra("track") +":"
+                     RText = intent.getStringExtra("album") +":" + intent.getStringExtra("track") +":"
                      + intent.getStringExtra("artist");
-                     Log.d(LOGTAG,"RT string size is "+szRTStr.length());
-                     mTransmitter.startRTInfo(szRTStr , FM_TX_PROGRAM_TYPE, FM_TX_PROGRAM_ID );
+                     Log.d(LOGTAG,"RT string size is "+RText.length());
+                     mTransmitter.startRTInfo(RText, FM_TX_PROGRAM_TYPE, FM_TX_PROGRAM_ID );
                  }
                  try {
                      if( mCallbacks != null ) {
-                         mCallbacks.onMetaDataChanged(intent.getStringExtra("album") +":" + intent.getStringExtra("track") +":"
-                                 + intent.getStringExtra("artist"));
+                         mCallbacks.onMetaDataChanged(RText);
                      } else {
                          Log.d(LOGTAG, "callback is not there");
                      }
@@ -574,6 +575,7 @@ public class FMTransmitterService extends Service
          bStatus = mReceiver.disable();
          mReceiver = null;
       }
+      RText = " ";
       stop();
       return(bStatus);
    }
@@ -935,6 +937,21 @@ public class FMTransmitterService extends Service
                }
             }
         }
+
+        if (mTransmitter != null ){
+            mTransmitter.startRTInfo(RText, FM_TX_PROGRAM_TYPE, FM_TX_PROGRAM_ID );
+        }
+
+        try {
+             if (mCallbacks != null ) {
+                 mCallbacks.onMetaDataChanged(RText);
+             } else {
+                 Log.d(LOGTAG, "callback is not there");
+             }
+        } catch (RemoteException ex){
+             ex.printStackTrace();
+        }
+
       }
 
       public void onRadioDisabled()
