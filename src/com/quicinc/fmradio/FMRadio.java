@@ -3089,6 +3089,7 @@ public class FMRadio extends Activity
                         break;
                      }
                   }
+                  mPrefs.Save();
                }
             } catch (RemoteException e)
             {
