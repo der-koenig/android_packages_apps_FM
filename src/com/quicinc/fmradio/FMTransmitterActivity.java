@@ -289,6 +289,7 @@ public class FMTransmitterActivity extends Activity {
                 } catch(RemoteException ex){
                     Log.d(LOGTAG,"expection for service");
                 }
+                mHandler.post(mUpdateRadioText);
                 updateStationInfoToUI();
                 enableRadioOnOffUI();
         }

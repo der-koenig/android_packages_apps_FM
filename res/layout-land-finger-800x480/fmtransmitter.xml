@@ -26,197 +26,189 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="wrap_content" >
 
     <!--
         This LinearLayout contains Station Information display and the
         function buttons
      -->
-    <LinearLayout android:layout_width="fill_parent"
+    <RelativeLayout android:id="@+id/station_layout"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="horizontal">
+        android:weightSum="1.0">
 
-        <LinearLayout android:background="@drawable/station_border"
+        <!-- This included layout contains Station Information to display -->
+        <RelativeLayout android:id="@+id/stationinfo_layout"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp" >
+
+           <RelativeLayout android:background="@drawable/station_border"
+               android:layout_width="fill_parent"
+               android:layout_height="wrap_content"
+               android:layout_weight="1" >
+
+               <RelativeLayout android:id="@+id/transmit_msg_layout"
+                   android:layout_width="fill_parent"
+                   android:layout_height="wrap_content"
+                   android:paddingTop="5dp"
+                   android:paddingBottom="5dp" >
+
+                   <TextView android:id="@+id/transmit_msg_tv"
+                       android:textAppearance="?android:attr/textAppearanceSmall"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:layout_centerInParent="true"
+                       android:textSize="15dp"
+                       android:text="@string/transmit_msg_string" />
+
+               </RelativeLayout>
+
+               <RelativeLayout android:id="@+id/frequency_layout"
+                   android:layout_width="fill_parent"
+                   android:layout_height="wrap_content"
+                   android:layout_below="@id/transmit_msg_layout" >
+
+                   <ImageView android:id="@+id/btn_back"
+                       android:clickable="true"
+                       android:focusable="true"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:paddingLeft="10dp"
+                       android:layout_alignParentLeft="true"
+                       android:visibility="visible"
+                       android:src="@drawable/btn_arrow_left" />
+
+                   <TextView android:id="@+id/prog_frequency_tv"
+                       android:textAppearance="?android:attr/textAppearanceLarge"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:layout_centerInParent="true"
+                       android:textSize="56dp"
+                       android:text="@string/frequency_string" />
+
+                   <ImageView android:id="@+id/btn_forward"
+                       android:clickable="true"
+                       android:focusable="true"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:paddingRight="10dp"
+                       android:layout_alignParentRight="true"
+                       android:visibility="visible"
+                       android:src="@drawable/btn_arrow_right" />
+
+               </RelativeLayout>
+
+               <!-- Station Radio Text information display -->
+               <RelativeLayout android:id="@+id/radio_text_layout"
+                   android:layout_width="fill_parent"
+                   android:layout_height="wrap_content"
+                   android:layout_below="@id/frequency_layout" >
+
+                   <TextView android:id="@+id/radio_text_tv"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:textAppearance="?android:attr/textAppearanceMedium"
+                       android:textSize="16dp"
+                       android:singleLine="true"
+                       android:textStyle="bold"
+                       android:paddingLeft="5dp"
+                       android:paddingRight="5dp"
+                       android:layout_centerInParent="true"
+                       android:text="@string/radio_text_string" />
+
+               </RelativeLayout>
+
+           </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout android:id="@+id/presets_layout"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="top|fill_vertical">
+            android:layout_below="@id/stationinfo_layout"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="10dp" >
 
-            <RelativeLayout android:id="@+id/station_layout"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent">
+            <RelativeLayout android:layout_width="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_height="wrap_content" >
 
-                <!-- This included layout contains Station Information to display -->
-                <LinearLayout android:id="@+id/stationinfo_layout"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:orientation="vertical"
-                    android:gravity="fill_vertical">
-
-                    <LinearLayout android:id="@+id/station_frequency_row"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:paddingTop="50dp"
-                        android:paddingBottom="50dp"
-                        android:gravity="fill_vertical|center">
-
-                        <TextView android:id="@+id/transmit_msg_tv"
-                            android:textAppearance="?android:attr/textAppearanceSmall"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="15dp"
-                            android:layout_centerHorizontal="true"
-                            android:layout_alignWithParentIfMissing="true"
-                            android:text="@string/transmit_msg_string" />
-
-                        <TextView android:id="@+id/prog_frequency_tv"
-                            android:textAppearance="?android:attr/textAppearanceLarge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerHorizontal="true"
-                            android:layout_alignWithParentIfMissing="true"
-                            android:layout_alignParentTop="true"
-                            android:paddingBottom="50dp"
-                            android:layout_alignParentLeft="true"
-                            android:textSize="56dp"
-                            android:text="@string/frequency_string" />
-                    </LinearLayout>
-
-                    <!-- Station Radio Text information display -->
-                    <TextView android:id="@+id/radio_text_tv"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textSize="16dp"
-                        android:singleLine="true"
-                        android:textStyle="bold"
-                        android:paddingBottom="2dp"
-                        android:paddingLeft="5dp"
-                        android:paddingRight="5dp"
-                        android:gravity="center_horizontal"
-                        android:text="@string/radio_text_string" />
-                </LinearLayout>
-
-                <ImageView android:id="@+id/btn_back"
-                    android:clickable="true"
-                    android:focusable="true"
+                <Button android:id="@+id/presets_button_1"
+                    android:text="@string/default_station"
+                    android:layout_marginLeft="10dp"
+                    android:textSize="24dp"
+                    android:singleLine="true"
                     android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="2dp"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
-                    android:visibility="visible"
-                    android:src="@drawable/btn_arrow_left" />
+                    android:layout_height="wrap_content" />
 
-                <ImageView android:id="@+id/btn_forward"
-                    android:clickable="true"
-                    android:focusable="true"
+                <Button android:id="@+id/presets_button_2"
+                    android:text="@string/default_station"
+                    android:textSize="24dp"
+                    android:singleLine="true"
+                    android:layout_toRightOf="@id/presets_button_1"
                     android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
-                    android:paddingLeft="2dp"
-                    android:paddingRight="10dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:visibility="visible"
-                    android:src="@drawable/btn_arrow_right" />
+                    android:layout_height="wrap_content" />
+
+                <Button android:id="@+id/presets_button_3"
+                    android:text="@string/default_station"
+                    android:textSize="24dp"
+                    android:singleLine="true"
+                    android:layout_toRightOf="@id/presets_button_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <Button android:id="@+id/presets_button_4"
+                    android:text="@string/default_blank"
+                    android:textSize="24dp"
+                    android:singleLine="true"
+                    android:layout_toRightOf="@id/presets_button_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <Button android:id="@+id/presets_button_5"
+                    android:text="@string/default_blank"
+                    android:textSize="24dp"
+                    android:singleLine="true"
+                    android:layout_toRightOf="@id/presets_button_4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <Button android:id="@+id/presets_button_6"
+                    android:text="@string/default_blank"
+                    android:textSize="24dp"
+                    android:singleLine="true"
+                    android:layout_toRightOf="@id/presets_button_5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
             </RelativeLayout>
-        </LinearLayout>
-        <LinearLayout android:layout_width="wrap_content"
+
+        </RelativeLayout>
+
+        <RelativeLayout android:id="@+id/layout_on_off"
+            android:layout_below="@id/presets_layout"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="center"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_marginBottom="2dp">
+
             <!-- On-Off button -->
             <ImageButton android:id="@+id/btn_onoff"
-                android:layout_width="75dp"
-                android:layout_height="75dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:src="@drawable/ic_btn_onoff"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp" />
-        </LinearLayout>
+                android:layout_marginTop="5dp"
+                android:layout_centerInParent="true"
+                android:layout_marginBottom="5dp" />
 
-     </LinearLayout>
-     <View
-         android:layout_width="fill_parent"
-         android:layout_height="1dp"
-         android:background="#ffffffff" />
+        </RelativeLayout>
 
-          <!--
-             Layout contains the Next/Previous Presets and Tune buttons and status
-             msg text
-          -->
-     <LinearLayout android:id="@+id/presets_layout"
-         android:layout_width="fill_parent"
-         android:layout_height="wrap_content"
-         android:orientation="horizontal"
-         android:layout_weight="0"
-         android:layout_gravity="center"
-         android:layout_marginTop="15dp"
-         android:layout_marginBottom="10dp"
-         android:gravity="center_horizontal">
+    </RelativeLayout>
 
-         <Button android:id="@+id/presets_button_1"
-             android:text="@string/default_station"
-             android:layout_marginLeft="10dp"
-             android:layout_marginRight="25dp"
-             android:textSize="24dp"
-             android:singleLine="true"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content" />
-
-         <Button android:id="@+id/presets_button_2"
-             android:text="@string/default_station"
-             android:layout_marginRight="25dip"
-             android:textSize="24dp"
-             android:singleLine="true"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content" />
-
-         <Button android:id="@+id/presets_button_3"
-             android:text="@string/default_station"
-             android:layout_marginRight="25dp"
-             android:textSize="24dp"
-             android:singleLine="true"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content" />
-
-         <Button android:id="@+id/presets_button_4"
-             android:text="@string/default_blank"
-             android:layout_marginRight="25dp"
-             android:textSize="24dp"
-             android:singleLine="true"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content" />
-
-         <Button android:id="@+id/presets_button_5"
-             android:text="@string/default_blank"
-             android:layout_marginRight="25dp"
-             android:textSize="24dp"
-             android:singleLine="true"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content" />
-
-         <Button android:id="@+id/presets_button_6"
-             android:text="@string/default_blank"
-             android:layout_marginRight="10dp"
-             android:textSize="24dp"
-             android:singleLine="true"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"/>
-
-     </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>
