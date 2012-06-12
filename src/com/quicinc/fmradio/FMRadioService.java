@@ -2374,6 +2374,15 @@ public class FMRadioService extends Service
        return mCallStatus;
    }
 
+   public void clearStationInfo() {
+       if(mFMRxRDSData != null) {
+          mFMRxRDSData.setRadioText("");
+          mFMRxRDSData.setPrgmId(0);
+          mFMRxRDSData.setPrgmType(0);
+          mFMRxRDSData.setPrgmServices("");
+       }
+   }
+
    /* Receiver callbacks back from the FM Stack */
    FmRxEvCallbacksAdaptor fmCallbacks = new FmRxEvCallbacksAdaptor()
    {
@@ -2441,6 +2450,9 @@ public class FMRadioService extends Service
             mPrefs.Save();
             //Log.d(LOGTAG, "Call mCallbacks.onTuneStatusChanged");
             /* Since the Tuned Status changed, clear out the RDSData cached */
+            if(mReceiver != null) {
+               clearStationInfo();
+            }
             mFMRxRDSData = null;
             if(mCallbacks != null)
             {
