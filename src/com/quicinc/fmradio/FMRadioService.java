@@ -74,6 +74,7 @@ import android.database.Cursor;
 import com.quicinc.utils.A2dpDeviceStatus;
 import android.media.AudioManager;
 import android.content.ComponentName;
+import android.os.StatFs;
 
 /**
  * Provides "background" FM Radio (that uses the hardware) capabilities,
@@ -143,6 +144,11 @@ public class FMRadioService extends Service
    private boolean mAppShutdown = false;
    private boolean mSingleRecordingInstanceSupported = false;
    private AudioManager mAudioManager;
+   public static final long UNAVAILABLE = -1L;
+   public static final long PREPARING = -2L;
+   public static final long UNKNOWN_SIZE = -3L;
+   public static final long LOW_STORAGE_THRESHOLD = 50000000;
+   private long mStorageSpace;
 
    private static final String IOBUSY_UNVOTE = "com.android.server.CpuGovernorService.action.IOBUSY_UNVOTE";
 
@@ -692,6 +698,17 @@ public class FMRadioService extends Service
                 return false;
        }
         stopRecording();
+
+        if (!updateAndShowStorageHint())
+            return false;
+        long maxFileSize = mStorageSpace - LOW_STORAGE_THRESHOLD;
+        mRecorder = new MediaRecorder();
+        try {
+              mRecorder.setMaxFileSize(maxFileSize);
+        } catch (RuntimeException exception) {
+
+        }
+
         mSampleFile = null;
         File sampleDir = Environment.getExternalStorageDirectory();
         if (!sampleDir.canWrite()) // Workaround for broken sdcard support on
@@ -705,7 +722,6 @@ public class FMRadioService extends Service
             Toast.makeText(this, "Not able to access SD Card", Toast.LENGTH_SHORT).show();
             return false;
         }
-        mRecorder = new MediaRecorder();
         if (mRecorder == null) {
            Toast.makeText(this,"MediaRecorder failed to create an instance",
                             Toast.LENGTH_SHORT).show();
@@ -738,6 +754,32 @@ public class FMRadioService extends Service
             return false;
         }
         mFmRecordingOn = true;
+        mRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
+             public void onInfo(MediaRecorder mr, int what, int extra) {
+                 if ((what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) ||
+                     (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED)) {
+                     if (mFmRecordingOn) {
+                         Log.d(LOGTAG, "Maximum file size/duration reached, stopping the recording");
+                         stopRecording();
+                     }
+                     // Show the toast.
+                     Toast.makeText(FMRadioService.this, R.string.FMRecording_reach_size_limit,
+                               Toast.LENGTH_LONG).show();
+                 }
+             }
+             // from MediaRecorder.OnErrorListener
+             public void onError(MediaRecorder mr, int what, int extra) {
+                 Log.e(LOGTAG, "MediaRecorder error. what=" + what + ". extra=" + extra);
+                 if (what == MediaRecorder.MEDIA_RECORDER_ERROR_UNKNOWN) {
+                     // We may have run out of space on the sdcard.
+                     if (mFmRecordingOn) {
+                         stopRecording();
+                     }
+                     updateAndShowStorageHint();
+                 }
+             }
+        });
+
         mSampleStart = System.currentTimeMillis();
         return true;
   }
@@ -910,7 +952,7 @@ public class FMRadioService extends Service
        {
            if((mServiceInUse) && (mCallbacks != null) ) {
                mCallbacks.onRecordingStopped();
-       }
+           }
        } catch (RemoteException e)
        {
            e.printStackTrace();
@@ -2349,6 +2391,51 @@ public class FMRadioService extends Service
          bAvailable = true;
       }
       return bAvailable;
+   }
+
+   public static long getAvailableSpace() {
+       String state = Environment.getExternalStorageState();
+       Log.d(LOGTAG, "External storage state=" + state);
+       if (Environment.MEDIA_CHECKING.equals(state)) {
+           return PREPARING;
+       }
+       if (!Environment.MEDIA_MOUNTED.equals(state)) {
+           return UNAVAILABLE;
+       }
+
+       try {
+            File sampleDir = Environment.getExternalStorageDirectory();
+            StatFs stat = new StatFs(sampleDir.getAbsolutePath());
+            return stat.getAvailableBlocks() * (long) stat.getBlockSize();
+       } catch (Exception e) {
+            Log.i(LOGTAG, "Fail to access external storage", e);
+       }
+       return UNKNOWN_SIZE;
+  }
+
+   private boolean updateAndShowStorageHint() {
+       mStorageSpace = getAvailableSpace();
+       return showStorageHint();
+   }
+
+   private boolean showStorageHint() {
+       String errorMessage = null;
+       if (mStorageSpace == UNAVAILABLE) {
+           errorMessage = getString(R.string.no_storage);
+       } else if (mStorageSpace == PREPARING) {
+           errorMessage = getString(R.string.preparing_sd);
+       } else if (mStorageSpace == UNKNOWN_SIZE) {
+           errorMessage = getString(R.string.access_sd_fail);
+       } else if (mStorageSpace < LOW_STORAGE_THRESHOLD) {
+           errorMessage = getString(R.string.spaceIsLow_content);
+       }
+
+       if (errorMessage != null) {
+           Toast.makeText(this, errorMessage,
+                    Toast.LENGTH_LONG).show();
+           return false;
+       }
+       return true;
    }
 
    /** Determines if a Wired headset is plugged in. Returns the
