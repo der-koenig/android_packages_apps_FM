@@ -89,7 +89,6 @@ import android.media.MediaRecorder;
 
 import android.hardware.fmradio.FmConfig;
 import android.os.ServiceManager;
-import android.os.IHDMIService;
 
 
 public class FMRadio extends Activity
@@ -742,11 +741,6 @@ public class FMRadio extends Activity
           try {
               String hdmiUserOption = android.provider.Settings.System.getString(
                                             getContentResolver(), "HDMI_USEROPTION");
-              IHDMIService hdmiService = IHDMIService.Stub.asInterface(ServiceManager.getService("hdmi"));
-              if( hdmiUserOption != null && hdmiUserOption.equals("HDMI_ON") &&
-                  hdmiService != null && hdmiService.isHDMIConnected()) {
-                  return true;
-              }
           }
           catch (Exception ex){
           }

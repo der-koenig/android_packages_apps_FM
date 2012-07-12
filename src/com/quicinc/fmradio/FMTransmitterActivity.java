@@ -74,7 +74,6 @@ import android.content.ServiceConnection;
 
 import android.hardware.fmradio.FmConfig;
 import android.os.ServiceManager;
-import android.os.IHDMIService;
 
 public class FMTransmitterActivity extends Activity {
         public static final String LOGTAG = "FMTransmitterActivity";
@@ -378,11 +377,6 @@ public class FMTransmitterActivity extends Activity {
                 try {
                     String hdmiUserOption = android.provider.Settings.System.getString(
                                             getContentResolver(), "HDMI_USEROPTION");
-                    IHDMIService hdmiService = IHDMIService.Stub.asInterface(ServiceManager.getService("hdmi"));
-                    if( hdmiUserOption != null && hdmiUserOption.equals("HDMI_ON") &&
-                        hdmiService != null && hdmiService.isHDMIConnected()) {
-                        return true;
-                    }
                 }
                 catch (Exception ex){
                     Log.d(LOGTAG,"Get HDMI open failed");

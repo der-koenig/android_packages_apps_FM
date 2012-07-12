@@ -10,7 +10,7 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src/com/quicinc/fmradio) \
 	src/com/quicinc/fmradio/IFMTransmitterService.aidl \
 
 
-ifeq ($(call is-android-codename-in-list,ICECREAM_SANDWICH HONEYCOMB),true)
+ifeq ($(call is-android-codename-in-list,JELLY_BEAN ICECREAM_SANDWICH HONEYCOMB),true)
 LOCAL_SRC_FILES +=  $(call all-java-files-under, src/com/quicinc/hc_utils)
 else
 LOCAL_SRC_FILES +=  $(call all-java-files-under, src/com/quicinc/utils)
