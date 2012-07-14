@@ -257,12 +257,6 @@ public class FMRadioService extends Service
                      if ((action.equals(Intent.ACTION_MEDIA_UNMOUNTED))
                            || (action.equals(Intent.ACTION_MEDIA_EJECT))) {
                          Log.d(LOGTAG, "ACTION_MEDIA_UNMOUNTED Intent received");
-                         if(isFmOn() && (true == mOverA2DP) &&
-                            (false == mStoppedOnFocusLoss) &&
-                            (!isSpeakerEnabled())) {
-                            stopFM();
-                            startFM();
-                         }
                          if (mFmRecordingOn == true) {
                              try {
                                   stopRecording();
@@ -270,22 +264,12 @@ public class FMRadioService extends Service
                                   e.printStackTrace();
                              }
                          }
-                     }else if((action.equals(Intent.ACTION_MEDIA_MOUNTED))){
-                         boolean  bA2dpConnected =
-                                        mA2dpDeviceState.isConnected(intent);
-                         if(isFmOn() && bA2dpConnected &&
-                            (false == mStoppedOnFocusLoss) &&
-                            (!isSpeakerEnabled())) {
-                             stopFM();
-                             startFM();
-                         }
                      }
                  }
              };
              IntentFilter iFilter = new IntentFilter();
              iFilter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
              iFilter.addAction(Intent.ACTION_MEDIA_EJECT);
-             iFilter.addAction(Intent.ACTION_MEDIA_MOUNTED);
              iFilter.addDataScheme("file");
              registerReceiver(mSdcardUnmountReceiver, iFilter);
          }
@@ -641,8 +625,8 @@ public class FMRadioService extends Service
        mStoppedOnFocusLoss = false;
 
        if ((true == mA2dpDeviceState.isDeviceAvailable()) &&
-           (!isSpeakerEnabled()) && !isAnalogModeEnabled() &&
-           isExternalStorageAvailable() && (true == startA2dpPlayback())) {
+           (!isSpeakerEnabled()) && !isAnalogModeEnabled()
+            && (true == startA2dpPlayback())) {
             mOverA2DP=true;
        } else {
            Log.d(LOGTAG, "FMRadio: sending the intent");
@@ -805,15 +789,14 @@ public class FMRadioService extends Service
             mA2dp.setAudioSource(MediaRecorder.AudioSource.FM_RX_A2DP);
             mA2dp.setOutputFormat(MediaRecorder.OutputFormat.RAW_AMR);
             mA2dp.setAudioEncoder(MediaRecorder.OutputFormat.DEFAULT);
-            File sampleDir = Environment.getExternalStorageDirectory();
-            if (!sampleDir.canWrite())
-                sampleDir = new File("/sdcard/sdcard");
+            File sampleDir = new File(getFilesDir().getAbsolutePath());
             try {
                 mA2DPSampleFile = File
                     .createTempFile("FMRecording", ".3gpp", sampleDir);
             } catch (IOException e) {
-                Log.e(LOGTAG, "Not able to access SD Card");
-                Toast.makeText(this, "Not able to access SD Card", Toast.LENGTH_SHORT).show();
+                Log.e(LOGTAG, "Not able to access Phone's internal memory");
+                Toast.makeText(this, "Not able to access Phone's internal memory",
+                                Toast.LENGTH_SHORT).show();
                 return false;
             }
             mA2dp.setOutputFile(mA2DPSampleFile.getAbsolutePath());
