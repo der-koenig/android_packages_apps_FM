@@ -582,10 +582,6 @@ public class FMTransmitterActivity extends Activity {
                 dlgBuilder.setPositiveButton(R.string.alert_dialog_ok,
                                 new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int whichButton) {
-                                                for (int index = 0; index < MAX_PRESETS; index++) {
-                                                        mPresetFrequencies[index] = FmSharedPreferences
-                                                                        .getLowerLimit();
-                                                }
                                                 /*
                                                  * Since the presets will be changed, reset the page
                                                  * number
@@ -1078,6 +1074,7 @@ public class FMTransmitterActivity extends Activity {
                                   updateSearchProgress();
                                   resetFMStationInfoUI();
                                   setupPresetLayout();
+                                  SavePreferences();
                                } else {
                                   updateSearchProgress();
                                   enableRadioHandler.removeCallbacks(enableRadioTask);

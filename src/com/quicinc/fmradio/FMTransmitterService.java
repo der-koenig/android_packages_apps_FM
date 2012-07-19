@@ -769,9 +769,21 @@ public class FMTransmitterService extends Service
            catch (InstantiationException e){
             throw new RuntimeException("FmTx service not available!");
            }
-           mReceiver.enable(config);
+           if (mReceiver.getFMState() == mReceiver.FMState_Turned_Off) {
+               bStatus = mReceiver.enable(config);
+           } else {
+               try {
+                   Thread.sleep(100);
+               } catch (Exception ex) {
+                   Log.d( LOGTAG,  "RunningThread InterruptedException");
+               }
+               bStatus = mReceiver.enable(config);
+           }
+           if (!bStatus) {
+               Log.e( LOGTAG,  "Search for weak station failed");
+               return false;
+           }
        }
-
 
        bStatus = mReceiver.setStation(config.getLowerLimit());
 
