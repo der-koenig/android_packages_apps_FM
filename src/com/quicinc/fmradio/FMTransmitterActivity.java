@@ -717,6 +717,12 @@ public class FMTransmitterActivity extends Activity {
                    mOnOffButton.setClickable(false);
                 }
         }
+        private void setHsPluggedInMsg() {
+                if (mRadioTextTV != null) {
+                    mRadioTextTV.setVisibility(View.VISIBLE);
+                    mRadioTextTV.setText(getString(R.string.msg_headsetpluggedin));
+                }
+        }
         private Runnable enableRadioTask = new Runnable() {
                 public void run() {
                      enableRadio();
@@ -734,10 +740,13 @@ public class FMTransmitterActivity extends Activity {
                 disableRadioOnOffButton();
                 if (mService != null) {
                         try {
-                                if(!(mService.isCallActive() ||
-                                    mService.isHeadsetPlugged()) &&
-                                    !mService.fmOn()) {
-                                    enableRadioOnOffButton();
+                                if(mService.isHeadsetPlugged()) {
+                                   setHsPluggedInMsg();
+                                   enableRadioOnOffButton();
+                                } else if(mService.isCallActive()) {
+                                   enableRadioOnOffButton();
+                                } else if(!mService.fmOn()) {
+                                   enableRadioOnOffButton();
                                 }
                         } catch (RemoteException e) {
                                 enableRadioOnOffButton();
