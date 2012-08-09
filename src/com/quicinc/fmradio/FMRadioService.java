@@ -1067,26 +1067,27 @@ public class FMRadioService extends Service
                    return;
                }
            }
-       boolean bTempSpeaker = mSpeakerPhoneOn; //need to restore SpeakerPhone
-       boolean bTempMute    = mMuted;// need to restore Mute status
-       int bTempCall = mCallStatus;//need to restore call status
-       fmOff();
-       try
-           {
-               // Notify the UI/Activity, only if the service is "bound"
-               // by an activity and if Callbacks are registered
-               if((mServiceInUse) && (mCallbacks != null) )
-               {
-                   mCallbacks.onDisabled();
+           boolean bTempSpeaker = mSpeakerPhoneOn; //need to restore SpeakerPhone
+           boolean bTempMute = mMuted;// need to restore Mute status
+           int bTempCall = mCallStatus;//need to restore call status
+           if (fmOff()) {
+               if((mServiceInUse) && (mCallbacks != null)) {
+                   try {
+                        mCallbacks.onDisabled();
+                   } catch (RemoteException e) {
+                        e.printStackTrace();
+                   }
                }
-            } catch (RemoteException e)
-            {
-                e.printStackTrace();
-            }
-           mResumeAfterCall = true;
-           mSpeakerPhoneOn = bTempSpeaker;
-           mCallStatus = bTempCall;
-           mMuted = bTempMute;
+               mResumeAfterCall = true;
+               mSpeakerPhoneOn = bTempSpeaker;
+               mCallStatus = bTempCall;
+               mMuted = bTempMute;
+           } else if (!mResumeAfterCall) {
+               mResumeAfterCall = false;
+               mSpeakerPhoneOn = bTempSpeaker;
+               mCallStatus = bTempCall;
+               mMuted = bTempMute;
+           }
        }
        else if (state == TelephonyManager.CALL_STATE_IDLE) {
           // start playing again
@@ -1094,20 +1095,19 @@ public class FMRadioService extends Service
           {
              // resume playback only if FM Radio was playing
              // when the call was answered
-              if ((isAntennaAvailable()) && (!isFmOn())
-                   && (mServiceInUse) && (mCallbacks != null))
+              if (isAntennaAvailable() && (!isFmOn()) && mServiceInUse)
               {
-                   Log.d(LOGTAG, "Resuming after call:" );
-                   if( true != fmOn() ) {
+                   Log.d(LOGTAG, "Resuming after call:");
+                   if(true != fmOn()) {
                        return;
                    }
                    mResumeAfterCall = false;
-                   try
-                   {
-                       mCallbacks.onEnabled();
-                   } catch (RemoteException e)
-                   {
-                       e.printStackTrace();
+                   if(mCallbacks != null) {
+                      try {
+                           mCallbacks.onEnabled();
+                      } catch (RemoteException e) {
+                           e.printStackTrace();
+                      }
                    }
               }
           }
