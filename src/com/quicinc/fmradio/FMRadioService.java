@@ -563,7 +563,7 @@ public class FMRadioService extends Service
       mServiceInUse = true;
       /* Application/UI is attached, so get out of lower power mode */
       setLowPowerMode(false);
-      if(false == mPlaybackInProgress)
+      if((mPlaybackInProgress == false) && isWiredHeadsetAvailable())
          startFM();
       Log.d(LOGTAG, "onRebind");
    }
@@ -572,10 +572,6 @@ public class FMRadioService extends Service
    public void onStart(Intent intent, int startId) {
       Log.d(LOGTAG, "onStart");
       mServiceStartId = startId;
-      // adding code for audio focus gain.
-      AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-      audioManager.requestAudioFocus(mAudioFocusListener, AudioManager.STREAM_FM,
-              AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
       // make sure the service will shut down on its own if it was
       // just started but not bound to and nothing is playing
       mDelayedStopHandler.removeCallbacksAndMessages(null);
