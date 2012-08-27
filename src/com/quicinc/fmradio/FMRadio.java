@@ -49,7 +49,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.SystemProperties;
@@ -222,7 +221,6 @@ public class FMRadio extends Activity
    private static boolean mIsScaning = false;
    private static boolean mIsSeeking = false;
    private static boolean mIsSearching = false;
-   private static boolean mIsHomeKeyPressed = false;
    private static int mScanPty = 0;
 
    private Animation mAnimation = null;
@@ -371,13 +369,11 @@ public class FMRadio extends Activity
       } catch (Exception e) {
          e.printStackTrace();
       }
-      mIsHomeKeyPressed = false;
       super.onRestart();
    }
 
    @Override
    public void onStop() {
-      PowerManager pm =(PowerManager) getSystemService(Context.POWER_SERVICE);
       Log.d(LOGTAG, "FMRadio: onStop");
       if(isSleepTimerActive() ) {
           mSleepUpdateHandlerThread.interrupt();
@@ -412,10 +408,6 @@ public class FMRadio extends Activity
                 e.printStackTrace();
             }
           }
-      }
-      if (pm.isScreenOn()) {
-         Log.d(LOGTAG, "Device is in Active mode");
-         mIsHomeKeyPressed = true;
       }
       super.onStop();
    }
@@ -523,18 +515,9 @@ public class FMRadio extends Activity
       unbindFromService(this);
       mService = null;
       Log.d(LOGTAG, "onDestroy: unbindFromService completed");
-      mIsHomeKeyPressed = false;
       super.onDestroy();
    }
 
-   public void onActivityFinish() {
-      Log.d(LOGTAG, "onActivityFinish:");
-      if (!hasWindowFocus() && (mService != null) && mIsHomeKeyPressed) {
-         mIsHomeKeyPressed = false;
-         unbindFromService(this);
-         finish();
-      }
-   }
    @Override
    public boolean onCreateOptionsMenu(Menu menu) {
       super.onCreateOptionsMenu(menu);
@@ -3568,11 +3551,6 @@ public class FMRadio extends Activity
       {
          Log.d(LOGTAG, "mServiceCallbacks.onRecordingStopped:");
          stopRecording();
-      }
-      public void onFinishActivity()
-      {
-         Log.d(LOGTAG, "mServiceCallbacks.onFinish:");
-         onActivityFinish();
       }
    };
 }

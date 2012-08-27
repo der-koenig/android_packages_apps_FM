@@ -44,5 +44,4 @@ interface IFMRadioServiceCallbacks
   void onAudioUpdate(boolean bStereo);
   void onStationRDSSupported(boolean bRDSSupported);
   void onRecordingStopped();
-  void onFinishActivity();
 }

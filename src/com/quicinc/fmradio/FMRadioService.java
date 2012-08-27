@@ -1285,12 +1285,6 @@ public class FMRadioService extends Service
 
    private void stop() {
       Log.d(LOGTAG,"in stop");
-      try {
-           if (mFMOn && (mCallbacks != null))
-               mCallbacks. onFinishActivity();
-      } catch (RemoteException e) {
-           e.printStackTrace();
-      }
       if (!mServiceInUse) {
           Log.d(LOGTAG,"calling unregisterMediaButtonEventReceiver in stop");
           mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
