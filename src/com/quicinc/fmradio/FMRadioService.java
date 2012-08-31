@@ -140,6 +140,7 @@ public class FMRadioService extends Service
    public static final int STOP_RECORD = 1;
    // A2dp Device Status will be queried through this class
    A2dpDeviceStatus mA2dpDeviceState = null;
+   private boolean mA2dpDeviceSupportInHal = false;
    //on shutdown not to send start Intent to AudioManager
    private boolean mAppShutdown = false;
    private boolean mSingleRecordingInstanceSupported = false;
@@ -188,6 +189,11 @@ public class FMRadioService extends Service
       Message msg = mDelayedStopHandler.obtainMessage();
       msg.what = FM_STOP;
       mDelayedStopHandler.sendMessageDelayed(msg, IDLE_DELAY);
+      /* Query to check is a2dp supported in Hal */
+      AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+      String valueStr = audioManager.getParameters("isA2dpDeviceSupported");
+      mA2dpDeviceSupportInHal = valueStr.contains("=true");
+      Log.d(LOGTAG, " is A2DP device Supported In HAL"+mA2dpDeviceSupportInHal);
    }
 
    @Override
@@ -620,8 +626,8 @@ public class FMRadioService extends Service
        mAudioManager.registerMediaButtonEventReceiver(fmRadio);
        mStoppedOnFocusLoss = false;
 
-       if ((true == mA2dpDeviceState.isDeviceAvailable()) &&
-           (!isSpeakerEnabled()) && !isAnalogModeEnabled()
+       if (!mA2dpDeviceSupportInHal &&  (true == mA2dpDeviceState.isDeviceAvailable()) &&
+            (!isSpeakerEnabled()) && !isAnalogModeEnabled()
             && (true == startA2dpPlayback())) {
             mOverA2DP=true;
        } else {
@@ -1820,8 +1826,9 @@ public class FMRadioService extends Service
                 startFM();
        }
 
+
        //Need to turn off BT path when Speaker is set on vice versa.
-       if( !analogmode && true == mA2dpDeviceState.isDeviceAvailable()) {
+       if( !mA2dpDeviceSupportInHal && !analogmode && true == mA2dpDeviceState.isDeviceAvailable()) {
            if( ((true == mOverA2DP) && (true == speakerOn)) ||
                ((false == mOverA2DP) && (false == speakerOn)) ) {
               //disable A2DP playback for speaker option
