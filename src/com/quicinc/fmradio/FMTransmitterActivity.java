@@ -135,6 +135,8 @@ public class FMTransmitterActivity extends Activity {
         /* Search Progress Dialog */
         private ProgressDialog mProgressDialog = null;
 
+        private LoadedDataAndState SavedDataAndState = null;
+
         /** Called when the activity is first created. */
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -146,6 +148,7 @@ public class FMTransmitterActivity extends Activity {
                                 + " - Width  : "
                                 + getWindowManager().getDefaultDisplay().getWidth());
                 setContentView(R.layout.fmtransmitter);
+                SavedDataAndState = (LoadedDataAndState)getLastNonConfigurationInstance();
                 mAnimation = AnimationUtils.loadAnimation(this, R.anim.preset_select);
 
                 mOnOffButton = (ImageButton) findViewById(R.id.btn_onoff);
@@ -300,6 +303,27 @@ public class FMTransmitterActivity extends Activity {
 
                 Log.d(LOGTAG, "onDestroy: unbindFromService completed");
                 super.onDestroy();
+        }
+
+        private class LoadedDataAndState {
+                public LoadedDataAndState(){};
+                public boolean onOrOff;
+        }
+
+        @Override
+        public Object onRetainNonConfigurationInstance() {
+                final LoadedDataAndState data = new LoadedDataAndState();
+                if(mService != null) {
+                   try {
+                       data.onOrOff = mService.isFmOn();
+                   } catch(RemoteException e) {
+                       data.onOrOff = false;
+                       e.printStackTrace();
+                   }
+                } else {
+                   data.onOrOff = false;
+                }
+                return data;
         }
 
         @Override
@@ -1336,20 +1360,26 @@ public class FMTransmitterActivity extends Activity {
                         mService = IFMTransmitterService.Stub.asInterface(obj);
                         Log.e(LOGTAG, "ServiceConnection: onServiceConnected: ");
                         if (mService != null) {
-                                try {
-                                        mService.registerCallbacks(mServiceCallbacks);
-                                        if(false == mService.isHeadsetPlugged()) {
-                                            Log.e(LOGTAG, "return for isHeadsetPlugged is false");
-                                            enableRadioHandler.removeCallbacks(enableRadioTask);
-                                            disableRadioHandler.removeCallbacks(disableRadioTask);
-                                            enableRadioHandler.postDelayed(enableRadioTask, 0);
-                                        } else {
-                                            enableRadioOnOffUI(false);
-                                        }
-                                } catch (RemoteException e) {
-                                        e.printStackTrace();
-                                }
-                                return;
+                            try {
+                                  mService.registerCallbacks(mServiceCallbacks);
+                                  if(false == mService.isHeadsetPlugged()) {
+                                      Log.e(LOGTAG, "return for isHeadsetPlugged is false");
+                                      if (SavedDataAndState == null) {
+                                          enableRadioHandler.removeCallbacks(enableRadioTask);
+                                          disableRadioHandler.removeCallbacks(disableRadioTask);
+                                          enableRadioHandler.postDelayed(enableRadioTask, 0);
+                                      } else if (SavedDataAndState.onOrOff) {
+                                          enableRadioOnOffUI(true);
+                                      } else {
+                                          enableRadioOnOffUI(false);
+                                      }
+                                  } else {
+                                      enableRadioOnOffUI(false);
+                                  }
+                            } catch (RemoteException e) {
+                                  e.printStackTrace();
+                            }
+                            return;
                         } else {
                                 Log.e(LOGTAG,
                                         "IFMTransmitterService onServiceConnected failed");
@@ -1359,11 +1389,11 @@ public class FMTransmitterActivity extends Activity {
                         // of a "play this file" Intent, exit. Otherwise go to the Music
                         // app start screen.
                         if (getIntent().getData() == null) {
-                                Intent intent = new Intent(Intent.ACTION_MAIN);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.setClass(FMTransmitterActivity.this,
+                            Intent intent = new Intent(Intent.ACTION_MAIN);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            intent.setClass(FMTransmitterActivity.this,
                                                 FMTransmitterActivity.class);
-                                startActivity(intent);
+                            startActivity(intent);
                         }
                         finish();
                 }
