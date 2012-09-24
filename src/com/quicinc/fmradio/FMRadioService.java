@@ -1821,9 +1821,17 @@ public class FMRadioService extends Service
                 if (isFmRecordingOn())
                     stopRecording();
                 stopFM();
-                setAudioPath(true);
+               AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
+               if (mMuted) {
+                   setAudioPath(true);
+               } else {
+                   mute();
+                   setAudioPath(true);
+                   unMute();
+               }
+           } else {
+               AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
            }
-           AudioSystem.setForceUse(AudioSystem.FOR_MEDIA, AudioSystem.FORCE_NONE);
            if (analogmode)
                 startFM();
        }
