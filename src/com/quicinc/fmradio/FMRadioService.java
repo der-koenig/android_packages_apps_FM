@@ -1818,6 +1818,8 @@ public class FMRadioService extends Service
        boolean analogmode = isAnalogModeSupported();
        if (false == speakerOn) {
            if (analogmode) {
+                if (isFmRecordingOn())
+                    stopRecording();
                 stopFM();
                 setAudioPath(true);
            }
