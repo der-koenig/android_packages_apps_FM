@@ -304,14 +304,7 @@ public class FMRadioService extends Service
                        // if headset is plugged out it is required to disable
                        // in minimal duration to avoid race conditions with
                        // audio policy manager switch audio to speaker.
-                       if ((mHeadsetPlugged == false) && (mReceiver != null) &&
-                           (mInternalAntennaAvailable == false) &&
-                           (mOverA2DP == false)) {
-                          mReceiver.disable();
-                          mReceiver = null;
-                          if(!isFmRecordingOn())
-                             stop();
-                       }
+                       mHandler.removeCallbacks(mHeadsetPluginHandler);
                        mHandler.post(mHeadsetPluginHandler);
                     } else if(mA2dpDeviceState.isA2dpStateChange(action) ) {
                         boolean  bA2dpConnected =
@@ -477,9 +470,6 @@ public class FMRadioService extends Service
                                 return;
                             }
                             if(isFmOn()){
-                                if((mReceiver != null) && mReceiver.disable()) {
-                                   mReceiver = null;
-                                }
                                 fmOff();
                                 if (isOrderedBroadcast()) {
                                     abortBroadcast();
@@ -2469,6 +2459,7 @@ public class FMRadioService extends Service
       public void FmRxEvDisableReceiver()
       {
          Log.d(LOGTAG, "FmRxEvDisableReceiver");
+         mFMOn = false;
       }
       public void FmRxEvRadioReset()
       {
