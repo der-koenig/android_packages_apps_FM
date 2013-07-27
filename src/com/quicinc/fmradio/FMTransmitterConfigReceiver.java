@@ -52,7 +52,7 @@ public class FMTransmitterConfigReceiver extends BroadcastReceiver {
         Log.d(TAG, "Received intent: " + action);
         if((action != null) && action.equals("android.intent.action.BOOT_COMPLETED")) {
             Log.d(TAG, "boot complete intent received");
-            boolean isFmTransmitterSupported = SystemProperties.getBoolean("ro.fm.transmitter",true);
+            boolean isFmTransmitterSupported = SystemProperties.getBoolean("ro.fm.transmitter",false);
 
             if ("msm7630_surf".equals(SystemProperties.get("ro.board.platform"))) {
                 Log.d(TAG,"this is msm7630_surf");
@@ -67,12 +67,12 @@ public class FMTransmitterConfigReceiver extends BroadcastReceiver {
                 build_id = new String(socinfo,17,1);
                 Log.d(TAG, "build_id=" +build_id);
             }
-            if ((!isFmTransmitterSupported) || (build_id.equals("0"))) {
+            if (isFmTransmitterSupported && !build_id.equals("0")) {
             PackageManager pManager = context.getPackageManager();
                if (pManager != null) {
-                   Log.d(TAG, "disableing the FM Transmitter");
+                   Log.d(TAG, "enabling the FM Transmitter");
                    ComponentName fmTransmitter = new ComponentName("com.quicinc.fmradio", "com.quicinc.fmradio.FMTransmitterActivity");
-                   pManager.setComponentEnabledSetting(fmTransmitter, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                   pManager.setComponentEnabledSetting(fmTransmitter, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                                                     PackageManager.DONT_KILL_APP);
                }
            }

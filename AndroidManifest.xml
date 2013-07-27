@@ -55,6 +55,7 @@
                   android:label="@string/tx_app_name"
                   android:clearTaskOnLaunch="true"
                   android:taskAffinity=""
+                  android:enabled="false"
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
