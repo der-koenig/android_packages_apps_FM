@@ -59,8 +59,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.KeyEvent;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -223,7 +221,6 @@ public class FMRadio extends Activity
    private static boolean mIsSearching = false;
    private static int mScanPty = 0;
 
-   private Animation mAnimation = null;
    private ScrollerText mRadioTextScroller = null;
 
    private static PresetStation mTunedStation = new PresetStation("", 102100);
@@ -256,8 +253,6 @@ public class FMRadio extends Activity
 
       setContentView(R.layout.fmradio);
       SavedDataAndState = (LoadedDataAndState)getLastNonConfigurationInstance();
-      mAnimation = AnimationUtils.loadAnimation(this,
-                                                R.anim.preset_select);
 
       mMuteButton = (ImageButton) findViewById(R.id.btn_silent);
       if (mMuteButton != null)
@@ -1786,7 +1781,6 @@ public class FMRadio extends Activity
    private View.OnLongClickListener mForwardLongClickListener
       = new View.OnLongClickListener() {
       public boolean onLongClick(View view) {
-         //mForwardButton.startAnimation(mAnimation);
          SeekNextStation();
          //enableScanningOnOffUI();
          return true;
@@ -1795,7 +1789,6 @@ public class FMRadio extends Activity
 
    private View.OnLongClickListener mBackLongClickListener = new View.OnLongClickListener() {
       public boolean onLongClick(View view) {
-         //mBackButton.startAnimation(mAnimation);
          SeekPreviousStation();
          //enableScanningOnOffUI();
          return true;
@@ -1830,7 +1823,6 @@ public class FMRadio extends Activity
                   + station.getFrequency() + ")");
             //mTunedStation.Copy(station);
             tuneRadio(station.getFrequency());
-            view.startAnimation(mAnimation);
          }
       }
    };
@@ -1845,7 +1837,6 @@ public class FMRadio extends Activity
          } else
          {
             addToPresets();
-            view.startAnimation(mAnimation);
          }
          return true;
       }
@@ -1878,7 +1869,6 @@ public class FMRadio extends Activity
                if(bStatus)
                {
                   setMuteModeButtonImage(true);
-                  v.startAnimation(mAnimation);
                }
                else
                {

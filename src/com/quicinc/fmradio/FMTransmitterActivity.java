@@ -52,8 +52,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -119,7 +117,6 @@ public class FMTransmitterActivity extends Activity {
 
         private boolean mInternalAntennaAvailable = false;
 
-        private Animation mAnimation = null;
         private ScrollerText mRadioTextScroller = null;
 
         private static int mTunedFrequency = 0;;
@@ -149,7 +146,6 @@ public class FMTransmitterActivity extends Activity {
                                 + getWindowManager().getDefaultDisplay().getWidth());
                 setContentView(R.layout.fmtransmitter);
                 SavedDataAndState = (LoadedDataAndState)getLastNonConfigurationInstance();
-                mAnimation = AnimationUtils.loadAnimation(this, R.anim.preset_select);
 
                 mOnOffButton = (ImageButton) findViewById(R.id.btn_onoff);
                 if (mOnOffButton != null) {
@@ -669,7 +665,6 @@ public class FMTransmitterActivity extends Activity {
                                 {
                                         mTunedFrequency = mPresetFrequencies[index];
                                         tuneRadio(mTunedFrequency);
-                                        view.startAnimation(mAnimation);
                                 }
                         }
                 }
@@ -686,7 +681,6 @@ public class FMTransmitterActivity extends Activity {
                                         showDialog(DIALOG_PRESET_OPTIONS);
                                 } else {
                                         mPresetFrequencies[index] = mTunedFrequency;
-                                        view.startAnimation(mAnimation);
                                         setupPresetLayout();
                                         SavePreferences();
                                 }
