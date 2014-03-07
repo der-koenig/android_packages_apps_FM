@@ -79,7 +79,8 @@
     <string name="preset_search">Search for "<xliff:g id="preset_pi">%1$s</xliff:g>"
         </string>
 
-    <string name="stat_notif_frequency">FM Radio Station "<xliff:g id="frequency">%1$s</xliff:g>"</string>
+    <string name="stat_notif_frequency">Tuned to "<xliff:g id="frequency">%1$s</xliff:g>"</string>
+    <string name="stat_notif_fm">Tuned to "<xliff:g id="station">%1$s</xliff:g>" ("<xliff:g id="frequency">%1$s</xliff:g>")</string>
     <string name="stat_notif_tx_frequency">FM Transmitting at: "<xliff:g id="frequency">%1$s</xliff:g>"</string>
 
 

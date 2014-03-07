@@ -1255,6 +1255,7 @@ public class FMRadioService extends Service
 
    /* Show the FM Notification */
    public void startNotification() {
+      /*
       RemoteViews views = new RemoteViews(getPackageName(), R.layout.statusbar);
       views.setImageViewResource(R.id.icon, R.drawable.stat_notify_fm);
       if (isFmOn())
@@ -1271,6 +1272,15 @@ public class FMRadioService extends Service
       status.icon = R.drawable.stat_notify_fm;
       status.contentIntent = PendingIntent.getActivity(this, 0,
                                                        new Intent("com.quicinc.fmradio.FMRADIO_ACTIVITY"), 0);
+      */
+      Notification status = new Notification.Builder(getApplicationContext())
+              .setContentTitle("FM Radio")
+              .setContentText(getTunedFrequencyString())
+              .setSmallIcon(R.drawable.stat_notify_fm)
+              .setOngoing(true)
+              .setContentIntent(PendingIntent.getActivity(this, 0,
+                                                       new Intent("com.quicinc.fmradio.FMRADIO_ACTIVITY"), 0))
+              .build();
       startForeground(FMRADIOSERVICE_STATUS, status);
       //NotificationManager nm = (NotificationManager)
       //                         getSystemService(Context.NOTIFICATION_SERVICE);
